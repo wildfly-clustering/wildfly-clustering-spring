@@ -5,11 +5,18 @@ A distributed session manager for Spring Session based on WildFly's distributed 
 
 ## Building
 
-1.	Clone this repository and build using a standard maven build.
+1.	Currently, this requires a branch of WildFly that integrates Infinispan 10.1.x and ProtoStream.  Consequently, WildFly first needs to be built:
 
-		$ git clone git@github.com:wildfly-clustering/wildfly-clustering-spring-session.git
-		$ cd wildfly-clustering-spring-session
-		$ mvn clean install
+	$ git clone git@github.com:pferraro/wildfly.git
+	$ cd wildfly
+	$ git checkout -b protostream
+	$ mvn clean install
+
+1.	Clone this repository and build using Java 8 and a standard maven build.
+
+	$ git clone git@github.com:wildfly-clustering/wildfly-clustering-spring-session.git
+	$ cd wildfly-clustering-spring-session
+	$ mvn clean install
 
 ## Installation
 
@@ -18,21 +25,21 @@ The following describes how to install wildfly-clustering-spring-session support
 
 1.	Enter directory of session manager implementation:
 
-		$ cd hotrod
+	$ cd hotrod
 
 1.	Copy the maven artifact to Tomcat's lib directory:
 
-		$ mvn dependency:copy -DoutputDirectory=$CATALINA_HOME/lib
+	$ mvn dependency:copy -DoutputDirectory=$CATALINA_HOME/lib
 
 1.	Copy runtime dependencies to Tomcat's lib directory:
 
-		$ mvn dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=$CATALINA_HOME/lib
+	$ mvn dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=$CATALINA_HOME/lib
 
 ## Configuration
 
 Spring Session is traditionally enabled either via XML or annotations.
-While wildfly-clustering-spring-session includes an @EnableHotRodHttpSession annotation, which is supposed to auto-wire the requisite request filters and listeners.
-However, due to one or more bugs in Spring Session core, this does not work without violating the servlet specificiation.
+wildfly-clustering-spring-session includes an @EnableHotRodHttpSession annotation, which is supposed to auto-wire the requisite request filters and listeners.
+However, due to one or more bugs in Spring Session core, this does not work and violates the servlet specificiation in a number of places.
 Thus we need to manually modify web.xml with the requsite filter for Spring to intercept and wrap the request, as well as a listener capture the servlet context:
 
 	<?xml version="1.0" encoding="UTF-8"?>
