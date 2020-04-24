@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2016, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.jboss</groupId>
+        <artifactId>jboss-parent</artifactId>
+        <version>35</version>
+    </parent>
+
+    <groupId>org.wildfly.clustering</groupId>
+    <artifactId>wildfly-clustering-spring-session</artifactId>
+    <version>1.0.0.Beta1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>Distributed session management for Spring Session</name>
+
+    <scm>
+        <connection>scm:git:git://github.com:wildfly-clustering/wildfly-clustering-spring-session.git</connection>
+        <developerConnection>scm:git:git@github.com:wildfly-clustering/wildfly-clustering-spring-session.git</developerConnection>
+        <url>https://github.com/wildfly-clustering/wildfly-clustering-spring-session</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <properties>
+        <!-- Requires https://github.com/pferraro/wildfly/tree/protostream -->
+        <version.org.wildfly>20.0.0.Beta1-SNAPSHOT</version.org.wildfly>
+        <version.org.infinispan>10.1.6.Final</version.org.infinispan>
+        <version.io.spring>5.2.3.RELEASE</version.io.spring>
+        <version.io.spring.session>2.2.1.RELEASE</version.io.spring.session>
+        <version.jakarta.servlet>4.0.2</version.jakarta.servlet>
+        <version.org.apache.httpcomponents>4.5.9</version.org.apache.httpcomponents>
+        <version.org.apache.tomcat>9.0.34</version.org.apache.tomcat>
+        <version.org.jboss.arquillian>1.6.0.Final</version.org.jboss.arquillian>
+        <version.org.jboss.arquillian.container.tomcat>1.1.0.Final</version.org.jboss.arquillian.container.tomcat>
+        <version.org.junit>4.13</version.org.junit>
+        <version.org.kohsuke.metainf-services>1.7</version.org.kohsuke.metainf-services>
+    </properties>
+
+    <modules>
+        <module>core</module>
+        <module>hotrod</module>
+    </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <configuration>
+                    <artifactItems>
+                        <artifactItem>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>${project.artifactId}</artifactId>
+                            <version>${project.version}</version>
+                        </artifactItem>
+                    </artifactItems>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>jakarta.servlet</groupId>
+                <artifactId>jakarta.servlet-api</artifactId>
+                <version>${version.jakarta.servlet}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>${version.io.spring}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-web</artifactId>
+                <version>${version.io.spring}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.session</groupId>
+                <artifactId>spring-session-core</artifactId>
+                <version>${version.io.spring.session}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-infinispan-client</artifactId>
+                <version>${version.org.wildfly}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-controller</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-naming</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-server</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-infinispan-marshalling</artifactId>
+                <version>${version.org.wildfly}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-web-hotrod</artifactId>
+                <version>${version.org.wildfly}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.modules</groupId>
+                        <artifactId>jboss-modules</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-controller</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-naming</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-server</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-web-cache</artifactId>
+                <version>${version.org.wildfly}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.servlet</groupId>
+                        <artifactId>jboss-servlet-api_4.0_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-controller</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-naming</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-server</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-web-spi</artifactId>
+                <version>${version.org.wildfly}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-controller</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-naming</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-server</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.metadata</groupId>
+                        <artifactId>jboss-metadata-web</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.servlet</groupId>
+                        <artifactId>jboss-servlet-api_4.0_spec</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-client-hotrod</artifactId>
+                <version>${version.org.infinispan}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.kohsuke.metainf-services</groupId>
+                <artifactId>metainf-services</artifactId>
+                <version>${version.org.kohsuke.metainf-services}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${version.org.apache.httpcomponents}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat</groupId>
+                <artifactId>tomcat-catalina</artifactId>
+                <version>${version.org.apache.tomcat}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-server-testdriver-junit4</artifactId>
+                <version>${version.org.infinispan}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-bom</artifactId>
+                <version>${version.org.jboss.arquillian}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.arquillian.container</groupId>
+                <artifactId>arquillian-tomcat-managed-8</artifactId>
+                <version>${version.org.jboss.arquillian.container.tomcat}</version>
+            </dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${version.org.junit}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

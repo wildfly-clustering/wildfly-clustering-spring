@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<infinispan
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+        xsi:schemaLocation="urn:infinispan:config:10.1 https://infinispan.org/schemas/infinispan-config-10.1.xsd
+                            urn:infinispan:server:10.1 https://infinispan.org/schemas/infinispan-server-10.1.xsd
+                            urn:org:jgroups http://www.jgroups.org/schema/jgroups-4.1.xsd"
+        xmlns="urn:infinispan:config:10.1"
+        xmlns:server="urn:infinispan:server:10.1">
+
+   <jgroups>
+      <stack name="test">
+         <!-- Disable the regular thread pool queue for tests so we can set a lower min_threads -->
+         <TCP_NIO2
+                 bind_addr="${jgroups.tcp.address:127.0.0.1}"
+                 bind_port="${jgroups.tcp.port:7800}"
+                 port_range="30"
+                 recv_buf_size="20m"
+                 send_buf_size="640k"
+                 enable_diagnostics="false"
+                 bundler_type="no-bundler"
+                 thread_naming_pattern="pl"
+                 thread_pool.min_threads="0"
+                 thread_pool.max_threads="8"
+                 thread_pool.keep_alive_time="60000"
+                 xmlns="urn:org:jgroups"
+         />
+
+         <MPING bind_addr="${jgroups.tcp.address:127.0.0.1}"
+                mcast_addr="${jgroups.mping.mcast_addr:224.0.0.1}"
+                mcast_port="${jgroups.mping.mcast_port:43366}"
+                num_discovery_runs="3"
+                ip_ttl="${jgroups.udp.ip_ttl:2}"
+                xmlns="urn:org:jgroups"
+         />
+
+         <MERGE3 min_interval="1000" max_interval="5000" xmlns="urn:org:jgroups"/>
+
+         <FD_SOCK sock_conn_timeout="3000" xmlns="urn:org:jgroups"/>
+         <!-- Suspect node `timeout` to `timeout + timeout_check_interval` millis after the last heartbeat -->
+         <FD_ALL timeout="3000"
+                 interval="1000"
+                 timeout_check_interval="1000"
+                 xmlns="urn:org:jgroups"
+         />
+         <VERIFY_SUSPECT timeout="1000" xmlns="urn:org:jgroups"/>
+
+         <!-- resend_last_seqno_max_times=10000 is a workaround for JGRP-2167  -->
+         <pbcast.NAKACK2
+                 use_mcast_xmit="false"
+                 xmit_interval="100"
+                 xmit_table_num_rows="50"
+                 xmit_table_msgs_per_row="1024"
+                 xmit_table_max_compaction_time="30000"
+                 resend_last_seqno_max_times="10000" xmlns="urn:org:jgroups"/>
+         <UNICAST3
+                 xmit_interval="100"
+                 xmit_table_num_rows="50"
+                 xmit_table_msgs_per_row="1024"
+                 xmit_table_max_compaction_time="30000"
+                 xmlns="urn:org:jgroups"
+         />
+         <pbcast.STABLE stability_delay="200"
+                        desired_avg_gossip="2000"
+                        max_bytes="1M"
+                        xmlns="urn:org:jgroups"
+         />
+         <pbcast.GMS print_local_addr="false"
+                     join_timeout="${jgroups.join_timeout:2000}"
+                     xmlns="urn:org:jgroups"/>
+
+         <UFC max_credits="3m" min_threshold="0.40" xmlns="urn:org:jgroups"/>
+         <MFC max_credits="3m" min_threshold="0.40" xmlns="urn:org:jgroups"/>
+      </stack>
+   </jgroups>
+
+   <cache-container name="default" statistics="true">
+      <transport cluster="${infinispan.cluster.name}" stack="test"/>
+   </cache-container>
+
+   <server xmlns="urn:infinispan:server:10.1">
+
+      <interfaces>
+         <interface name="public">
+            <inet-address value="${infinispan.bind.address:127.0.0.1}"/>
+         </interface>
+      </interfaces>
+
+      <socket-bindings default-interface="public" port-offset="${infinispan.socket.binding.port-offset:0}">
+         <socket-binding name="default" port="11222"/>
+      </socket-bindings>
+
+      <security>
+         <security-realms>
+            <security-realm name="default">
+            </security-realm>
+         </security-realms>
+      </security>
+
+      <endpoints socket-binding="default">
+         <hotrod-connector name="hotrod"/>
+         <rest-connector name="rest"/>
+      </endpoints>
+
+   </server>
+</infinispan>
