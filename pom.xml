@@ -48,8 +48,8 @@
         <!-- Requires https://github.com/pferraro/wildfly/tree/protostream -->
         <version.org.wildfly>20.0.0.Beta1-SNAPSHOT</version.org.wildfly>
         <version.org.infinispan>10.1.6.Final</version.org.infinispan>
-        <version.io.spring>5.2.3.RELEASE</version.io.spring>
-        <version.io.spring.session>2.2.1.RELEASE</version.io.spring.session>
+        <version.io.spring>5.2.4.RELEASE</version.io.spring>
+        <version.io.spring.session>2.2.2.RELEASE</version.io.spring.session>
         <version.jakarta.servlet>4.0.2</version.jakarta.servlet>
         <version.org.apache.httpcomponents>4.5.9</version.org.apache.httpcomponents>
         <version.org.apache.tomcat>9.0.34</version.org.apache.tomcat>
