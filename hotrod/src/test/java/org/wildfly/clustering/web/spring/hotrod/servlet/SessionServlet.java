@@ -23,9 +23,6 @@
 package org.wildfly.clustering.web.spring.hotrod.servlet;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -33,24 +30,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.wildfly.clustering.web.spring.servlet.SessionHandler;
+
 /**
  * @author Paul Ferraro
  */
-@WebServlet(SessionServlet.SERVLET_PATH)
-public class SessionServlet extends HttpServlet {
+@WebServlet(SessionHandler.SERVLET_PATH)
+public class SessionServlet extends HttpServlet implements SessionHandler {
     private static final long serialVersionUID = 2878267318695777395L;
 
-    private static final String SERVLET_NAME = "session";
-    static final String SERVLET_PATH = "/" + SERVLET_NAME;
-    public static final String VALUE = "value";
-    public static final String SESSION_ID = "session-id";
-
-    public static URI createURI(URL baseURL) throws URISyntaxException {
-        return baseURL.toURI().resolve(SERVLET_NAME);
-    }
-
     @Override
-    protected void doHead(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void doHead(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession(false);
         if (session != null) {
             response.setHeader(SESSION_ID, session.getId());
@@ -58,7 +48,7 @@ public class SessionServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession();
         response.setHeader(SESSION_ID, session.getId());
 
@@ -74,7 +64,7 @@ public class SessionServlet extends HttpServlet {
     }
 
     @Override
-    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession(false);
         if (session != null) {
             response.setHeader(SESSION_ID, session.getId());

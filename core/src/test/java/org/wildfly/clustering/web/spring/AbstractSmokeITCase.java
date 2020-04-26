@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring.hotrod;
+package org.wildfly.clustering.web.spring;
 
 import java.io.IOException;
 import java.net.URI;
@@ -38,54 +38,21 @@ import org.apache.http.impl.client.HttpClients;
 import org.infinispan.server.test.core.ServerRunMode;
 import org.infinispan.server.test.junit4.InfinispanServerRule;
 import org.infinispan.server.test.junit4.InfinispanServerRuleBuilder;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.wildfly.clustering.web.spring.hotrod.servlet.SessionServlet;
+import org.wildfly.clustering.web.spring.servlet.SessionHandler;
 
 /**
  * @author Paul Ferraro
  */
-@RunWith(Arquillian.class)
-@RunAsClient
-public class HotRodSpringITCase {
+public abstract class AbstractSmokeITCase {
     public static final String CONTAINER_1 = "tomcat-1";
     public static final String CONTAINER_2 = "tomcat-2";
     public static final String DEPLOYMENT_1 = "deployment-1";
     public static final String DEPLOYMENT_2 = "deployment-2";
-
-    private static final String MODULE = HotRodSpringITCase.class.getSimpleName();
-
-    @Deployment(name = DEPLOYMENT_1, testable = false)
-    @TargetsContainer(CONTAINER_1)
-    public static Archive<?> deployment1() {
-        return deployment();
-    }
-
-    @Deployment(name = DEPLOYMENT_2, testable = false)
-    @TargetsContainer(CONTAINER_2)
-    public static Archive<?> deployment2() {
-        return deployment();
-    }
-
-    private static Archive<?> deployment() {
-        Archive<?> archive = ShrinkWrap.create(WebArchive.class, MODULE + ".war")
-                .addPackage(SessionServlet.class.getPackage())
-                .addAsWebInfResource(HotRodSpringITCase.class.getPackage(), "applicationContext.xml", "applicationContext.xml")
-                .setWebXML(HotRodSpringITCase.class.getPackage(), "web.xml")
-                ;
-        return archive;
-    }
 
     @ClassRule
     public static final InfinispanServerRule SERVERS = InfinispanServerRuleBuilder.config("config.xml")
@@ -93,10 +60,18 @@ public class HotRodSpringITCase {
             .numServers(1)
             .build();
 
-    @Test
-    public void test(@ArquillianResource(SessionServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1, @ArquillianResource(SessionServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws IOException, URISyntaxException {
-        URI uri1 = SessionServlet.createURI(baseURL1);
-        URI uri2 = SessionServlet.createURI(baseURL2);
+    public static Archive<?> deployment(Class<? extends AbstractSmokeITCase> testClass, Class<? extends SessionHandler> servletClass) {
+        return ShrinkWrap.create(WebArchive.class, testClass.getSimpleName() + ".war")
+                .addClass(SessionHandler.class)
+                .addClass(servletClass)
+                .addAsWebInfResource(testClass.getPackage(), "applicationContext.xml", "applicationContext.xml")
+                .setWebXML(AbstractSmokeITCase.class.getPackage(), "web.xml")
+                ;
+    }
+
+    protected void test(URL baseURL1, URL baseURL2) throws IOException, URISyntaxException {
+        URI uri1 = SessionHandler.createURI(baseURL1);
+        URI uri2 = SessionHandler.createURI(baseURL2);
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String sessionId = null;
@@ -105,22 +80,22 @@ public class HotRodSpringITCase {
                 for (URI uri : Arrays.asList(uri1, uri2)) {
                     try (CloseableHttpResponse response = client.execute(new HttpGet(uri))) {
                         Assert.assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
-                        Assert.assertEquals(String.valueOf(value++), response.getFirstHeader(SessionServlet.VALUE).getValue());
+                        Assert.assertEquals(String.valueOf(value++), response.getFirstHeader(SessionHandler.VALUE).getValue());
                         if (sessionId == null) {
-                            sessionId = response.getFirstHeader(SessionServlet.SESSION_ID).getValue();
+                            sessionId = response.getFirstHeader(SessionHandler.SESSION_ID).getValue();
                         } else {
-                            Assert.assertEquals(sessionId, response.getFirstHeader(SessionServlet.SESSION_ID).getValue());
+                            Assert.assertEquals(sessionId, response.getFirstHeader(SessionHandler.SESSION_ID).getValue());
                         }
                     }
                 }
             }
             try (CloseableHttpResponse response = client.execute(new HttpDelete(uri1))) {
                 Assert.assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(sessionId, response.getFirstHeader(SessionServlet.SESSION_ID).getValue());
+                Assert.assertEquals(sessionId, response.getFirstHeader(SessionHandler.SESSION_ID).getValue());
             }
             try (CloseableHttpResponse response = client.execute(new HttpHead(uri2))) {
                 Assert.assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertFalse(response.containsHeader(SessionServlet.SESSION_ID));
+                Assert.assertFalse(response.containsHeader(SessionHandler.SESSION_ID));
             }
         }
     }
