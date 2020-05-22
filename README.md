@@ -54,7 +54,7 @@ e.g.
 
 However, this mechanism cannot possibly work correctly in a specification compliant servlet container.
 
-Spring Session's auto-wiring initiates in the `[AbstractHttpSessionApplicationInitializer.onStartup(ServletContext)](https://github.com/spring-projects/spring-session/blob/2.3.0.RELEASE/spring-session-core/src/main/java/org/springframework/session/web/context/AbstractHttpSessionApplicationInitializer.java#L107)` method, where it dynamically registers a ServletContextListener.
+Spring Session's auto-wiring initiates in the [`AbstractHttpSessionApplicationInitializer.onStartup(ServletContext)`](https://github.com/spring-projects/spring-session/blob/2.3.0.RELEASE/spring-session-core/src/main/java/org/springframework/session/web/context/AbstractHttpSessionApplicationInitializer.java#L107) method, where it dynamically registers a ServletContextListener.
 Unfortunately, &sect;4.4 of the servlet specification is very specific about how a container should treat ServletContext events for dynamically registered listeners:
 
 > If the ServletContext passed to the ServletContextListener’s contextInitialized method where the ServletContextListener was neither declared in web.xml or web-fragment.xml nor annotated with @WebListener then an UnsupportedOperationException MUST be thrown for all the methods defined in ServletContext for programmatic configuration of servlets, filters and listeners.
