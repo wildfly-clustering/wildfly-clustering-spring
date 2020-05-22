@@ -122,7 +122,7 @@ The following is a sample `/WEB-INF/applicationContext.xml`:
 
 The complete set of HotRod properties can be found here:
 
-https://github.com/infinispan/infinispan/blob/9.4.x/client/hotrod-client/src/main/java/org/infinispan/client/hotrod/impl/ConfigurationProperties.java
+https://github.com/infinispan/infinispan/blob/10.1.x/client/hotrod-client/src/main/java/org/infinispan/client/hotrod/impl/ConfigurationProperties.java
 
 == Notes
 
