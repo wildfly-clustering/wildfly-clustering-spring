@@ -52,23 +52,13 @@ public class SmokeITCase extends AbstractSmokeITCase {
     @Deployment(name = DEPLOYMENT_1, testable = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> deployment1() {
-        try {
-            return deployment(SmokeITCase.class, SessionServlet.class);
-        } catch (RuntimeException e) {
-            e.printStackTrace();
-            throw e;
-        }
+        return deployment(SmokeITCase.class, SessionServlet.class);
     }
 
     @Deployment(name = DEPLOYMENT_2, testable = false)
     @TargetsContainer(CONTAINER_2)
     public static Archive<?> deployment2() {
-        try {
-            return deployment(SmokeITCase.class, SessionServlet.class);
-        } catch (RuntimeException e) {
-            e.printStackTrace();
-            throw e;
-        }
+        return deployment(SmokeITCase.class, SessionServlet.class);
     }
 
     @Override

@@ -85,7 +85,6 @@
                 <includes>
                     <include>**/*.xml</include>
                 </includes>
-                <filtering>true</filtering>
             </testResource>
         </testResources>
         <plugins>

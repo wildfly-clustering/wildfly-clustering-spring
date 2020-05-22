@@ -22,7 +22,9 @@
 
 package org.wildfly.clustering.web.spring;
 
+import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -42,21 +44,27 @@ public class DistributableSessionRepository<B extends Batch> implements SessionR
     // Needed to obtain reference to session for use by deleteById(...)
     private final Map<String, Session<Void>> sessions = new ConcurrentHashMap<>();
     private final ApplicationEventPublisher publisher;
+    private final Optional<Duration> defaultTimeout;
 
-    public DistributableSessionRepository(SessionManager<Void, B> manager, ApplicationEventPublisher publisher) {
+    public DistributableSessionRepository(SessionManager<Void, B> manager, Optional<Duration> defaultTimeout, ApplicationEventPublisher publisher) {
         this.manager = manager;
+        this.defaultTimeout = defaultTimeout;
         this.publisher = publisher;
     }
 
     @Override
     public DistributableSession<B> createSession() {
         String id = this.manager.createIdentifier();
-        Batcher<B> batcher = this.manager.getBatcher();
-        Session<Void> session = this.manager.createSession(id);
-        this.sessions.put(id, session);
         boolean close = true;
+        Batcher<B> batcher = this.manager.getBatcher();
         B batch = batcher.createBatch();
         try {
+            Session<Void> session = this.manager.createSession(id);
+            this.sessions.put(id, session);
+            // This is present for servlet version < 4.0
+            if (this.defaultTimeout.isPresent()) {
+                session.getMetaData().setMaxInactiveInterval(this.defaultTimeout.get());
+            }
             DistributableSession<B> result = new DistributableSession<>(this.manager, session, batcher.suspendBatch());
             this.publisher.publishEvent(new SessionCreatedEvent(this, result));
             close = false;
@@ -67,19 +75,20 @@ public class DistributableSessionRepository<B extends Batch> implements SessionR
         } finally {
             if (close) {
                 batch.close();
+                this.sessions.remove(id);
             }
         }
     }
 
     @Override
     public DistributableSession<B> findById(String id) {
-        Batcher<B> batcher = this.manager.getBatcher();
-        Session<Void> session = this.manager.findSession(id);
-        if (session == null) return null;
-        this.sessions.put(id, session);
         boolean close = true;
+        Batcher<B> batcher = this.manager.getBatcher();
         B batch = batcher.createBatch();
         try {
+            Session<Void> session = this.manager.findSession(id);
+            if (session == null) return null;
+            this.sessions.put(id, session);
             DistributableSession<B> result = new DistributableSession<>(this.manager, session, batcher.suspendBatch());
             close = false;
             return result;

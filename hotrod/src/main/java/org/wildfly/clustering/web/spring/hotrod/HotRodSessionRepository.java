@@ -24,7 +24,7 @@ package org.wildfly.clustering.web.spring.hotrod;
 
 import java.time.Duration;
 import java.util.EnumSet;
-import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -53,15 +53,13 @@ import org.wildfly.clustering.ee.immutable.CompositeImmutability;
 import org.wildfly.clustering.ee.immutable.DefaultImmutability;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.infinispan.client.manager.RemoteCacheManager;
-import org.wildfly.clustering.infinispan.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.infinispan.marshalling.jboss.JBossMarshaller;
 import org.wildfly.clustering.marshalling.jboss.DynamicClassTable;
 import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
 import org.wildfly.clustering.marshalling.jboss.MarshallingContext;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingContextFactory;
-import org.wildfly.clustering.marshalling.protostream.AnyMarshalledValueFactory;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallingContext;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
@@ -114,13 +112,11 @@ public class HotRodSessionRepository implements SessionRepository<DistributableS
     public void afterPropertiesSet() throws Exception {
         Integer maxActiveSessions = this.configuration.getMaxActiveSessions();
         ClassLoader managerLoader = HotRodSessionManagerFactory.class.getClassLoader();
+        @SuppressWarnings("deprecation")
         Configuration configuration = new ConfigurationBuilder()
                 .withProperties(this.configuration.getProperties())
-//                .marshaller(new JBossMarshaller(new SimpleMarshallingConfigurationRepository(JBossMarshallingVersion.class, JBossMarshallingVersion.CURRENT, managerLoader), managerLoader))
-                .marshaller(new ProtoStreamMarshaller(managerLoader))
-                .nearCache()
-                    .mode(NearCacheMode.INVALIDATED)
-                    .maxEntries(Integer.MAX_VALUE)
+                .marshaller(new JBossMarshaller(new SimpleMarshallingConfigurationRepository(JBossMarshallingVersion.class, JBossMarshallingVersion.CURRENT, managerLoader), managerLoader))
+                .nearCache().mode(NearCacheMode.INVALIDATED).maxEntries(-1)
                 .build();
 
         SessionAttributePersistenceStrategy strategy = this.configuration.getPersistenceStrategy();
@@ -130,16 +126,16 @@ public class HotRodSessionRepository implements SessionRepository<DistributableS
         ClassLoader deploymentLoader = this.configuration.getClassLoader();
         String containerName = context.getServletContextName();
         RemoteCacheContainer container = new RemoteCacheManager(containerName, configuration, this);
-        System.out.println("Starting container " + containerName);
         container.start();
         this.container = container;
 
-        MarshalledValueFactory<?> marshalledValueFactory = createMarshalledValueFactory(deploymentLoader);
+        MarshallingContext marshallingContext = new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(JBossMarshallingVersion.class, JBossMarshallingVersion.CURRENT, deploymentLoader), deploymentLoader);
+        MarshalledValueFactory<MarshallingContext> marshalledValueFactory = new SimpleMarshalledValueFactory(marshallingContext);
 
         ServiceLoader<Immutability> loadedImmutability = ServiceLoader.load(Immutability.class, Immutability.class.getClassLoader());
         Immutability immutability = new CompositeImmutability(new CompositeIterable<>(EnumSet.allOf(DefaultImmutability.class), EnumSet.allOf(SessionAttributeImmutability.class), loadedImmutability));
 
-        HotRodSessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, HttpSessionBindingListener, Object, Void> sessionManagerFactoryConfig = new HotRodSessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, HttpSessionBindingListener, Object, Void>() {
+        HotRodSessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, HttpSessionBindingListener, MarshallingContext, Void> sessionManagerFactoryConfig = new HotRodSessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, HttpSessionBindingListener, MarshallingContext, Void>() {
             @Override
             public Integer getMaxActiveSessions() {
                 return maxActiveSessions;
@@ -156,17 +152,11 @@ public class HotRodSessionRepository implements SessionRepository<DistributableS
                 return context.getVirtualServerName() + context.getContextPath();
             }
 
-            @SuppressWarnings("unchecked")
             @Override
-            public MarshalledValueFactory<Object> getMarshalledValueFactory() {
-                return (MarshalledValueFactory<Object>) marshalledValueFactory;
+            public MarshalledValueFactory<MarshallingContext> getMarshalledValueFactory() {
+                return marshalledValueFactory;
             }
-/*
-            @Override
-            public Marshallability getMarshallability() {
-                return marshallingContext;
-            }
-*/
+
             @Override
             public String getServerName() {
                 return context.getVirtualServerName();
@@ -249,28 +239,20 @@ public class HotRodSessionRepository implements SessionRepository<DistributableS
             }
         };
         this.manager = this.managerFactory.createSessionManager(sessionManagerConfiguration);
+        Duration timeout = Duration.ofMinutes(context.getSessionTimeout());
+        Optional<Duration> defaultTimeout = Optional.empty();
         try {
-            this.manager.setDefaultMaxInactiveInterval(Duration.ofMinutes(context.getSessionTimeout()));
+            this.manager.setDefaultMaxInactiveInterval(timeout);
         } catch (NoSuchMethodError error) {
-            // Servlet 3.x
+            // Servlet version < 4.0
+            defaultTimeout = Optional.of(timeout);
         }
         this.manager.start();
-        this.repository = new DistributableSessionRepository<>(this.manager, publisher);
-    }
-
-    private static MarshalledValueFactory<?> createMarshalledValueFactory(ClassLoader loader) {
-        try {
-            ProtoStreamMarshallingContext context = new ProtoStreamMarshallingContext(loader);
-            return new AnyMarshalledValueFactory(context.get());
-        } catch (NoSuchElementException e) {
-            MarshallingContext context = new SimpleMarshallingContextFactory().createMarshallingContext(new SimpleMarshallingConfigurationRepository(JBossMarshallingVersion.class, JBossMarshallingVersion.CURRENT, loader), loader);
-            return new SimpleMarshalledValueFactory(context);
-        }
+        this.repository = new DistributableSessionRepository<>(this.manager, defaultTimeout, publisher);
     }
 
     @Override
     public void destroy() throws Exception {
-        System.out.println("Stopping container " + this.container.getName());
         this.manager.stop();
         this.managerFactory.close();
         this.container.stop();
@@ -278,7 +260,6 @@ public class HotRodSessionRepository implements SessionRepository<DistributableS
 
     @Override
     public Registration register(String name) {
-        System.out.println("Starting " + name);
         return this;
     }
 
