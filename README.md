@@ -5,23 +5,19 @@ A distributed session manager for Spring Session based on WildFly's distributed 
 
 ## Building
 
-1.	Currently, this requires a branch of WildFly that integrates Infinispan 10.1.x and ProtoStream.  Consequently, WildFly first needs to be built:
-
-	$ git clone git@github.com:pferraro/wildfly.git
-	$ cd wildfly
-	$ git checkout -b protostream
-	$ mvn clean install
-
-1.	Clone this repository and build using Java 8 and a standard maven build.
+1.	Clone this repository.
 
 	$ git clone git@github.com:wildfly-clustering/wildfly-clustering-spring-session.git
 	$ cd wildfly-clustering-spring-session
+
+1.	Build using Java 8 and Apache Maven 3.2.5+.
+
 	$ mvn clean install
 
 ## Installation
 
-Spring Session is intended to function in any servlet container.
-The following describes how to install wildfly-clustering-spring-session support for Tomcat:
+Spring Session is intended to operate within any servlet container.
+The following describes how to install wildfly-clustering-spring-session support into a Tomcat distribution:
 
 1.	Enter directory of session manager implementation:
 
@@ -38,9 +34,32 @@ The following describes how to install wildfly-clustering-spring-session support
 ## Configuration
 
 Spring Session is traditionally enabled either via XML or annotations.
-wildfly-clustering-spring-session includes an @EnableHotRodHttpSession annotation, which is supposed to auto-wire the requisite request filters and listeners.
-However, due to one or more bugs in Spring Session core, this does not work and violates the servlet specificiation in a number of places.
-Thus we need to manually modify web.xml with the requsite filter for Spring to intercept and wrap the request, as well as a listener capture the servlet context:
+wildfly-clustering-spring-session includes an `@EnableHotRodHttpSession` annotation for annotation-based configuration, but this configuration mechanism is currently non-functional for reasons explained below.
+
+The Spring Session documentation directs users to provide an implementation of `org.springframework.web.WebApplicationInitializer`, which is supposed to auto-wire the requisite request filters and listeners.
+
+e.g.
+
+	@EnableHotRodHttpSession(...)
+	public class Config {
+		// ...
+	}
+
+	public class ApplicationInitializer extends AbstractHttpSessionApplicationInitializer { 
+
+		public ApplicationInitializer() {
+			super(Config.class); 
+		}
+	}
+
+However, this mechanism cannot possibly work correctly in a specification compliant servlet container.
+
+Spring Session's auto-wiring initiates in the `[AbstractHttpSessionApplicationInitializer.onStartup(ServletContext)](https://github.com/spring-projects/spring-session/blob/2.3.0.RELEASE/spring-session-core/src/main/java/org/springframework/session/web/context/AbstractHttpSessionApplicationInitializer.java#L107)` method, where it dynamically registers a ServletContextListener.
+Unfortunately, &sect;4.4 of the servlet specification is very specific about how a container should treat ServletContext events for dynamically registered listeners:
+
+> If the ServletContext passed to the ServletContextListener’s contextInitialized method where the ServletContextListener was neither declared in web.xml or web-fragment.xml nor annotated with @WebListener then an UnsupportedOperationException MUST be thrown for all the methods defined in ServletContext for programmatic configuration of servlets, filters and listeners.
+
+Consequently, the only *correct* way to configure Spring Session is to manually specify the requisite listeners (to capture the `ServletContext`) and filters (intercept and wrap the request) within web.xml (or a fragment).
 
 	<?xml version="1.0" encoding="UTF-8"?>
 	<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
@@ -65,8 +84,9 @@ Thus we need to manually modify web.xml with the requsite filter for Spring to i
 	</web-app>
 
 
-Until the @EnableHotRotHttpSession annotation is functional, you must provide the configuration for the distributed session repository via Spring XML.
-Here is a sample /WEB-INF/applicationContext.xml:
+Until the `@EnableHotRodHttpSession` annotation is functional, you must provide the configuration for the distributed session repository via Spring XML.
+
+The following is a sample `/WEB-INF/applicationContext.xml`:
 
 	<?xml version="1.0" encoding="UTF-8"?>
 	<beans xmlns="http://www.springframework.org/schema/beans"
@@ -96,7 +116,7 @@ Here is a sample /WEB-INF/applicationContext.xml:
 |:---|:---|
 |configurationName|Defines the server-side configuration template from which a deployment cache is created on the server.  If undefined, the configuration of the server's default cache will be used.|
 |persistenceStrategy|Defines how a session is mapped to entries in the cache. "COARSE" will store all attributes of a session in a single cache entry.  "FINE" will store each session attribute in a separate cache entry.  Default is "COARSE".|
-|maxActiveSessions|Defines the maximum number of sessions to retain in the near cache. Default is limitless. A value of 0 will disable the near cache.|
+|maxActiveSessions|Defines the maximum number of sessions to retain in the near cache. Default is boundless. A value of 0 will disable the near cache.|
 
 #### HotRod properties
 
@@ -104,3 +124,12 @@ The complete set of HotRod properties can be found here:
 
 https://github.com/infinispan/infinispan/blob/9.4.x/client/hotrod-client/src/main/java/org/infinispan/client/hotrod/impl/ConfigurationProperties.java
 
+== Notes
+
+Applications that use Spring Session should be aware of the following aberrant behavior:
+
+1. Session create and destroy events will only notify those listeners (instances of HttpSessionListener) wired to the WebApplicationInitializer.  Listeners defined using standard mechanisms will not be notified.
+
+1. Spring Session lacks any facility to notify listeners (instances of HttpSessionAttributeListener) of new, replaced and removed session attributes.
+
+1. Spring Session lacks any facility to notify listeners (instances of HttpSessionIdListener) of session identifier changes resulting from HttpServletRequest.changeSessionId().
