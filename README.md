@@ -7,12 +7,12 @@ A distributed session manager for Spring Session based on WildFly's distributed 
 
 1.	Clone this repository.
 
-	$ git clone git@github.com:wildfly-clustering/wildfly-clustering-spring-session.git
-	$ cd wildfly-clustering-spring-session
+		$ git clone git@github.com:wildfly-clustering/wildfly-clustering-spring-session.git	
+		$ cd wildfly-clustering-spring-session
 
 1.	Build using Java 8 and Apache Maven 3.2.5+.
 
-	$ mvn clean install
+		$ mvn clean install
 
 ## Installation
 
@@ -21,15 +21,15 @@ The following describes how to install wildfly-clustering-spring-session support
 
 1.	Enter directory of session manager implementation:
 
-	$ cd hotrod
+		$ cd hotrod
 
 1.	Copy the maven artifact to Tomcat's lib directory:
 
-	$ mvn dependency:copy -DoutputDirectory=$CATALINA_HOME/lib
+		$ mvn dependency:copy -DoutputDirectory=$CATALINA_HOME/lib
 
 1.	Copy runtime dependencies to Tomcat's lib directory:
 
-	$ mvn dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=$CATALINA_HOME/lib
+		$ mvn dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=$CATALINA_HOME/lib
 
 ## Configuration
 
