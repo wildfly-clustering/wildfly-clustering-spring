@@ -128,8 +128,8 @@ https://github.com/infinispan/infinispan/blob/10.1.x/client/hotrod-client/src/ma
 
 Applications that use Spring Session should be aware of the following aberrant behavior:
 
-1. Session create and destroy events will only notify those listeners (instances of HttpSessionListener) wired to the WebApplicationInitializer.  Listeners defined using standard mechanisms will not be notified.
+1. Session create and destroy events will only notify those listeners (instances of `HttpSessionListener`) wired to the `WebApplicationInitializer`.  Listeners defined using standard mechanisms will not be notified.
 
-1. Spring Session lacks any facility to notify listeners (instances of HttpSessionAttributeListener) of new, replaced and removed session attributes.
+1. Spring Session lacks any facility to notify listeners (instances of `HttpSessionAttributeListener`) of new, replaced and removed session attributes.
 
-1. Spring Session lacks any facility to notify listeners (instances of HttpSessionIdListener) of session identifier changes resulting from HttpServletRequest.changeSessionId().
+1. Spring Session lacks any facility to notify listeners (instances of `HttpSessionIdListener`) of session identifier changes resulting from `HttpServletRequest.changeSessionId()`.
