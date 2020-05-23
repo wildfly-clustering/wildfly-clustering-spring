@@ -124,7 +124,7 @@ The complete set of HotRod properties can be found here:
 
 https://github.com/infinispan/infinispan/blob/10.1.x/client/hotrod-client/src/main/java/org/infinispan/client/hotrod/impl/ConfigurationProperties.java
 
-== Notes
+## Notes
 
 Applications that use Spring Session should be aware of the following aberrant behavior:
 
