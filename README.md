@@ -54,12 +54,12 @@ e.g.
 
 However, this mechanism cannot possibly work correctly in a specification compliant servlet container.
 
-Spring Session's auto-wiring initiates in the [`AbstractHttpSessionApplicationInitializer.onStartup(ServletContext)`](https://github.com/spring-projects/spring-session/blob/2.3.0.RELEASE/spring-session-core/src/main/java/org/springframework/session/web/context/AbstractHttpSessionApplicationInitializer.java#L107) method, where it dynamically registers a ServletContextListener.
+Spring Session's auto-wiring initiates from the [`AbstractHttpSessionApplicationInitializer.onStartup(ServletContext)`](https://github.com/spring-projects/spring-session/blob/2.3.0.RELEASE/spring-session-core/src/main/java/org/springframework/session/web/context/AbstractHttpSessionApplicationInitializer.java#L107) method, where it dynamically registers a ServletContextListener.
 Unfortunately, &sect;4.4 of the servlet specification is very specific about how a container should treat ServletContext events for dynamically registered listeners:
 
 > If the ServletContext passed to the ServletContextListener’s contextInitialized method where the ServletContextListener was neither declared in web.xml or web-fragment.xml nor annotated with @WebListener then an UnsupportedOperationException MUST be thrown for all the methods defined in ServletContext for programmatic configuration of servlets, filters and listeners.
 
-Consequently, the only *correct* way to configure Spring Session is to manually specify the requisite listeners (to capture the `ServletContext`) and filters (intercept and wrap the request) within web.xml (or a fragment).
+Consequently, the only *feasible* way to configure Spring Session requires manually specifying the requisite listeners (to capture the `ServletContext`) and filters (intercept and wrap the request) within web.xml (or fragment).
 
 	<?xml version="1.0" encoding="UTF-8"?>
 	<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
@@ -84,7 +84,7 @@ Consequently, the only *correct* way to configure Spring Session is to manually 
 	</web-app>
 
 
-Until the `@EnableHotRodHttpSession` annotation is functional, you must provide the configuration for the distributed session repository via Spring XML.
+Until the `@EnableHotRodHttpSession` annotation is functional, you must provide the configuration of the distributed session repository via Spring XML.
 
 The following is a sample `/WEB-INF/applicationContext.xml`:
 
