@@ -22,10 +22,13 @@
 
 package org.wildfly.clustering.web.spring;
 
+import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 import javax.servlet.ServletContext;
 
+import org.jboss.as.clustering.context.ContextClassLoaderReference;
+import org.jboss.as.clustering.context.ContextReferenceExecutor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
@@ -36,15 +39,15 @@ import org.wildfly.clustering.web.session.SessionExpirationListener;
 public class ImmutableSessionExpirationListener implements SessionExpirationListener {
 
     private final Consumer<ImmutableSession> expireAction;
-    private final Consumer<Runnable> classLoaderAction;
+    private final Executor executor;
 
     public ImmutableSessionExpirationListener(ApplicationEventPublisher publisher, ServletContext context) {
         this.expireAction = new ImmutableSessionDestroyAction(publisher, context);
-        this.classLoaderAction = new ContextClassLoaderAction(Thread.currentThread().getContextClassLoader());
+        this.executor = new ContextReferenceExecutor<>(context.getClassLoader(), ContextClassLoaderReference.INSTANCE);
     }
 
     @Override
     public void sessionExpired(ImmutableSession session) {
-        this.classLoaderAction.accept(() -> this.expireAction.accept(session));
+        this.executor.execute(() -> this.expireAction.accept(session));
     }
 }
