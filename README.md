@@ -1,7 +1,12 @@
 # wildfly-clustering-spring-session
 
-A distributed session manager for Spring Session based on WildFly's distributed session management.
+A session repository implementation for Spring Session based on WildFly's distributed session management.
+This brings the same clustering features to Spring Session that one can expect from WildFly's distributed session management, including:
 
+* Persists session data to a remote Infinispan cluster using either per session or per attribute granularity.
+* Ability to configure the number of sessions to retain in local memory.
+* Mutable session attribute semantics.
+* Support for user supplied marshalling optimizations
 
 ## Building
 
@@ -45,9 +50,8 @@ e.g.
 		// ...
 	}
 
-	public class ApplicationInitializer extends AbstractHttpSessionApplicationInitializer { 
-
-		public ApplicationInitializer() {
+	public class MyApplicationInitializer extends AbstractHttpSessionApplicationInitializer { 
+		public MyApplicationInitializer() {
 			super(Config.class); 
 		}
 	}
@@ -63,24 +67,23 @@ Consequently, the only *feasible* way to configure Spring Session requires manua
 
 	<?xml version="1.0" encoding="UTF-8"?>
 	<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
-		    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3.1.xsd"
-		    version="3.1">
+			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3.1.xsd"
+			version="3.1">
 
 		<listener>
-		    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+			<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
 		</listener>
 		<filter>
-		    <filter-name>springSessionRepositoryFilter</filter-name>
-		    <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+			<filter-name>springSessionRepositoryFilter</filter-name>
+			<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
 		</filter>
 		<filter-mapping>
-		    <filter-name>springSessionRepositoryFilter</filter-name>
-		    <url-pattern>/*</url-pattern>
-		    <dispatcher>REQUEST</dispatcher>
-		    <dispatcher>ERROR</dispatcher>
+			<filter-name>springSessionRepositoryFilter</filter-name>
+			<url-pattern>/*</url-pattern>
+			<dispatcher>REQUEST</dispatcher>
+			<dispatcher>ERROR</dispatcher>
 		</filter-mapping>
-
 	</web-app>
 
 
@@ -90,8 +93,8 @@ The following is a sample `/WEB-INF/applicationContext.xml`:
 
 	<?xml version="1.0" encoding="UTF-8"?>
 	<beans xmlns="http://www.springframework.org/schema/beans"
-		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
-		xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+			xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
 		<context:annotation-config/>
 
@@ -126,10 +129,18 @@ https://github.com/infinispan/infinispan/blob/10.1.x/client/hotrod-client/src/ma
 
 ## Notes
 
-Applications that use Spring Session should be aware of the following aberrant behavior:
+Because Spring Session operates entirely within userspace (i.e. external to the servlet container), its session management behavior will inherently deviate from the servlet specification in several areas.
+In particular, applications using Spring Session should be aware of the following aberrant behavior:
 
-1. Session create and destroy events will only notify those listeners (instances of `HttpSessionListener`) wired to the `WebApplicationInitializer`.  Listeners defined using standard mechanisms will not be notified.
+1. Spring Session lacks any facility to notify standard listeners (instances of `HttpSessionListener` declared in web.xml or annotated with @WebListener) of newly created or destroyed sessions.
+   You must instead rely on Spring's own event mechanism.
 
-1. Spring Session lacks any facility to notify listeners (instances of `HttpSessionAttributeListener`) of new, replaced and removed session attributes.
+1. Spring Session lacks any facility to notify standard listeners (instances of `HttpSessionAttributeListener` declared in web.xml or annotated with @WebListener) of new, replaced and removed session attributes.
+   As far as I am aware, Spring has no mechanism for these events.
 
-1. Spring Session lacks any facility to notify listeners (instances of `HttpSessionIdListener`) of session identifier changes resulting from `HttpServletRequest.changeSessionId()`.
+1. Spring Session lacks any facility to notify standard listeners (instances of `HttpSessionIdListener` declared in web.xml or annotated with @WebListener) of session identifier changes resulting from `HttpServletRequest.changeSessionId()`.
+   You must instead rely on Spring's own event mechanism.
+
+1. Applications using Spring Session will generally need to rely on Spring Security for authentication and authorization.
+   Many authentication mechanisms store user identity in the HttpSession or will need to change the session ID following authetication - a common practice for preventing session fixation attacks.
+   Since the servlet container has no access to sessions created by Spring, most container managed security mechanisms will not work.
