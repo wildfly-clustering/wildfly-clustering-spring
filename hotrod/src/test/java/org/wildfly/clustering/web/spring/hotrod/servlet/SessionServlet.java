@@ -64,6 +64,12 @@ public class SessionServlet extends HttpServlet implements SessionHandler {
     }
 
     @Override
+    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String id = request.changeSessionId();
+        response.setHeader(SESSION_ID, id);
+    }
+
+    @Override
     public void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession(false);
         if (session != null) {

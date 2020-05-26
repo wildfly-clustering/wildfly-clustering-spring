@@ -46,4 +46,5 @@ public interface SessionHandler {
     void doHead(HttpServletRequest request, HttpServletResponse response) throws IOException;
     void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException;
     void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException;
+    void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException;
 }

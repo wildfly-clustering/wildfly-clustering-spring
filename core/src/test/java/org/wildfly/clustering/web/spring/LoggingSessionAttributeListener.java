@@ -22,32 +22,29 @@
 
 package org.wildfly.clustering.web.spring;
 
-import java.util.concurrent.Executor;
-import java.util.function.Consumer;
-
-import javax.servlet.ServletContext;
-
-import org.jboss.as.clustering.context.ContextClassLoaderReference;
-import org.jboss.as.clustering.context.ContextReferenceExecutor;
-import org.springframework.context.ApplicationEventPublisher;
-import org.wildfly.clustering.web.session.ImmutableSession;
-import org.wildfly.clustering.web.session.SessionExpirationListener;
+import javax.servlet.annotation.WebListener;
+import javax.servlet.http.HttpSessionAttributeListener;
+import javax.servlet.http.HttpSessionBindingEvent;
 
 /**
+ * Detects support (or lack thereof) for HttpSessionAttributeListener notifications in Spring Session.
  * @author Paul Ferraro
  */
-public class ImmutableSessionExpirationListener implements SessionExpirationListener {
+@WebListener
+public class LoggingSessionAttributeListener implements HttpSessionAttributeListener {
 
-    private final Consumer<ImmutableSession> expireAction;
-    private final Executor executor;
-
-    public ImmutableSessionExpirationListener(ApplicationEventPublisher publisher, ServletContext context) {
-        this.expireAction = new ImmutableSessionDestroyAction(publisher, context);
-        this.executor = new ContextReferenceExecutor<>(context.getClassLoader(), ContextClassLoaderReference.INSTANCE);
+    @Override
+    public void attributeAdded(HttpSessionBindingEvent event) {
+        event.getSession().getServletContext().log("Session attribute added: " + event.getName());
     }
 
     @Override
-    public void sessionExpired(ImmutableSession session) {
-        this.executor.execute(() -> this.expireAction.accept(session));
+    public void attributeRemoved(HttpSessionBindingEvent event) {
+        event.getSession().getServletContext().log("Session attribute removed: " + event.getName());
+    }
+
+    @Override
+    public void attributeReplaced(HttpSessionBindingEvent event) {
+        event.getSession().getServletContext().log("Session attribute replaced: " + event.getName());
     }
 }

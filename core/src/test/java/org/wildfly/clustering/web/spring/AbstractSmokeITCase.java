@@ -33,6 +33,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.infinispan.server.test.core.ServerRunMode;
@@ -63,6 +64,7 @@ public abstract class AbstractSmokeITCase {
     public static Archive<?> deployment(Class<? extends AbstractSmokeITCase> testClass, Class<? extends SessionHandler> servletClass) {
         return ShrinkWrap.create(WebArchive.class, testClass.getSimpleName() + ".war")
                 .addClass(SessionHandler.class)
+                .addClasses(LoggingSessionListener.class, LoggingSessionIdentifierListener.class, LoggingSessionAttributeListener.class)
                 .addClass(servletClass)
                 .addAsWebInfResource(testClass.getPackage(), "applicationContext.xml", "applicationContext.xml")
                 .setWebXML(AbstractSmokeITCase.class.getPackage(), "web.xml")
@@ -88,6 +90,12 @@ public abstract class AbstractSmokeITCase {
                         }
                     }
                 }
+            }
+            try (CloseableHttpResponse response = client.execute(new HttpPost(uri2))) {
+                Assert.assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
+                String newSessionId = response.getFirstHeader(SessionHandler.SESSION_ID).getValue();
+                Assert.assertNotEquals(sessionId, newSessionId);
+                sessionId = newSessionId;
             }
             try (CloseableHttpResponse response = client.execute(new HttpDelete(uri1))) {
                 Assert.assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());

@@ -22,32 +22,24 @@
 
 package org.wildfly.clustering.web.spring;
 
-import java.util.concurrent.Executor;
-import java.util.function.Consumer;
-
-import javax.servlet.ServletContext;
-
-import org.jboss.as.clustering.context.ContextClassLoaderReference;
-import org.jboss.as.clustering.context.ContextReferenceExecutor;
-import org.springframework.context.ApplicationEventPublisher;
-import org.wildfly.clustering.web.session.ImmutableSession;
-import org.wildfly.clustering.web.session.SessionExpirationListener;
+import javax.servlet.annotation.WebListener;
+import javax.servlet.http.HttpSessionEvent;
+import javax.servlet.http.HttpSessionListener;
 
 /**
+ * Detects support (or lack thereof) for HttpSessionListener notifications in Spring Session.
  * @author Paul Ferraro
  */
-public class ImmutableSessionExpirationListener implements SessionExpirationListener {
+@WebListener
+public class LoggingSessionListener implements HttpSessionListener {
 
-    private final Consumer<ImmutableSession> expireAction;
-    private final Executor executor;
-
-    public ImmutableSessionExpirationListener(ApplicationEventPublisher publisher, ServletContext context) {
-        this.expireAction = new ImmutableSessionDestroyAction(publisher, context);
-        this.executor = new ContextReferenceExecutor<>(context.getClassLoader(), ContextClassLoaderReference.INSTANCE);
+    @Override
+    public void sessionCreated(HttpSessionEvent event) {
+        event.getSession().getServletContext().log("Session created: " + event.getSession().getId());
     }
 
     @Override
-    public void sessionExpired(ImmutableSession session) {
-        this.executor.execute(() -> this.expireAction.accept(session));
+    public void sessionDestroyed(HttpSessionEvent event) {
+        event.getSession().getServletContext().log("Session destroyed: " + event.getSession().getId());
     }
 }
