@@ -20,31 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring.servlet;
+package org.wildfly.clustering.web.spring;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.annotation.WebListener;
+import javax.servlet.http.HttpSessionEvent;
+import javax.servlet.http.HttpSessionListener;
 
 /**
+ * Detects support (or lack thereof) for HttpSessionListener notifications in Spring Session.
  * @author Paul Ferraro
  */
-public interface SessionHandler {
-    final String SERVLET_NAME = "session";
-    final String SERVLET_PATH = "/" + SERVLET_NAME;
-    final String VALUE = "value";
-    final String SESSION_ID = "session-id";
+@WebListener
+public class LoggingSessionListener implements HttpSessionListener {
 
-    static URI createURI(URL baseURL) throws URISyntaxException {
-        return baseURL.toURI().resolve(SERVLET_NAME);
+    @Override
+    public void sessionCreated(HttpSessionEvent event) {
+        event.getSession().getServletContext().log("Session created: " + event.getSession().getId());
     }
 
-    void doHead(HttpServletRequest request, HttpServletResponse response) throws IOException;
-    void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException;
-    void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException;
-    void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException;
+    @Override
+    public void sessionDestroyed(HttpSessionEvent event) {
+        event.getSession().getServletContext().log("Session destroyed: " + event.getSession().getId());
+    }
 }
