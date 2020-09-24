@@ -45,13 +45,13 @@
     </scm>
 
     <properties>
-        <version.org.wildfly>20.0.0.Final</version.org.wildfly>
-        <version.org.infinispan>10.1.8.Final</version.org.infinispan>
-        <version.io.spring>5.2.6.RELEASE</version.io.spring>
-        <version.io.spring.session>2.3.0.RELEASE</version.io.spring.session>
+        <version.org.wildfly>21.0.0.Beta1</version.org.wildfly>
+        <version.org.infinispan>11.0.3.Final</version.org.infinispan>
+        <version.io.spring>5.2.9.RELEASE</version.io.spring>
+        <version.io.spring.session>2.3.1.RELEASE</version.io.spring.session>
         <version.jakarta.servlet>4.0.2</version.jakarta.servlet>
         <version.org.apache.httpcomponents>4.5.12</version.org.apache.httpcomponents>
-        <version.org.apache.tomcat>9.0.35</version.org.apache.tomcat>
+        <version.org.apache.tomcat>9.0.38</version.org.apache.tomcat>
         <version.org.jboss.arquillian>1.6.0.Final</version.org.jboss.arquillian>
         <version.org.jboss.arquillian.container.tomcat>1.1.0.Final</version.org.jboss.arquillian.container.tomcat>
         <version.org.junit>4.13</version.org.junit>
@@ -61,7 +61,6 @@
     <modules>
         <module>core</module>
         <module>hotrod</module>
-        <!--module>infinispan</module-->
     </modules>
 
     <build>
@@ -87,6 +86,15 @@
                 </configuration>
             </plugin>
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>com.googlecode.maven-download-plugin</groupId>
+                    <artifactId>download-maven-plugin</artifactId>
+                    <version>1.6.0</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
     <dependencyManagement>
@@ -177,29 +185,6 @@
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-clustering-web-hotrod</artifactId>
-                <version>${version.org.wildfly}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.modules</groupId>
-                        <artifactId>jboss-modules</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.wildfly</groupId>
-                        <artifactId>wildfly-controller</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.wildfly</groupId>
-                        <artifactId>wildfly-naming</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.wildfly</groupId>
-                        <artifactId>wildfly-server</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-clustering-web-infinispan</artifactId>
                 <version>${version.org.wildfly}</version>
                 <exclusions>
                     <exclusion>

@@ -23,6 +23,7 @@
 package org.wildfly.clustering.web.spring;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -36,6 +37,7 @@ import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.infinispan.server.Server;
 import org.infinispan.server.test.core.ServerRunMode;
 import org.infinispan.server.test.junit4.InfinispanServerRule;
 import org.infinispan.server.test.junit4.InfinispanServerRuleBuilder;
@@ -55,9 +57,15 @@ public abstract class AbstractSmokeITCase {
     public static final String DEPLOYMENT_1 = "deployment-1";
     public static final String DEPLOYMENT_2 = "deployment-2";
 
+    static {
+        System.setProperty(Server.INFINISPAN_CLUSTER_STACK, Server.DEFAULT_CLUSTER_STACK);
+        System.setProperty(Server.INFINISPAN_CLUSTER_NAME, Server.DEFAULT_CLUSTER_NAME);
+        System.setProperty(Server.INFINISPAN_NODE_NAME, InetAddress.getLoopbackAddress().getHostName());
+    }
+
     @ClassRule
     public static final InfinispanServerRule SERVERS = InfinispanServerRuleBuilder.config("config.xml")
-            .runMode(ServerRunMode.EMBEDDED)
+            .runMode(ServerRunMode.FORKED)
             .numServers(1)
             .build();
 
