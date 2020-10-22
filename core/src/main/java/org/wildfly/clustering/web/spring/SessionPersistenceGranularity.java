@@ -20,28 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring.hotrod;
+package org.wildfly.clustering.web.spring;
 
-import java.util.Properties;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
-import javax.servlet.ServletContext;
-
-import org.springframework.context.ApplicationEventPublisher;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
 
 /**
  * @author Paul Ferraro
  */
-public interface HotRodSessionRepositoryConfiguration {
-    Properties getProperties();
-    String getTemplateName();
-    Integer getMaxActiveSessions();
-    SessionAttributePersistenceStrategy getPersistenceStrategy();
-    Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory();
-    Supplier<String> getIdentifierFactory();
-    ApplicationEventPublisher getEventPublisher();
-    ServletContext getServletContext();
+public enum SessionPersistenceGranularity implements Supplier<SessionAttributePersistenceStrategy> {
+    SESSION(SessionAttributePersistenceStrategy.COARSE),
+    ATTRIBUTE(SessionAttributePersistenceStrategy.FINE),
+    ;
+    private final SessionAttributePersistenceStrategy strategy;
+
+    SessionPersistenceGranularity(SessionAttributePersistenceStrategy strategy) {
+        this.strategy = strategy;
+    }
+
+    @Override
+    public SessionAttributePersistenceStrategy get() {
+        return this.strategy;
+    }
 }

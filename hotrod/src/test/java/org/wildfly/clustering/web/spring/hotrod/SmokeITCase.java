@@ -22,8 +22,6 @@
 
 package org.wildfly.clustering.web.spring.hotrod;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -63,7 +61,7 @@ public class SmokeITCase extends AbstractSmokeITCase {
 
     @Override
     @Test
-    public void test(@ArquillianResource(SessionServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1, @ArquillianResource(SessionServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws IOException, URISyntaxException {
+    public void test(@ArquillianResource(SessionServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1, @ArquillianResource(SessionServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
         super.test(baseURL1, baseURL2);
     }
 }

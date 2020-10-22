@@ -20,26 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring;
+package org.wildfly.clustering.web.spring.servlet;
 
 import javax.servlet.annotation.WebListener;
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSessionListener;
+import javax.servlet.http.HttpSessionAttributeListener;
+import javax.servlet.http.HttpSessionBindingEvent;
 
 /**
- * Detects support (or lack thereof) for HttpSessionListener notifications in Spring Session.
+ * Detects support (or lack thereof) for HttpSessionAttributeListener notifications in Spring Session.
  * @author Paul Ferraro
  */
 @WebListener
-public class LoggingSessionListener implements HttpSessionListener {
+public class LoggingSessionAttributeListener implements HttpSessionAttributeListener {
 
     @Override
-    public void sessionCreated(HttpSessionEvent event) {
-        event.getSession().getServletContext().log("Session created: " + event.getSession().getId());
+    public void attributeAdded(HttpSessionBindingEvent event) {
+        event.getSession().getServletContext().log("Session attribute added: " + event.getName());
     }
 
     @Override
-    public void sessionDestroyed(HttpSessionEvent event) {
-        event.getSession().getServletContext().log("Session destroyed: " + event.getSession().getId());
+    public void attributeRemoved(HttpSessionBindingEvent event) {
+        event.getSession().getServletContext().log("Session attribute removed: " + event.getName());
+    }
+
+    @Override
+    public void attributeReplaced(HttpSessionBindingEvent event) {
+        event.getSession().getServletContext().log("Session attribute replaced: " + event.getName());
     }
 }

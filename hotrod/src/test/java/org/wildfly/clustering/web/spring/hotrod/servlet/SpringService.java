@@ -20,31 +20,43 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring;
+package org.wildfly.clustering.web.spring.hotrod.servlet;
 
-import javax.servlet.annotation.WebListener;
-import javax.servlet.http.HttpSessionAttributeListener;
-import javax.servlet.http.HttpSessionBindingEvent;
+import java.io.IOException;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.wildfly.clustering.web.spring.servlet.ServletService;
+import org.wildfly.clustering.web.spring.servlet.ServletSession;
 
 /**
- * Detects support (or lack thereof) for HttpSessionAttributeListener notifications in Spring Session.
  * @author Paul Ferraro
  */
-@WebListener
-public class LoggingSessionAttributeListener implements HttpSessionAttributeListener {
+public class SpringService implements ServletService {
 
-    @Override
-    public void attributeAdded(HttpSessionBindingEvent event) {
-        event.getSession().getServletContext().log("Session attribute added: " + event.getName());
+    private final HttpServletRequest request;
+    private final HttpServletResponse response;
+
+    SpringService(HttpServletRequest request, HttpServletResponse response) {
+        this.request = request;
+        this.response = response;
     }
 
     @Override
-    public void attributeRemoved(HttpSessionBindingEvent event) {
-        event.getSession().getServletContext().log("Session attribute removed: " + event.getName());
+    public ServletSession getSession(boolean create) {
+        HttpSession session = this.request.getSession(create);
+        return (session != null) ? new SpringSession(session) : null;
     }
 
     @Override
-    public void attributeReplaced(HttpSessionBindingEvent event) {
-        event.getSession().getServletContext().log("Session attribute replaced: " + event.getName());
+    public void setHeader(String name, int value) throws IOException {
+        this.response.setIntHeader(name, value);
+    }
+
+    @Override
+    public void setHeader(String name, String value) throws IOException {
+        this.response.setHeader(name, value);
     }
 }

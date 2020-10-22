@@ -39,15 +39,22 @@
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-spring-session-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-client-hotrod</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.clustering</groupId>
-            <artifactId>wildfly-clustering-spring-session-core</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
@@ -56,10 +63,6 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-clustering-web-hotrod</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-client-hotrod</artifactId>
         </dependency>
 
         <dependency>
@@ -70,9 +73,10 @@
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
+
         <dependency>
-            <groupId>org.apache.tomcat</groupId>
-            <artifactId>tomcat-catalina</artifactId>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -91,11 +95,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
@@ -108,22 +107,29 @@
                 <directory>src/test/resources</directory>
                 <includes>
                     <include>arquillian.xml</include>
-                    <include>config.xml</include>
                 </includes>
                 <filtering>true</filtering>
             </testResource>
             <testResource>
-                <directory>src/test/resources</directory>
-                <targetPath>${project.build.directory}/apache-tomcat-${version.org.apache.tomcat}/conf/</targetPath>
+                <directory>src/test/resources/infinispan</directory>
+                <targetPath>${project.build.directory}/infinispan-server-${version.org.infinispan}/server/conf</targetPath>
                 <includes>
-                    <include>server.xml</include>
-                    <include>tomcat-users.xml</include>
+                    <include>**</include>
+                </includes>
+                <filtering>true</filtering>
+            </testResource>
+            <testResource>
+                <directory>src/test/resources/tomcat</directory>
+                <targetPath>${project.build.directory}/apache-tomcat-${version.org.apache.tomcat}/conf</targetPath>
+                <includes>
+                    <include>**</include>
                 </includes>
                 <filtering>true</filtering>
             </testResource>
             <testResource>
                 <directory>src/test/java</directory>
                 <includes>
+                    <include>**/*.properties</include>
                     <include>**/*.xml</include>
                 </includes>
                 <filtering>true</filtering>
@@ -152,7 +158,7 @@
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>unpack</id>
+                        <id>unpack-tomcat</id>
                         <phase>generate-test-resources</phase>
                         <goals>
                             <goal>unpack</goal>
@@ -172,7 +178,7 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>copy</id>
+                        <id>configure-tomcat</id>
                         <phase>pre-integration-test</phase>
                         <goals>
                             <goal>copy</goal>
@@ -252,15 +258,18 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>test</id>
+                        <id>smoke-test</id>
                         <phase>integration-test</phase>
                         <goals>
                             <goal>integration-test</goal>
                             <goal>verify</goal>
                         </goals>
                         <configuration>
+                            <trimStackTrace>false</trimStackTrace>
+                            <!-- Workaround for @ClassRule Infinispan Server -->
+                            <reuseForks>false</reuseForks>
                             <systemPropertyVariables>
-                                <org.infinispan.test.server.home>${project.build.directory}/infinispan-server-${version.org.infinispan}</org.infinispan.test.server.home>
+                                <infinispan.server.home>${project.build.directory}/infinispan-server-${version.org.infinispan}</infinispan.server.home>
                             </systemPropertyVariables>
                         </configuration>
                     </execution>

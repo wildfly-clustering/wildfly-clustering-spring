@@ -20,28 +20,36 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring.hotrod;
+package org.wildfly.clustering.web.spring.servlet;
 
-import java.util.Properties;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.io.Serializable;
+import java.util.function.IntConsumer;
+import java.util.function.IntSupplier;
 
-import javax.servlet.ServletContext;
-
-import org.springframework.context.ApplicationEventPublisher;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
-import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
+import org.infinispan.protostream.annotations.ProtoFactory;
+import org.infinispan.protostream.annotations.ProtoField;
 
 /**
  * @author Paul Ferraro
  */
-public interface HotRodSessionRepositoryConfiguration {
-    Properties getProperties();
-    String getTemplateName();
-    Integer getMaxActiveSessions();
-    SessionAttributePersistenceStrategy getPersistenceStrategy();
-    Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory();
-    Supplier<String> getIdentifierFactory();
-    ApplicationEventPublisher getEventPublisher();
-    ServletContext getServletContext();
+public class MutableInteger implements IntSupplier, IntConsumer, Serializable {
+    private static final long serialVersionUID = -5935940924708909645L;
+
+    @ProtoField(value = 1, defaultValue = "0")
+    volatile int value;
+
+    @ProtoFactory
+    public MutableInteger(int value) {
+        this.value = value;
+    }
+
+    @Override
+    public void accept(int value) {
+        this.value = value;
+    }
+
+    @Override
+    public int getAsInt() {
+        return this.value;
+    }
 }

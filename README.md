@@ -99,15 +99,18 @@ The following is a sample `/WEB-INF/applicationContext.xml`:
 		<context:annotation-config/>
 
 		<bean class="org.wildfly.clustering.web.spring.hotrod.annotation.HotRodHttpSessionConfiguration">
-		    <property name="properties">
-		        <props>
-		            <prop key="infinispan.client.hotrod.server_list">127.0.0.1:11222</prop>
-		        </props>
-		    </property>
-		    <property name="persistenceStrategy">
-		        <value type="org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy">FINE</value>
-		    </property>
-		    <property name="maxActiveSessions">1000</property>
+			<property name="properties">
+				<props>
+					<prop key="infinispan.client.hotrod.server_list">127.0.0.1:11222</prop>
+				</props>
+			</property>
+			<property name="granularity">
+				<value type="org.wildfly.clustering.web.spring.SessionPersistenceGranularity">SESSION</value>
+			</property>
+			<property name="marshallerFactory">
+				<value type="org.wildfly.clustering.web.spring.SessionMarshallerFactory">PROTOSTREAM</value>
+			</property>
+			<property name="maxActiveSessions">1000</property>
 		</bean>
 	</beans>
 
@@ -117,9 +120,10 @@ The following is a sample `/WEB-INF/applicationContext.xml`:
 
 |Property|Description|
 |:---|:---|
-|configurationName|Defines the server-side configuration template from which a deployment cache is created on the server.  If undefined, the configuration of the server's default cache will be used.|
-|persistenceStrategy|Defines how a session is mapped to entries in the cache. "COARSE" will store all attributes of a session in a single cache entry.  "FINE" will store each session attribute in a separate cache entry.  Default is "COARSE".|
-|maxActiveSessions|Defines the maximum number of sessions to retain in the near cache. Default is boundless. A value of 0 will disable the near cache.|
+|templateName|Defines the server-side configuration template from which a deployment cache is created on the server. Default is `org.infinispan.DIST_SYNC`.|
+|granularity|Defines how a session is mapped to entries in the cache. Supported granularities are enumerated by the `org.wildfly.clustering.web.spring.SessionPersistenceGranularity` enum. `SESSION` will store all attributes of a session in a single cache entry, while `ATTRIBUTE` will store each session attribute in a separate cache entry.  Default is `SESSION`.|
+|maxActiveSessions|Defines the maximum number of sessions to retain in the near cache. Default is limitless. A value of 0 will disable the near cache.|
+|marshallerFactory|Specifies the marshaller used to serialize and deserialize session attributes. Supported marshallers are enumerated by the `org.wildfly.clustering.web.spring.SessionMarshallerFactory` enum and include: `JAVA`, `JBOSS`, `PROTOSTREAM`. Default marshaller is `JBOSS`.|
 
 #### HotRod properties
 
