@@ -20,28 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring.hotrod;
+package org.wildfly.clustering.web.spring.servlet;
 
-import java.util.Properties;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
-import javax.servlet.ServletContext;
-
-import org.springframework.context.ApplicationEventPublisher;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
-import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
+import javax.servlet.annotation.WebListener;
+import javax.servlet.http.HttpSessionEvent;
+import javax.servlet.http.HttpSessionListener;
 
 /**
+ * Detects support (or lack thereof) for HttpSessionListener notifications in Spring Session.
  * @author Paul Ferraro
  */
-public interface HotRodSessionRepositoryConfiguration {
-    Properties getProperties();
-    String getTemplateName();
-    Integer getMaxActiveSessions();
-    SessionAttributePersistenceStrategy getPersistenceStrategy();
-    Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory();
-    Supplier<String> getIdentifierFactory();
-    ApplicationEventPublisher getEventPublisher();
-    ServletContext getServletContext();
+@WebListener
+public class LoggingSessionListener implements HttpSessionListener {
+
+    @Override
+    public void sessionCreated(HttpSessionEvent event) {
+        event.getSession().getServletContext().log("Session created: " + event.getSession().getId());
+    }
+
+    @Override
+    public void sessionDestroyed(HttpSessionEvent event) {
+        event.getSession().getServletContext().log("Session destroyed: " + event.getSession().getId());
+    }
 }

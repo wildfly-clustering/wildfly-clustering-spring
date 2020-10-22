@@ -45,17 +45,20 @@
     </scm>
 
     <properties>
-        <version.org.wildfly>21.0.0.Beta1</version.org.wildfly>
-        <version.org.infinispan>11.0.3.Final</version.org.infinispan>
         <version.io.spring>5.2.9.RELEASE</version.io.spring>
         <version.io.spring.session>2.3.1.RELEASE</version.io.spring.session>
-        <version.jakarta.servlet>4.0.2</version.jakarta.servlet>
+        <version.jakarta.annotation>1.3.5</version.jakarta.annotation>
+        <version.jakarta.servlet>4.0.3</version.jakarta.servlet>
         <version.org.apache.httpcomponents>4.5.12</version.org.apache.httpcomponents>
-        <version.org.apache.tomcat>9.0.38</version.org.apache.tomcat>
+        <version.org.apache.tomcat>9.0.39</version.org.apache.tomcat>
+        <version.org.infinispan>11.0.4.Final</version.org.infinispan>
+        <version.org.infinispan.protostream>4.3.4.Final</version.org.infinispan.protostream>
+        <version.org.infinispan.server>${version.org.infinispan}</version.org.infinispan.server>
         <version.org.jboss.arquillian>1.6.0.Final</version.org.jboss.arquillian>
         <version.org.jboss.arquillian.container.tomcat>1.1.0.Final</version.org.jboss.arquillian.container.tomcat>
-        <version.org.junit>4.13.1</version.org.junit>
         <version.org.kohsuke.metainf-services>1.7</version.org.kohsuke.metainf-services>
+        <version.org.wildfly>21.0.0.Final</version.org.wildfly>
+        <version.junit>4.13.1</version.junit>
     </properties>
 
     <modules>
@@ -100,10 +103,67 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>jakarta.annotation</groupId>
+                <artifactId>jakarta.annotation-api</artifactId>
+                <version>${version.jakarta.annotation}</version>
+            </dependency>
+            <dependency>
                 <groupId>jakarta.servlet</groupId>
                 <artifactId>jakarta.servlet-api</artifactId>
                 <version>${version.jakarta.servlet}</version>
-                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${version.org.apache.httpcomponents}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat</groupId>
+                <artifactId>tomcat-catalina</artifactId>
+                <version>${version.org.apache.tomcat}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-client-hotrod</artifactId>
+                <version>${version.org.infinispan}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-server-testdriver-junit4</artifactId>
+                <version>${version.org.infinispan.server}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.infinispan</groupId>
+                        <artifactId>infinispan-cli-client</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan.protostream</groupId>
+                <artifactId>protostream</artifactId>
+                <version>${version.org.infinispan.protostream}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan.protostream</groupId>
+                <artifactId>protostream-processor</artifactId>
+                <version>${version.org.infinispan.protostream}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-bom</artifactId>
+                <version>${version.org.jboss.arquillian}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.arquillian.container</groupId>
+                <artifactId>arquillian-tomcat-managed-8</artifactId>
+                <version>${version.org.jboss.arquillian.container.tomcat}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.kohsuke.metainf-services</groupId>
+                <artifactId>metainf-services</artifactId>
+                <version>${version.org.kohsuke.metainf-services}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -122,20 +182,35 @@
             </dependency>
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-clustering-infinispan-client</artifactId>
+                <artifactId>wildfly-clustering-common</artifactId>
                 <version>${version.org.wildfly}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.wildfly</groupId>
+                        <groupId>org.jboss.msc</groupId>
+                        <artifactId>jboss-msc</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly.core</groupId>
                         <artifactId>wildfly-controller</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-clustering-service</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.wildfly</groupId>
                         <artifactId>wildfly-naming</artifactId>
                     </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-infinispan-client</artifactId>
+                <version>${version.org.wildfly}</version>
+                <exclusions>
                     <exclusion>
                         <groupId>org.wildfly</groupId>
-                        <artifactId>wildfly-server</artifactId>
+                        <artifactId>wildfly-clustering-common</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -146,20 +221,46 @@
             </dependency>
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-clustering-server</artifactId>
+                <artifactId>wildfly-clustering-marshalling-api</artifactId>
+                <version>${version.org.wildfly}</version>
+                <classifier>tests</classifier>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-marshalling-spi</artifactId>
+                <version>${version.org.wildfly}</version>
+                <classifier>tests</classifier>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-marshalling-jboss</artifactId>
                 <version>${version.org.wildfly}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.wildfly</groupId>
-                        <artifactId>wildfly-controller</artifactId>
+                        <groupId>org.jboss.modules</groupId>
+                        <artifactId>jboss-modules</artifactId>
                     </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
+                <version>${version.org.wildfly}</version>
+                <exclusions>
                     <exclusion>
-                        <groupId>org.wildfly</groupId>
-                        <artifactId>wildfly-naming</artifactId>
+                        <groupId>org.jboss.modules</groupId>
+                        <artifactId>jboss-modules</artifactId>
                     </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-service</artifactId>
+                <version>${version.org.wildfly}</version>
+                <exclusions>
                     <exclusion>
-                        <groupId>org.wildfly</groupId>
-                        <artifactId>wildfly-server</artifactId>
+                        <groupId>org.jboss.msc</groupId>
+                        <artifactId>jboss-msc</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -169,16 +270,8 @@
                 <version>${version.org.wildfly}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.wildfly</groupId>
-                        <artifactId>wildfly-controller</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.wildfly</groupId>
-                        <artifactId>wildfly-naming</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.wildfly</groupId>
-                        <artifactId>wildfly-server</artifactId>
+                        <groupId>org.jboss.msc</groupId>
+                        <artifactId>jboss-msc</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -188,20 +281,8 @@
                 <version>${version.org.wildfly}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.jboss.modules</groupId>
-                        <artifactId>jboss-modules</artifactId>
-                    </exclusion>
-                    <exclusion>
                         <groupId>org.wildfly</groupId>
-                        <artifactId>wildfly-controller</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.wildfly</groupId>
-                        <artifactId>wildfly-naming</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.wildfly</groupId>
-                        <artifactId>wildfly-server</artifactId>
+                        <artifactId>wildfly-clustering-common</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -212,72 +293,14 @@
                 <exclusions>
                     <exclusion>
                         <groupId>org.wildfly</groupId>
-                        <artifactId>wildfly-controller</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.wildfly</groupId>
-                        <artifactId>wildfly-naming</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.wildfly</groupId>
-                        <artifactId>wildfly-server</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.metadata</groupId>
-                        <artifactId>jboss-metadata-web</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.servlet</groupId>
-                        <artifactId>jboss-servlet-api_4.0_spec</artifactId>
+                        <artifactId>wildfly-clustering-common</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-client-hotrod</artifactId>
-                <version>${version.org.infinispan}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-core</artifactId>
-                <version>${version.org.infinispan}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.kohsuke.metainf-services</groupId>
-                <artifactId>metainf-services</artifactId>
-                <version>${version.org.kohsuke.metainf-services}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpclient</artifactId>
-                <version>${version.org.apache.httpcomponents}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.tomcat</groupId>
-                <artifactId>tomcat-catalina</artifactId>
-                <version>${version.org.apache.tomcat}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.infinispan</groupId>
-                <artifactId>infinispan-server-testdriver-junit4</artifactId>
-                <version>${version.org.infinispan}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian</groupId>
-                <artifactId>arquillian-bom</artifactId>
-                <version>${version.org.jboss.arquillian}</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.container</groupId>
-                <artifactId>arquillian-tomcat-managed-8</artifactId>
-                <version>${version.org.jboss.arquillian.container.tomcat}</version>
-            </dependency>
-            <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>${version.org.junit}</version>
+                <version>${version.junit}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

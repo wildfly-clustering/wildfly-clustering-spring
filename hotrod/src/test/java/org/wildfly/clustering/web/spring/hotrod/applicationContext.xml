@@ -11,8 +11,12 @@
                 <prop key="infinispan.client.hotrod.server_list">127.0.0.1:11222</prop>
             </props>
         </property>
-        <property name="persistenceStrategy">
-            <value type="org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy">FINE</value>
+        <property name="granularity">
+            <value type="org.wildfly.clustering.web.spring.SessionPersistenceGranularity">ATTRIBUTE</value>
         </property>
+        <property name="marshallerFactory">
+            <value type="org.wildfly.clustering.web.spring.SessionMarshallerFactory">PROTOSTREAM</value>
+        </property>
+        <property name="templateName" value="default"/>
     </bean>
 </beans> 

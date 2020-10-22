@@ -20,28 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring.hotrod;
+package org.wildfly.clustering.marshalling.jdk;
 
-import java.util.Properties;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
-import javax.servlet.ServletContext;
-
-import org.springframework.context.ApplicationEventPublisher;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
-import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 /**
+ * Annotates a resolves {@link Class} instances to/from an object stream.
  * @author Paul Ferraro
  */
-public interface HotRodSessionRepositoryConfiguration {
-    Properties getProperties();
-    String getTemplateName();
-    Integer getMaxActiveSessions();
-    SessionAttributePersistenceStrategy getPersistenceStrategy();
-    Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory();
-    Supplier<String> getIdentifierFactory();
-    ApplicationEventPublisher getEventPublisher();
-    ServletContext getServletContext();
+public interface ClassResolver {
+
+    void annotateClass(ObjectOutput output, Class<?> targetClass) throws IOException;
+
+    Class<?> resolveClass(ObjectInput input, String className) throws IOException, ClassNotFoundException;
+
+    ClassLoader getClassLoader();
 }

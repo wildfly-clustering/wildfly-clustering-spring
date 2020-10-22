@@ -24,11 +24,12 @@ package org.wildfly.clustering.web.spring.hotrod.annotation;
 
 import java.util.Properties;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.servlet.ServletContext;
 
-import org.springframework.beans.factory.BeanClassLoaderAware;
+import org.infinispan.client.hotrod.DefaultTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
@@ -37,7 +38,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.session.config.annotation.web.http.SpringHttpSessionConfiguration;
 import org.springframework.web.context.ServletContextAware;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
+import org.wildfly.clustering.web.spring.SessionMarshallerFactory;
+import org.wildfly.clustering.web.spring.SessionPersistenceGranularity;
 import org.wildfly.clustering.web.spring.hotrod.HotRodSessionRepository;
 import org.wildfly.clustering.web.spring.hotrod.HotRodSessionRepositoryConfiguration;
 import org.wildfly.common.Assert;
@@ -46,16 +50,16 @@ import org.wildfly.common.Assert;
  * @author Paul Ferraro
  */
 @Configuration(proxyBeanMethods = false)
-public class HotRodHttpSessionConfiguration extends SpringHttpSessionConfiguration implements HotRodSessionRepositoryConfiguration, ServletContextAware, ApplicationEventPublisherAware, BeanClassLoaderAware {
+public class HotRodHttpSessionConfiguration extends SpringHttpSessionConfiguration implements HotRodSessionRepositoryConfiguration, ServletContextAware, ApplicationEventPublisherAware {
 
     private Properties properties;
     private Integer maxActiveSessions;
-    private SessionAttributePersistenceStrategy persistenceStrategy;
-    private String configurationName;
+    private SessionAttributePersistenceStrategy persistenceStrategy = SessionAttributePersistenceStrategy.COARSE;
+    private Function<ClassLoader, ByteBufferMarshaller> marshallerFactory = SessionMarshallerFactory.JBOSS;
+    private String templateName = DefaultTemplate.DIST_SYNC.getTemplateName();
     private Supplier<String> identifierFactory = () -> UUID.randomUUID().toString();
     private ApplicationEventPublisher publisher;
     private ServletContext context;
-    private ClassLoader loader;
 
     @Bean
     public HotRodSessionRepository sessionRepository() {
@@ -63,7 +67,6 @@ public class HotRodHttpSessionConfiguration extends SpringHttpSessionConfigurati
         Assert.assertNotNull(this.persistenceStrategy);
         Assert.assertNotNull(this.publisher);
         Assert.assertNotNull(this.context);
-        Assert.assertNotNull(this.loader);
         return new HotRodSessionRepository(this);
     }
 
@@ -73,8 +76,8 @@ public class HotRodHttpSessionConfiguration extends SpringHttpSessionConfigurati
     }
 
     @Override
-    public String getConfigurationName() {
-        return this.configurationName;
+    public String getTemplateName() {
+        return this.templateName;
     }
 
     @Override
@@ -85,6 +88,11 @@ public class HotRodHttpSessionConfiguration extends SpringHttpSessionConfigurati
     @Override
     public SessionAttributePersistenceStrategy getPersistenceStrategy() {
         return this.persistenceStrategy;
+    }
+
+    @Override
+    public Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory() {
+        return this.marshallerFactory;
     }
 
     @Override
@@ -103,11 +111,6 @@ public class HotRodHttpSessionConfiguration extends SpringHttpSessionConfigurati
     }
 
     @Override
-    public ClassLoader getClassLoader() {
-        return this.loader;
-    }
-
-    @Override
     public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
         this.publisher = publisher;
     }
@@ -118,20 +121,25 @@ public class HotRodHttpSessionConfiguration extends SpringHttpSessionConfigurati
         this.context = context;
     }
 
-    @Override
-    public void setBeanClassLoader(ClassLoader loader) {
-        this.loader = loader;
-    }
-
     @Autowired(required = true)
     @Qualifier("hotRodProperties")
     public void setProperties(Properties properties) {
         this.properties = properties;
     }
 
-    @Autowired(required = true)
+    @Autowired(required = false)
+    public void setGranularity(SessionPersistenceGranularity granularity) {
+        this.persistenceStrategy = granularity.get();
+    }
+
+    @Autowired(required = false)
     public void setPersistenceStrategy(SessionAttributePersistenceStrategy persistenceStrategy) {
         this.persistenceStrategy = persistenceStrategy;
+    }
+
+    @Autowired(required = false)
+    public void setMarshallerFactory(Function<ClassLoader, ByteBufferMarshaller> marshallerFactory) {
+        this.marshallerFactory = marshallerFactory;
     }
 
     @Autowired(required = false)
@@ -140,8 +148,8 @@ public class HotRodHttpSessionConfiguration extends SpringHttpSessionConfigurati
     }
 
     @Autowired(required = false)
-    public void setConfigurationName(String configurationName) {
-        this.configurationName = configurationName;
+    public void setTemplateName(String templateName) {
+        this.templateName = templateName;
     }
 
     @Autowired(required = false)

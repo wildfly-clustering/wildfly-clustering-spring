@@ -24,25 +24,19 @@ package org.wildfly.clustering.web.spring.hotrod;
 
 import java.time.Duration;
 import java.util.EnumSet;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.ServiceLoader;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionActivationListener;
 
-import org.infinispan.client.hotrod.DefaultTemplate;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
-import org.infinispan.client.hotrod.configuration.RemoteCacheConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
-import org.jboss.marshalling.MarshallingConfiguration;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEventPublisher;
@@ -58,12 +52,6 @@ import org.wildfly.clustering.ee.immutable.DefaultImmutability;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.infinispan.client.manager.RemoteCacheManager;
 import org.wildfly.clustering.infinispan.marshalling.protostream.ProtoStreamMarshaller;
-import org.wildfly.clustering.marshalling.jboss.DynamicClassTable;
-import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
-import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
@@ -84,25 +72,12 @@ import org.wildfly.clustering.web.spring.DistributableSession;
 import org.wildfly.clustering.web.spring.DistributableSessionRepository;
 import org.wildfly.clustering.web.spring.ImmutableSessionExpirationListener;
 import org.wildfly.clustering.web.spring.SpringSpecificationProvider;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Paul Ferraro
  */
 public class HotRodSessionRepository implements SessionRepository<DistributableSession<TransactionBatch>>, InitializingBean, DisposableBean, LocalContextFactory<Void>, Registrar<String>, Registration {
-
-    enum JBossMarshallingVersion implements Function<ClassLoader, MarshallingConfiguration> {
-        VERSION_1() {
-            @Override
-            public MarshallingConfiguration apply(ClassLoader loader) {
-                MarshallingConfiguration config = new MarshallingConfiguration();
-                config.setClassTable(new DynamicClassTable(loader));
-                config.setObjectTable(new ExternalizerObjectTable(loader));
-                return config;
-            }
-        },
-        ;
-        static final JBossMarshallingVersion CURRENT = VERSION_1;
-    }
 
     private final HotRodSessionRepositoryConfiguration configuration;
     private volatile RemoteCacheContainer container;
@@ -114,47 +89,34 @@ public class HotRodSessionRepository implements SessionRepository<DistributableS
         this.configuration = configuration;
     }
 
-    private static ByteBufferMarshaller createMarshaller(ClassLoader loader) {
-        try {
-            return new ProtoStreamByteBufferMarshaller(new SerializationContextBuilder().register(loader).build());
-        } catch (NoSuchElementException e) {
-            return new JBossByteBufferMarshaller(new SimpleMarshallingConfigurationRepository(JBossMarshallingVersion.class, JBossMarshallingVersion.CURRENT, loader), loader);
-        }
-    }
-
     @Override
     public void afterPropertiesSet() throws Exception {
-        Integer maxActiveSessions = this.configuration.getMaxActiveSessions();
-        ClassLoader managerLoader = HotRodSessionManagerFactory.class.getClassLoader();
-        Configuration configuration = new ConfigurationBuilder()
-                .withProperties(this.configuration.getProperties())
-                .marshaller(new ProtoStreamMarshaller(managerLoader))
-                .build();
 
         ServletContext context = this.configuration.getServletContext();
-        String configurationName = this.configuration.getConfigurationName();
-        String templateName = (configurationName != null) ? configurationName : DefaultTemplate.DIST_SYNC.getTemplateName();
+        // Deployment name = host name + context path + version
         String deploymentName = context.getVirtualServerName() + context.getContextPath();
-        Consumer<RemoteCacheConfigurationBuilder> configurator = new Consumer<RemoteCacheConfigurationBuilder>() {
-            @Override
-            public void accept(RemoteCacheConfigurationBuilder builder) {
-                builder.forceReturnValues(false).transactionMode(TransactionMode.NONE).nearCacheMode(NearCacheMode.INVALIDATED).templateName(templateName);
-            }
-        };
-        configuration.addRemoteCache(deploymentName, configurator);
+        String templateName = this.configuration.getTemplateName();
+        Integer maxActiveSessions = this.configuration.getMaxActiveSessions();
+        SessionAttributePersistenceStrategy strategy = this.configuration.getPersistenceStrategy();
 
-        ClassLoader deploymentLoader = this.configuration.getClassLoader();
-        String containerName = context.getServletContextName();
-        RemoteCacheContainer container = new RemoteCacheManager(containerName, configuration, this);
+        ClassLoader containerLoader = WildFlySecurityManager.getClassLoaderPrivileged(HotRodSessionManagerFactory.class);
+        Configuration configuration = new ConfigurationBuilder()
+                .withProperties(this.configuration.getProperties())
+                .marshaller(new ProtoStreamMarshaller(containerLoader))
+                .classLoader(containerLoader)
+                .build();
+
+        configuration.addRemoteCache(deploymentName, builder -> builder.forceReturnValues(false).nearCacheMode(NearCacheMode.INVALIDATED).transactionMode(TransactionMode.NONE).templateName(templateName));
+
+        RemoteCacheContainer container = new RemoteCacheManager(this.getClass().getName(), configuration, this);
         container.start();
         this.container = container;
 
-        ByteBufferMarshaller marshaller = createMarshaller(deploymentLoader);
+        ByteBufferMarshaller marshaller = this.configuration.getMarshallerFactory().apply(context.getClassLoader());
         MarshalledValueFactory<ByteBufferMarshaller> marshalledValueFactory = new ByteBufferMarshalledValueFactory(marshaller);
 
         ServiceLoader<Immutability> loadedImmutability = ServiceLoader.load(Immutability.class, Immutability.class.getClassLoader());
         Immutability immutability = new CompositeImmutability(new CompositeIterable<>(EnumSet.allOf(DefaultImmutability.class), EnumSet.allOf(SessionAttributeImmutability.class), loadedImmutability));
-        SessionAttributePersistenceStrategy strategy = this.configuration.getPersistenceStrategy();
 
         HotRodSessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, ByteBufferMarshaller, Void> sessionManagerFactoryConfig = new HotRodSessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, ByteBufferMarshaller, Void>() {
             @Override
@@ -169,8 +131,7 @@ public class HotRodSessionRepository implements SessionRepository<DistributableS
 
             @Override
             public String getDeploymentName() {
-                // Deployment name = host name + context path
-                return context.getVirtualServerName() + context.getContextPath();
+                return deploymentName;
             }
 
             @Override
@@ -198,12 +159,12 @@ public class HotRodSessionRepository implements SessionRepository<DistributableS
 
             @Override
             public String getConfigurationName() {
-                return configurationName;
+                return null;
             }
 
             @Override
             public String getContainerName() {
-                return containerName;
+                return null;
             }
 
             @Override

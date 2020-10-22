@@ -28,53 +28,28 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
-import org.wildfly.clustering.web.spring.servlet.SessionHandler;
+import org.wildfly.clustering.web.spring.servlet.ServletHandler;
 
 /**
  * @author Paul Ferraro
  */
-@WebServlet(SessionHandler.SERVLET_PATH)
-public class SessionServlet extends HttpServlet implements SessionHandler {
+@WebServlet(ServletHandler.SERVLET_PATH)
+public class SessionServlet extends HttpServlet implements ServletHandler<HttpServletRequest, HttpServletResponse> {
     private static final long serialVersionUID = 2878267318695777395L;
 
     @Override
     public void doHead(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            response.setHeader(SESSION_ID, session.getId());
-        }
+        this.doHead(new SpringService(request, response));
     }
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        HttpSession session = request.getSession();
-        response.setHeader(SESSION_ID, session.getId());
-
-        Integer value = (Integer) session.getAttribute(VALUE);
-        if (value == null) {
-            value = Integer.valueOf(0);
-        } else {
-            value = Integer.valueOf(value.intValue() + 1);
-        }
-        session.setAttribute(VALUE, value);
-
-        response.setIntHeader(VALUE, value);
-    }
-
-    @Override
-    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String id = request.changeSessionId();
-        response.setHeader(SESSION_ID, id);
+        this.doGet(new SpringService(request, response));
     }
 
     @Override
     public void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            response.setHeader(SESSION_ID, session.getId());
-            session.invalidate();
-        }
+        this.doDelete(new SpringService(request, response));
     }
 }

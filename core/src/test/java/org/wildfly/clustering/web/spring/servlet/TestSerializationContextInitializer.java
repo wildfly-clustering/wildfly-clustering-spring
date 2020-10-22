@@ -20,21 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring;
+package org.wildfly.clustering.web.spring.servlet;
 
-import javax.servlet.annotation.WebListener;
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSessionIdListener;
+import org.infinispan.protostream.SerializationContextInitializer;
+import org.infinispan.protostream.annotations.AutoProtoSchemaBuilder;
 
 /**
- * Detects support (or lack thereof) for HttpSessionIdListener notifications in Spring Session.
  * @author Paul Ferraro
  */
-@WebListener
-public class LoggingSessionIdentifierListener implements HttpSessionIdListener {
+@AutoProtoSchemaBuilder(includeClasses = { MutableInteger.class })
+public interface TestSerializationContextInitializer extends SerializationContextInitializer {
 
-    @Override
-    public void sessionIdChanged(HttpSessionEvent event, String oldSessionId) {
-        event.getSession().getServletContext().log("Session identifier changed, old = " + oldSessionId + ", new = " + event.getSession().getId());
-    }
 }

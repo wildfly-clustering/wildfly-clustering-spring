@@ -20,28 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring.hotrod;
+package org.wildfly.clustering.web.spring.servlet;
 
-import java.util.Properties;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
-import javax.servlet.ServletContext;
-
-import org.springframework.context.ApplicationEventPublisher;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
-import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
+import java.io.IOException;
 
 /**
  * @author Paul Ferraro
  */
-public interface HotRodSessionRepositoryConfiguration {
-    Properties getProperties();
-    String getTemplateName();
-    Integer getMaxActiveSessions();
-    SessionAttributePersistenceStrategy getPersistenceStrategy();
-    Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory();
-    Supplier<String> getIdentifierFactory();
-    ApplicationEventPublisher getEventPublisher();
-    ServletContext getServletContext();
+public interface ServletService {
+    default ServletSession getSession() {
+        return this.getSession(true);
+    }
+    ServletSession getSession(boolean create);
+
+    void setHeader(String name, int value) throws IOException;
+    void setHeader(String name, String value) throws IOException;
 }

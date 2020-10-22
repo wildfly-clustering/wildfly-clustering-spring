@@ -7,7 +7,7 @@
     <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener"/>
 
     <GlobalNamingResources>
-        <Resource name="UserDatabase" auth="Container" type="org.apache.catalina.UserDatabase" factory="org.apache.catalina.users.MemoryUserDatabaseFactory" pathname="conf/tomcat-users.xml"/>
+        <Resource name="UserDatabase" auth="Container" type="org.apache.catalina.UserDatabase" factory="org.apache.catalina.users.MemoryUserDatabaseFactory" pathname="conf/tomcat-users.xml" />
     </GlobalNamingResources>
 
     <Service name="Catalina">
@@ -20,8 +20,8 @@
                 <Realm className="org.apache.catalina.realm.UserDatabaseRealm" resourceName="UserDatabase"/>
             </Realm>
 
-            <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="true">
-                <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs" prefix="localhost_access_log." suffix=".txt" pattern="%h %l %u %t &quot;%r&quot; %s %b"/>
+            <Host name="localhost"  appBase="webapps" unpackWARs="true" autoDeploy="true">
+                <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs" prefix="localhost_access_log." suffix=".txt" pattern="%h %l %u %t &quot;%r&quot; %s %b" />
             </Host>
         </Engine>
     </Service>

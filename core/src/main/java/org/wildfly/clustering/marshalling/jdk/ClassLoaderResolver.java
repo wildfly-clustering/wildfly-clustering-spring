@@ -20,28 +20,36 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring.hotrod;
+package org.wildfly.clustering.marshalling.jdk;
 
-import java.util.Properties;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
-import javax.servlet.ServletContext;
-
-import org.springframework.context.ApplicationEventPublisher;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
-import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 /**
+ * A {@link ClassResolver} that resolves classes against a given class loader.
  * @author Paul Ferraro
  */
-public interface HotRodSessionRepositoryConfiguration {
-    Properties getProperties();
-    String getTemplateName();
-    Integer getMaxActiveSessions();
-    SessionAttributePersistenceStrategy getPersistenceStrategy();
-    Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory();
-    Supplier<String> getIdentifierFactory();
-    ApplicationEventPublisher getEventPublisher();
-    ServletContext getServletContext();
+public class ClassLoaderResolver implements ClassResolver {
+
+    private final ClassLoader loader;
+
+    public ClassLoaderResolver(ClassLoader loader) {
+        this.loader = loader;
+    }
+
+    @Override
+    public void annotateClass(ObjectOutput output, Class<?> targetClass) throws IOException {
+        // Do nothing
+    }
+
+    @Override
+    public Class<?> resolveClass(ObjectInput input, String className) throws IOException, ClassNotFoundException {
+        return this.loader.loadClass(className);
+    }
+
+    @Override
+    public ClassLoader getClassLoader() {
+        return this.loader;
+    }
 }

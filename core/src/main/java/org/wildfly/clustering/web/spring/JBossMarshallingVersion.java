@@ -20,28 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring.hotrod;
+package org.wildfly.clustering.web.spring;
 
-import java.util.Properties;
+import java.io.Externalizable;
+import java.io.Serializable;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
-import javax.servlet.ServletContext;
-
-import org.springframework.context.ApplicationEventPublisher;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
-import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
+import org.jboss.marshalling.MarshallingConfiguration;
+import org.jboss.marshalling.SimpleClassResolver;
+import org.wildfly.clustering.marshalling.jboss.ExternalizerObjectTable;
+import org.wildfly.clustering.marshalling.jboss.SimpleClassTable;
 
 /**
  * @author Paul Ferraro
  */
-public interface HotRodSessionRepositoryConfiguration {
-    Properties getProperties();
-    String getTemplateName();
-    Integer getMaxActiveSessions();
-    SessionAttributePersistenceStrategy getPersistenceStrategy();
-    Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory();
-    Supplier<String> getIdentifierFactory();
-    ApplicationEventPublisher getEventPublisher();
-    ServletContext getServletContext();
+public enum JBossMarshallingVersion implements Function<ClassLoader, MarshallingConfiguration> {
+
+    VERSION_1() {
+        @Override
+        public MarshallingConfiguration apply(ClassLoader loader) {
+            MarshallingConfiguration config = new MarshallingConfiguration();
+            config.setClassResolver(new SimpleClassResolver(loader));
+            config.setClassTable(new SimpleClassTable(Serializable.class, Externalizable.class));
+            config.setObjectTable(new ExternalizerObjectTable(loader));
+            return config;
+        }
+    },
+    ;
+    static final JBossMarshallingVersion CURRENT = VERSION_1;
 }

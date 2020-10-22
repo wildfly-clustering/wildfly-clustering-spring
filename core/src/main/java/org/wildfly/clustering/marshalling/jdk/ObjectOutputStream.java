@@ -20,28 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring.hotrod;
+package org.wildfly.clustering.marshalling.jdk;
 
-import java.util.Properties;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
-import javax.servlet.ServletContext;
-
-import org.springframework.context.ApplicationEventPublisher;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
-import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
+ * An {@link java.io.ObjectInputStream} that annotates classes using a given {@link ClassResolver}.
  * @author Paul Ferraro
  */
-public interface HotRodSessionRepositoryConfiguration {
-    Properties getProperties();
-    String getTemplateName();
-    Integer getMaxActiveSessions();
-    SessionAttributePersistenceStrategy getPersistenceStrategy();
-    Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory();
-    Supplier<String> getIdentifierFactory();
-    ApplicationEventPublisher getEventPublisher();
-    ServletContext getServletContext();
+public class ObjectOutputStream extends java.io.ObjectOutputStream {
+
+    private final ClassResolver resolver;
+
+    public ObjectOutputStream(OutputStream output, ClassResolver resolver) throws IOException {
+        super(output);
+        this.resolver = resolver;
+    }
+
+    @Override
+    protected void annotateClass(Class<?> targetClass) throws IOException {
+        this.resolver.annotateClass(this, targetClass);
+    }
+
+    @Override
+    protected void annotateProxyClass(Class<?> proxyClass) throws IOException {
+        this.resolver.annotateClass(this, proxyClass);
+    }
 }
