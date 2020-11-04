@@ -1,6 +1,6 @@
 # wildfly-clustering-spring-session
 
-A session repository implementation for Spring Session based on WildFly's distributed session management.
+A high-availability session repository implementation for Spring Session based on WildFly's distributed session management and Infinispan server.
 This brings the same clustering features to Spring Session that one can expect from WildFly's distributed session management, including:
 
 * Persists session data to a remote Infinispan cluster using either per session or per attribute granularity.
@@ -39,7 +39,7 @@ The following describes how to install wildfly-clustering-spring-session support
 ## Configuration
 
 Spring Session is traditionally enabled either via XML or annotations.
-wildfly-clustering-spring-session includes an `@EnableHotRodHttpSession` annotation for annotation-based configuration, but this configuration mechanism is currently non-functional for reasons explained below.
+wildfly-clustering-spring-session includes an `@EnableHotRodHttpSession` annotation for annotation-based configuration, but this configuration mechanism currently deviates from the documentation of other session repositories.
 
 The Spring Session documentation directs users to provide an implementation of `org.springframework.web.WebApplicationInitializer`, which is supposed to auto-wire the requisite request filters and listeners.
 
@@ -50,58 +50,92 @@ e.g.
 		// ...
 	}
 
+
 	public class MyApplicationInitializer extends AbstractHttpSessionApplicationInitializer { 
 		public MyApplicationInitializer() {
+		    // This doesn't work!!!
 			super(Config.class); 
 		}
 	}
 
-However, this mechanism cannot possibly work correctly in a specification compliant servlet container.
 
-Spring Session's auto-wiring initiates from the [`AbstractHttpSessionApplicationInitializer.onStartup(ServletContext)`](https://github.com/spring-projects/spring-session/blob/2.3.0.RELEASE/spring-session-core/src/main/java/org/springframework/session/web/context/AbstractHttpSessionApplicationInitializer.java#L107) method, where it dynamically registers a ServletContextListener.
+However, this mechanism *cannot possibly work correctly* in a specification compliant servlet container.
+
+Spring Session's auto-wiring initiates from the [`AbstractHttpSessionApplicationInitializer.onStartup(ServletContext)`](https://github.com/spring-projects/spring-session/blob/2.4.0/spring-session-core/src/main/java/org/springframework/session/web/context/AbstractHttpSessionApplicationInitializer.java#L107) method, where it dynamically registers a ServletContextListener.
 Unfortunately, &sect;4.4 of the servlet specification is very specific about how a container should treat ServletContext events for dynamically registered listeners:
 
 > If the ServletContext passed to the ServletContextListener’s contextInitialized method where the ServletContextListener was neither declared in web.xml or web-fragment.xml nor annotated with @WebListener then an UnsupportedOperationException MUST be thrown for all the methods defined in ServletContext for programmatic configuration of servlets, filters and listeners.
 
-Consequently, the only *feasible* way to configure Spring Session requires manually specifying the requisite listeners (to capture the `ServletContext`) and filters (intercept and wrap the request) within web.xml (or fragment).
+Consequently, the only *feasible* way to configure Spring Session via annotations is to create the WebApplicationContext from an explicitly defined ServletContextListener, rather than from the HttpSessionApplicationInitializer.
+
+e.g.
+
+`/WEB-INF/applicationContext.xml`:
+
+	<?xml version="1.0" encoding="UTF-8"?>
+	<beans xmlns="http://www.springframework.org/schema/beans"
+			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+			xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+		<context:annotation-config/>
+	</beans>
+
+
+	// Auto-registers the requisite servlet filter used by Spring Session to intercept the request chain
+	public class MyHttpSessionApplicationInitializer extends AbstractHttpSessionApplicationInitializer { 
+		public MyHttpSessionApplicationInitializer() {
+			// Do not construct with any component classes
+			// This skips dynamic registration of Spring Session's ServletContextListener
+		}
+	}
+
+
+	// Spring Session repository configuration
+	@EnableHotRodHttpSession(uri = "hotrod://127.0.0.1:11222?tcp_keep_alive=true")
+	public class Config {
+		// ...
+	}
+
+
+	@WebListener
+	public class MyContextLoaderListener extends org.wildfly.clustering.web.spring.hotrod.context.ContextLoaderListener { 
+		public MyContextLoaderListener() {
+			// Specify spring session repository component class to super implementation
+			super(Config.class);
+		}
+	}
+
+
+Alternatively, the Spring Session repository can be configured via XML rather than the `@EnableHotRodHttpSession` annotation.
+
+'WEB-INF/web.xml':
 
 	<?xml version="1.0" encoding="UTF-8"?>
 	<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
 			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 			xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3.1.xsd"
 			version="3.1">
-
 		<listener>
+			<!-- We need to declare the ServletContextListener explicitly -->
 			<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
 		</listener>
-		<filter>
-			<filter-name>springSessionRepositoryFilter</filter-name>
-			<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
-		</filter>
-		<filter-mapping>
-			<filter-name>springSessionRepositoryFilter</filter-name>
-			<url-pattern>/*</url-pattern>
-			<dispatcher>REQUEST</dispatcher>
-			<dispatcher>ERROR</dispatcher>
-		</filter-mapping>
 	</web-app>
 
 
-Until the `@EnableHotRodHttpSession` annotation is functional, you must provide the configuration of the distributed session repository via Spring XML.
-
-The following is a sample `/WEB-INF/applicationContext.xml`:
+`/WEB-INF/applicationContext.xml`:
 
 	<?xml version="1.0" encoding="UTF-8"?>
 	<beans xmlns="http://www.springframework.org/schema/beans"
 			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
 			xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
-
 		<context:annotation-config/>
 
 		<bean class="org.wildfly.clustering.web.spring.hotrod.annotation.HotRodHttpSessionConfiguration">
+			<property name="uri">
+				<value type="java.net.URI">hotrod://127.0.0.1:11222</value>
+			</property>
 			<property name="properties">
 				<props>
-					<prop key="infinispan.client.hotrod.server_list">127.0.0.1:11222</prop>
+					<prop key="infinispan.client.hotrod.tcp_keep_alive">true</prop>
 				</props>
 			</property>
 			<property name="granularity">
@@ -114,22 +148,19 @@ The following is a sample `/WEB-INF/applicationContext.xml`:
 		</bean>
 	</beans>
 
+
 ### Configuration Properties
 
 #### Implementation specific properties
 
 |Property|Description|
 |:---|:---|
+|uri|Defines a HotRod URI, which includes a list of infinispan server instances and any authentication details. For details, see: https://infinispan.org/blog/2020/05/26/hotrod-uri/|
 |templateName|Defines the server-side configuration template from which a deployment cache is created on the server. Default is `org.infinispan.DIST_SYNC`.|
 |granularity|Defines how a session is mapped to entries in the cache. Supported granularities are enumerated by the `org.wildfly.clustering.web.spring.SessionPersistenceGranularity` enum. `SESSION` will store all attributes of a session in a single cache entry, while `ATTRIBUTE` will store each session attribute in a separate cache entry.  Default is `SESSION`.|
 |maxActiveSessions|Defines the maximum number of sessions to retain in the near cache. Default is limitless. A value of 0 will disable the near cache.|
 |marshallerFactory|Specifies the marshaller used to serialize and deserialize session attributes. Supported marshallers are enumerated by the `org.wildfly.clustering.web.spring.SessionMarshallerFactory` enum and include: `JAVA`, `JBOSS`, `PROTOSTREAM`. Default marshaller is `JBOSS`.|
-
-#### HotRod properties
-
-The complete set of HotRod properties can be found here:
-
-https://github.com/infinispan/infinispan/blob/10.1.x/client/hotrod-client/src/main/java/org/infinispan/client/hotrod/impl/ConfigurationProperties.java
+|properties|Specifies additional configuration properties. The complete set of HotRod properties can be found here: https://github.com/infinispan/infinispan/blob/11.0.x/client/hotrod-client/src/main/java/org/infinispan/client/hotrod/impl/ConfigurationProperties.java|
 
 ## Notes
 
@@ -146,5 +177,5 @@ In particular, applications using Spring Session should be aware of the followin
    You must instead rely on Spring's own event mechanism.
 
 1. Applications using Spring Session will generally need to rely on Spring Security for authentication and authorization.
-   Many authentication mechanisms store user identity in the HttpSession or will need to change the session ID following authetication - a common practice for preventing session fixation attacks.
+   Many authentication mechanisms store user identity in the HttpSession or will need to change the session ID following authentication - a common practice for preventing session fixation attacks.
    Since the servlet container has no access to sessions created by Spring, most container managed security mechanisms will not work.
