@@ -11,6 +11,11 @@
                 <prop key="infinispan.client.hotrod.server_list">127.0.0.1:11222</prop>
             </props>
         </property>
+        <property name="properties">
+            <props>
+                <prop key="infinispan.client.hotrod.tcp_keep_alive">true</prop>
+            </props>
+        </property>
         <property name="granularity">
             <value type="org.wildfly.clustering.web.spring.SessionPersistenceGranularity">ATTRIBUTE</value>
         </property>

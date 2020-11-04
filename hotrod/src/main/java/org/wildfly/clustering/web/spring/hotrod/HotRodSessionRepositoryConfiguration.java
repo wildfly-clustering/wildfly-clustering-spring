@@ -22,6 +22,7 @@
 
 package org.wildfly.clustering.web.spring.hotrod;
 
+import java.net.URI;
 import java.util.Properties;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -36,6 +37,7 @@ import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
  * @author Paul Ferraro
  */
 public interface HotRodSessionRepositoryConfiguration {
+    URI getUri();
     Properties getProperties();
     String getTemplateName();
     Integer getMaxActiveSessions();

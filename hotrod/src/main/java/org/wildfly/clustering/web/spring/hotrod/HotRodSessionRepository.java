@@ -22,6 +22,7 @@
 
 package org.wildfly.clustering.web.spring.hotrod;
 
+import java.net.URI;
 import java.time.Duration;
 import java.util.EnumSet;
 import java.util.Optional;
@@ -37,6 +38,7 @@ import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
+import org.infinispan.client.hotrod.impl.HotRodURI;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEventPublisher;
@@ -100,7 +102,8 @@ public class HotRodSessionRepository implements SessionRepository<DistributableS
         SessionAttributePersistenceStrategy strategy = this.configuration.getPersistenceStrategy();
 
         ClassLoader containerLoader = WildFlySecurityManager.getClassLoaderPrivileged(HotRodSessionManagerFactory.class);
-        Configuration configuration = new ConfigurationBuilder()
+        URI uri = this.configuration.getUri();
+        Configuration configuration = ((uri != null) ? HotRodURI.create(uri).toConfigurationBuilder() : new ConfigurationBuilder())
                 .withProperties(this.configuration.getProperties())
                 .marshaller(new ProtoStreamMarshaller(containerLoader))
                 .classLoader(containerLoader)
