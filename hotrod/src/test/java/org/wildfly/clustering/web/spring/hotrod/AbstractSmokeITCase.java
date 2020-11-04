@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring;
+package org.wildfly.clustering.web.spring.hotrod;
 
 import java.net.URI;
 import java.net.URL;
@@ -33,20 +33,13 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.infinispan.protostream.SerializationContextInitializer;
 import org.infinispan.server.test.core.ServerRunMode;
 import org.infinispan.server.test.core.TestSystemPropertyNames;
 import org.infinispan.server.test.junit4.InfinispanServerRuleBuilder;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.rules.TestRule;
-import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.web.spring.servlet.MutableIntegerExternalizer;
 import org.wildfly.clustering.web.spring.servlet.ServletHandler;
-import org.wildfly.clustering.web.spring.servlet.TestSerializationContextInitializer;
 
 /**
  * @author Paul Ferraro
@@ -61,17 +54,6 @@ public abstract class AbstractSmokeITCase {
                 .runMode(ServerRunMode.FORKED)
                 .numServers(1)
                 .build();
-
-    public static Archive<?> deployment(Class<? extends AbstractSmokeITCase> testClass, Class<? extends ServletHandler<?, ?>> servletClass) {
-        return ShrinkWrap.create(WebArchive.class, testClass.getSimpleName() + ".war")
-                .addPackage(ServletHandler.class.getPackage())
-                .addPackage(servletClass.getPackage())
-                .addAsWebInfResource(testClass.getPackage(), "applicationContext.xml", "applicationContext.xml")
-                .addAsServiceProvider(Externalizer.class, MutableIntegerExternalizer.class)
-                .addAsServiceProvider(SerializationContextInitializer.class.getName(), TestSerializationContextInitializer.class.getName() + "Impl")
-                .setWebXML(AbstractSmokeITCase.class.getPackage(), "web.xml")
-                ;
-    }
 
     protected void test(URL baseURL1, URL baseURL2) throws Exception {
         URI uri1 = ServletHandler.createURI(baseURL1);
