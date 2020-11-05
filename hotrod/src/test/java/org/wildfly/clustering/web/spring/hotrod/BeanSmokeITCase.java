@@ -31,17 +31,22 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.clustering.web.spring.AbstractSmokeITCase;
+import org.wildfly.clustering.marshalling.Externalizer;
+import org.wildfly.clustering.web.spring.hotrod.context.HttpSessionApplicationInitializer;
 import org.wildfly.clustering.web.spring.hotrod.servlet.SessionServlet;
+import org.wildfly.clustering.web.spring.servlet.MutableIntegerExternalizer;
+import org.wildfly.clustering.web.spring.servlet.ServletHandler;
 
 /**
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class SmokeITCase extends AbstractSmokeITCase {
+public class BeanSmokeITCase extends AbstractSmokeITCase {
     public static final String CONTAINER_1 = "tomcat-1";
     public static final String CONTAINER_2 = "tomcat-2";
     public static final String DEPLOYMENT_1 = "deployment-1";
@@ -50,13 +55,24 @@ public class SmokeITCase extends AbstractSmokeITCase {
     @Deployment(name = DEPLOYMENT_1, testable = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> deployment1() {
-        return deployment(SmokeITCase.class, SessionServlet.class);
+        return deployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, testable = false)
     @TargetsContainer(CONTAINER_2)
     public static Archive<?> deployment2() {
-        return deployment(SmokeITCase.class, SessionServlet.class);
+        return deployment();
+    }
+
+    private static Archive<?> deployment() {
+        return ShrinkWrap.create(WebArchive.class, BeanSmokeITCase.class.getSimpleName() + ".war")
+                .addPackage(ServletHandler.class.getPackage())
+                .addPackage(SessionServlet.class.getPackage())
+                .addClass(HttpSessionApplicationInitializer.class)
+                .addAsWebInfResource(BeanSmokeITCase.class.getPackage(), "applicationContext-bean.xml", "applicationContext.xml")
+                .addAsServiceProvider(Externalizer.class, MutableIntegerExternalizer.class)
+                .setWebXML(AbstractSmokeITCase.class.getPackage(), "web.xml")
+                ;
     }
 
     @Override

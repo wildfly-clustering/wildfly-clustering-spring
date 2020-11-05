@@ -20,30 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring.hotrod;
+package org.wildfly.clustering.web.spring.hotrod.context;
 
-import java.net.URI;
-import java.util.Properties;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
-import javax.servlet.ServletContext;
-
-import org.springframework.context.ApplicationEventPublisher;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
-import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
+import org.wildfly.clustering.web.spring.SessionMarshallerFactory;
+import org.wildfly.clustering.web.spring.SessionPersistenceGranularity;
+import org.wildfly.clustering.web.spring.hotrod.annotation.EnableHotRodHttpSession;
 
 /**
+ * Test configuration for session manager.
  * @author Paul Ferraro
  */
-public interface HotRodSessionRepositoryConfiguration {
-    URI getUri();
-    Properties getProperties();
-    String getTemplateName();
-    Integer getMaxActiveSessions();
-    SessionAttributePersistenceStrategy getPersistenceStrategy();
-    Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory();
-    Supplier<String> getIdentifierFactory();
-    ApplicationEventPublisher getEventPublisher();
-    ServletContext getServletContext();
+@EnableHotRodHttpSession(uri = "hotrod://127.0.0.1:11222", marshallerFactory = SessionMarshallerFactory.PROTOSTREAM, granularity = SessionPersistenceGranularity.ATTRIBUTE, templateName = "default", maxActiveSessions = 100)
+public class Config {
+
 }

@@ -20,30 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring.hotrod;
+package org.wildfly.clustering.web.spring.hotrod.context;
 
-import java.net.URI;
-import java.util.Properties;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
-import javax.servlet.ServletContext;
-
-import org.springframework.context.ApplicationEventPublisher;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
-import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
+import javax.servlet.annotation.WebListener;
 
 /**
+ * Custom servlet context listener that uses annotation-based registration, using our Config.
  * @author Paul Ferraro
  */
-public interface HotRodSessionRepositoryConfiguration {
-    URI getUri();
-    Properties getProperties();
-    String getTemplateName();
-    Integer getMaxActiveSessions();
-    SessionAttributePersistenceStrategy getPersistenceStrategy();
-    Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory();
-    Supplier<String> getIdentifierFactory();
-    ApplicationEventPublisher getEventPublisher();
-    ServletContext getServletContext();
+@WebListener
+public class ConfigContextLoaderListener extends org.wildfly.clustering.web.spring.hotrod.context.ContextLoaderListener {
+
+    public ConfigContextLoaderListener() {
+        super(Config.class);
+    }
 }

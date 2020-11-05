@@ -30,6 +30,8 @@ import java.lang.annotation.Target;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.wildfly.clustering.web.spring.SessionMarshallerFactory;
+import org.wildfly.clustering.web.spring.SessionPersistenceGranularity;
 
 /**
  * @author Paul Ferraro
@@ -40,4 +42,9 @@ import org.springframework.context.annotation.Import;
 @Import(HotRodHttpSessionConfiguration.class)
 @Configuration(proxyBeanMethods = false)
 public @interface EnableHotRodHttpSession {
+    String uri();
+    SessionMarshallerFactory marshallerFactory() default SessionMarshallerFactory.JBOSS;
+    SessionPersistenceGranularity granularity() default SessionPersistenceGranularity.SESSION;
+    String templateName() default "org.infinispan.DIST_SYNC";
+    int maxActiveSessions() default -1;
 }

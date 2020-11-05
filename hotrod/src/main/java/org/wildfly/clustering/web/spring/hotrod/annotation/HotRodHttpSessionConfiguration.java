@@ -22,6 +22,8 @@
 
 package org.wildfly.clustering.web.spring.hotrod.annotation;
 
+import java.net.URI;
+import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.function.Function;
@@ -31,12 +33,15 @@ import javax.servlet.ServletContext;
 
 import org.infinispan.client.hotrod.DefaultTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.ImportAware;
+import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.session.config.annotation.web.http.SpringHttpSessionConfiguration;
+import org.springframework.util.StringUtils;
 import org.springframework.web.context.ServletContextAware;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
@@ -50,10 +55,11 @@ import org.wildfly.common.Assert;
  * @author Paul Ferraro
  */
 @Configuration(proxyBeanMethods = false)
-public class HotRodHttpSessionConfiguration extends SpringHttpSessionConfiguration implements HotRodSessionRepositoryConfiguration, ServletContextAware, ApplicationEventPublisherAware {
+public class HotRodHttpSessionConfiguration extends SpringHttpSessionConfiguration implements HotRodSessionRepositoryConfiguration, ServletContextAware, ApplicationEventPublisherAware, ImportAware {
 
-    private Properties properties;
-    private Integer maxActiveSessions;
+    private URI uri;
+    private Properties properties = new Properties();
+    private Integer maxActiveSessions = null;
     private SessionAttributePersistenceStrategy persistenceStrategy = SessionAttributePersistenceStrategy.COARSE;
     private Function<ClassLoader, ByteBufferMarshaller> marshallerFactory = SessionMarshallerFactory.JBOSS;
     private String templateName = DefaultTemplate.DIST_SYNC.getTemplateName();
@@ -68,6 +74,11 @@ public class HotRodHttpSessionConfiguration extends SpringHttpSessionConfigurati
         Assert.assertNotNull(this.publisher);
         Assert.assertNotNull(this.context);
         return new HotRodSessionRepository(this);
+    }
+
+    @Override
+    public URI getUri() {
+        return this.uri;
     }
 
     @Override
@@ -121,8 +132,12 @@ public class HotRodHttpSessionConfiguration extends SpringHttpSessionConfigurati
         this.context = context;
     }
 
-    @Autowired(required = true)
-    @Qualifier("hotRodProperties")
+    @Autowired(required = false)
+    public void setUri(URI uri) {
+        this.uri = uri;
+    }
+
+    @Autowired(required = false)
     public void setProperties(Properties properties) {
         this.properties = properties;
     }
@@ -155,5 +170,18 @@ public class HotRodHttpSessionConfiguration extends SpringHttpSessionConfigurati
     @Autowired(required = false)
     public void setIdentifierFactory(Supplier<String> identifierFactory) {
         this.identifierFactory = identifierFactory;
+    }
+
+    @Override
+    public void setImportMetadata(AnnotationMetadata metadata) {
+        Map<String, Object> attributeMap = metadata.getAnnotationAttributes(EnableHotRodHttpSession.class.getName());
+        AnnotationAttributes attributes = AnnotationAttributes.fromMap(attributeMap);
+        String uriValue = attributes.getString("uri");
+        this.setUri(StringUtils.hasText(uriValue) ? URI.create(uriValue) : null);
+        int maxActiveSessions = attributes.getNumber("maxActiveSessions").intValue();
+        this.setMaxActiveSessions(maxActiveSessions < 0 ? null : maxActiveSessions);
+        this.setMarshallerFactory(attributes.getEnum("marshallerFactory"));
+        this.setGranularity(attributes.getEnum("granularity"));
+        this.setTemplateName(attributes.getString("templateName"));
     }
 }

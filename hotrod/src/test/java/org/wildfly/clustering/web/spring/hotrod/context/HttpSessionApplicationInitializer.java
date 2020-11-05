@@ -20,30 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring.hotrod;
+package org.wildfly.clustering.web.spring.hotrod.context;
 
-import java.net.URI;
-import java.util.Properties;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
-import javax.servlet.ServletContext;
-
-import org.springframework.context.ApplicationEventPublisher;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
-import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
+import org.springframework.session.web.context.AbstractHttpSessionApplicationInitializer;
 
 /**
+ * Empty initializer that explicitly prevents dynamic registration of a servlet context listener,
+ * as this must be declared explicitly (either via web.xml or {@link javax.servlet.annotation.WebListener} annotation).
  * @author Paul Ferraro
  */
-public interface HotRodSessionRepositoryConfiguration {
-    URI getUri();
-    Properties getProperties();
-    String getTemplateName();
-    Integer getMaxActiveSessions();
-    SessionAttributePersistenceStrategy getPersistenceStrategy();
-    Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory();
-    Supplier<String> getIdentifierFactory();
-    ApplicationEventPublisher getEventPublisher();
-    ServletContext getServletContext();
+public class HttpSessionApplicationInitializer extends AbstractHttpSessionApplicationInitializer {
 }
