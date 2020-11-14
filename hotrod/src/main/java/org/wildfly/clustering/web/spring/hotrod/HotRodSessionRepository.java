@@ -233,7 +233,7 @@ public class HotRodSessionRepository implements SessionRepository<DistributableS
             defaultTimeout = Optional.of(timeout);
         }
         this.manager.start();
-        this.repository = new DistributableSessionRepository<>(this.manager, defaultTimeout, publisher);
+        this.repository = new DistributableSessionRepository<>(this.manager, defaultTimeout, publisher, context);
     }
 
     @Override

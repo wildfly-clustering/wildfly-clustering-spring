@@ -23,6 +23,7 @@
 package org.wildfly.clustering.web.spring;
 
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 import javax.servlet.ServletContext;
@@ -30,8 +31,9 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionBindingEvent;
 import javax.servlet.http.HttpSessionBindingListener;
 
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.session.events.SessionDestroyedEvent;
+import org.springframework.session.Session;
 import org.wildfly.clustering.web.cache.session.ImmutableSessionAttributesFilter;
 import org.wildfly.clustering.web.cache.session.SessionAttributesFilter;
 import org.wildfly.clustering.web.session.ImmutableSession;
@@ -42,16 +44,19 @@ import org.wildfly.clustering.web.session.ImmutableSession;
 public class ImmutableSessionDestroyAction implements Consumer<ImmutableSession> {
 
     private final ApplicationEventPublisher publisher;
+    private final BiFunction<Object, Session, ApplicationEvent> eventFactory;
     private final ServletContext context;
 
-    public ImmutableSessionDestroyAction(ApplicationEventPublisher publisher, ServletContext context) {
+    public ImmutableSessionDestroyAction(ApplicationEventPublisher publisher, BiFunction<Object, Session, ApplicationEvent> eventFactory, ServletContext context) {
         this.publisher = publisher;
+        this.eventFactory = eventFactory;
         this.context = context;
     }
 
     @Override
     public void accept(ImmutableSession session) {
-        this.publisher.publishEvent(new SessionDestroyedEvent(this, new DistributableImmutableSession(session)));
+        ApplicationEvent event = this.eventFactory.apply(this, new DistributableImmutableSession(session));
+        this.publisher.publishEvent(event);
         SessionAttributesFilter filter = new ImmutableSessionAttributesFilter(session);
         HttpSession httpSession = SpringSpecificationProvider.INSTANCE.createHttpSession(session, this.context);
         for (Map.Entry<String, HttpSessionBindingListener> entry : filter.getAttributes(HttpSessionBindingListener.class).entrySet()) {

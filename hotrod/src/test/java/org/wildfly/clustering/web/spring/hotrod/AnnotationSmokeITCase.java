@@ -71,7 +71,6 @@ public class AnnotationSmokeITCase extends AbstractSmokeITCase {
                 .addPackage(ConfigContextLoaderListener.class.getPackage())
                 .addAsWebInfResource(AnnotationSmokeITCase.class.getPackage(), "applicationContext-annotation.xml", "applicationContext.xml")
                 .addAsServiceProvider(SerializationContextInitializer.class.getName(), TestSerializationContextInitializer.class.getName() + "Impl")
-//                .setWebXML(AbstractSmokeITCase.class.getPackage(), "web.xml")
                 ;
     }
 

@@ -23,15 +23,22 @@
 package org.wildfly.clustering.web.spring;
 
 import java.time.Duration;
+import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
+
+import javax.servlet.ServletContext;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.session.SessionRepository;
 import org.springframework.session.events.SessionCreatedEvent;
+import org.springframework.session.events.SessionDestroyedEvent;
 import org.wildfly.clustering.ee.Batch;
+import org.wildfly.clustering.ee.BatchContext;
 import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
 
@@ -42,14 +49,16 @@ public class DistributableSessionRepository<B extends Batch> implements SessionR
 
     private final SessionManager<Void, B> manager;
     // Needed to obtain reference to session for use by deleteById(...)
-    private final Map<String, Session<Void>> sessions = new ConcurrentHashMap<>();
+    private final Map<String, Map.Entry<Session<Void>, B>> sessions = new ConcurrentHashMap<>();
     private final ApplicationEventPublisher publisher;
     private final Optional<Duration> defaultTimeout;
+    private final Consumer<ImmutableSession> destroyAction;
 
-    public DistributableSessionRepository(SessionManager<Void, B> manager, Optional<Duration> defaultTimeout, ApplicationEventPublisher publisher) {
+    public DistributableSessionRepository(SessionManager<Void, B> manager, Optional<Duration> defaultTimeout, ApplicationEventPublisher publisher, ServletContext context) {
         this.manager = manager;
         this.defaultTimeout = defaultTimeout;
         this.publisher = publisher;
+        this.destroyAction = new ImmutableSessionDestroyAction(publisher, SessionDestroyedEvent::new, context);
     }
 
     @Override
@@ -60,12 +69,13 @@ public class DistributableSessionRepository<B extends Batch> implements SessionR
         B batch = batcher.createBatch();
         try {
             Session<Void> session = this.manager.createSession(id);
-            this.sessions.put(id, session);
             // This is present for servlet version < 4.0
             if (this.defaultTimeout.isPresent()) {
                 session.getMetaData().setMaxInactiveInterval(this.defaultTimeout.get());
             }
-            DistributableSession<B> result = new DistributableSession<>(this.manager, session, batcher.suspendBatch());
+            B suspendedBatch = batcher.suspendBatch();
+            DistributableSession<B> result = new DistributableSession<>(this.manager, session, suspendedBatch);
+            this.sessions.put(id, new AbstractMap.SimpleImmutableEntry<>(session, suspendedBatch));
             this.publisher.publishEvent(new SessionCreatedEvent(this, result));
             close = false;
             return result;
@@ -88,8 +98,9 @@ public class DistributableSessionRepository<B extends Batch> implements SessionR
         try {
             Session<Void> session = this.manager.findSession(id);
             if (session == null) return null;
-            this.sessions.put(id, session);
-            DistributableSession<B> result = new DistributableSession<>(this.manager, session, batcher.suspendBatch());
+            B suspendedBatch = batcher.suspendBatch();
+            DistributableSession<B> result = new DistributableSession<>(this.manager, session, suspendedBatch);
+            this.sessions.put(id, new AbstractMap.SimpleImmutableEntry<>(session, suspendedBatch));
             close = false;
             return result;
         } catch (RuntimeException | Error e) {
@@ -104,24 +115,23 @@ public class DistributableSessionRepository<B extends Batch> implements SessionR
 
     @Override
     public void deleteById(String id) {
-        Session<Void> session = this.sessions.remove(id);
-        if (session != null) {
-            session.invalidate();
-        } else {
-            Batcher<B> batcher = this.manager.getBatcher();
-            try (B batch = batcher.createBatch()) {
-                session = this.manager.findSession(id);
-                if (session != null) {
-                    session.invalidate();
-                }
+        Map.Entry<Session<Void>, B> entry = this.sessions.remove(id);
+        if (entry != null) {
+            Session<Void> session = entry.getKey();
+            this.destroyAction.accept(session);
+            try (BatchContext context = this.manager.getBatcher().resumeBatch(entry.getValue())) {
+                session.invalidate();
             }
         }
     }
 
     @Override
     public void save(DistributableSession<B> session) {
-        try (Session<Void> closeable = this.sessions.remove(session.getId())) {
-            // Do nothing
+        Map.Entry<Session<Void>, B> entry = this.sessions.remove(session.getId());
+        if (entry != null) {
+            try (Session<Void> closeable = entry.getKey()) {
+                // Do nothing
+            }
         }
     }
 }
