@@ -62,18 +62,22 @@ public abstract class AbstractSmokeITCase {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             String sessionId = null;
             int value = 0;
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 4; i++) {
                 for (URI uri : Arrays.asList(uri1, uri2)) {
-                    try (CloseableHttpResponse response = client.execute(new HttpGet(uri))) {
-                        Assert.assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
-                        Assert.assertEquals(String.valueOf(value++), response.getFirstHeader(ServletHandler.VALUE).getValue());
-                        if (sessionId == null) {
-                            sessionId = response.getFirstHeader(ServletHandler.SESSION_ID).getValue();
-                        } else {
-                            Assert.assertEquals(sessionId, response.getFirstHeader(ServletHandler.SESSION_ID).getValue());
+                    for (int j = 0; j < 4; j++) {
+                        try (CloseableHttpResponse response = client.execute(new HttpGet(uri))) {
+                            Assert.assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
+                            Assert.assertEquals(String.valueOf(value++), response.getFirstHeader(ServletHandler.VALUE).getValue());
+                            String requestSessionId = response.getFirstHeader(ServletHandler.SESSION_ID).getValue();
+                            if (sessionId == null) {
+                                sessionId = requestSessionId;
+                            } else {
+                                Assert.assertEquals(sessionId, requestSessionId);
+                            }
                         }
                     }
-                    Thread.sleep(100);
+                    // Grace time between failover requests
+                    Thread.sleep(500);
                 }
             }
             try (CloseableHttpResponse response = client.execute(new HttpDelete(uri1))) {

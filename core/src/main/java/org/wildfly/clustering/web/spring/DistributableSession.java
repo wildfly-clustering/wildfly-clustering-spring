@@ -34,7 +34,7 @@ import org.wildfly.clustering.web.session.SessionManager;
 /**
  * @author Paul Ferraro
  */
-public class DistributableSession<B extends Batch> implements org.springframework.session.Session {
+public class DistributableSession<B extends Batch> implements org.springframework.session.Session, AutoCloseable {
 
     private final SessionManager<Void, B> manager;
     private final B batch;
@@ -144,5 +144,10 @@ public class DistributableSession<B extends Batch> implements org.springframewor
     private BatchContext resumeBatch() {
         B batch = (this.batch.getState() != Batch.State.CLOSED) ? this.batch : null;
         return this.manager.getBatcher().resumeBatch(batch);
+    }
+
+    @Override
+    public void close() {
+        this.session.close();
     }
 }
