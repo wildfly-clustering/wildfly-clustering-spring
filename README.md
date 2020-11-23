@@ -45,19 +45,20 @@ The Spring Session documentation directs users to provide an implementation of `
 
 e.g.
 
-	@EnableHotRodHttpSession(...)
-	public class Config {
-		// ...
+```java
+@EnableHotRodHttpSession(...)
+public class Config {
+	// ...
+}
+```
+```java
+public class MyApplicationInitializer extends AbstractHttpSessionApplicationInitializer { 
+	public MyApplicationInitializer() {
+		// This doesn't work!!!
+		super(Config.class); 
 	}
-
-
-	public class MyApplicationInitializer extends AbstractHttpSessionApplicationInitializer { 
-		public MyApplicationInitializer() {
-		    // This doesn't work!!!
-			super(Config.class); 
-		}
-	}
-
+}
+```
 
 However, this mechanism *cannot possibly work correctly* in a specification compliant servlet container.
 
@@ -72,82 +73,88 @@ e.g.
 
 `/WEB-INF/applicationContext.xml`:
 
-	<?xml version="1.0" encoding="UTF-8"?>
-	<beans xmlns="http://www.springframework.org/schema/beans"
-			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
-			xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
-		<context:annotation-config/>
-	</beans>
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+		xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+	<context:annotation-config/>
+</beans>
+```
 
-
-	// Auto-registers the requisite servlet filter used by Spring Session to intercept the request chain
-	public class MyHttpSessionApplicationInitializer extends AbstractHttpSessionApplicationInitializer { 
-		public MyHttpSessionApplicationInitializer() {
-			// Do not construct with any component classes
-			// This skips dynamic registration of Spring Session's ServletContextListener
-		}
+```java
+// Auto-registers the requisite servlet filter used by Spring Session to intercept the request chain
+public class MyHttpSessionApplicationInitializer extends AbstractHttpSessionApplicationInitializer { 
+	public MyHttpSessionApplicationInitializer() {
+		// Do not construct with any component classes
+		// This skips dynamic registration of Spring Session's ServletContextListener
 	}
+}
+```
 
+```java
+// Spring Session repository configuration
+@EnableHotRodHttpSession(uri = "hotrod://127.0.0.1:11222?tcp_keep_alive=true")
+public class Config {
+	// ...
+}
+```
 
-	// Spring Session repository configuration
-	@EnableHotRodHttpSession(uri = "hotrod://127.0.0.1:11222?tcp_keep_alive=true")
-	public class Config {
-		// ...
+```java
+@WebListener
+public class MyContextLoaderListener extends org.wildfly.clustering.web.spring.hotrod.context.ContextLoaderListener { 
+	public MyContextLoaderListener() {
+		// Specify spring session repository component class to super implementation
+		super(Config.class);
 	}
-
-
-	@WebListener
-	public class MyContextLoaderListener extends org.wildfly.clustering.web.spring.hotrod.context.ContextLoaderListener { 
-		public MyContextLoaderListener() {
-			// Specify spring session repository component class to super implementation
-			super(Config.class);
-		}
-	}
-
+}
+```
 
 Alternatively, the Spring Session repository can be configured via XML rather than the `@EnableHotRodHttpSession` annotation.
 
 'WEB-INF/web.xml':
 
-	<?xml version="1.0" encoding="UTF-8"?>
-	<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
-			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-			xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3.1.xsd"
-			version="3.1">
-		<listener>
-			<!-- We need to declare the ServletContextListener explicitly -->
-			<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-		</listener>
-	</web-app>
-
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3.1.xsd"
+		version="3.1">
+	<listener>
+		<!-- We need to declare the ServletContextListener explicitly -->
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+</web-app>
+```
 
 `/WEB-INF/applicationContext.xml`:
 
-	<?xml version="1.0" encoding="UTF-8"?>
-	<beans xmlns="http://www.springframework.org/schema/beans"
-			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
 			xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
-		<context:annotation-config/>
+	<context:annotation-config/>
 
-		<bean class="org.wildfly.clustering.web.spring.hotrod.annotation.HotRodHttpSessionConfiguration">
-			<property name="uri">
-				<value type="java.net.URI">hotrod://127.0.0.1:11222</value>
-			</property>
-			<property name="properties">
-				<props>
-					<prop key="infinispan.client.hotrod.tcp_keep_alive">true</prop>
-				</props>
-			</property>
-			<property name="granularity">
-				<value type="org.wildfly.clustering.web.spring.SessionPersistenceGranularity">SESSION</value>
-			</property>
-			<property name="marshallerFactory">
-				<value type="org.wildfly.clustering.web.spring.SessionMarshallerFactory">PROTOSTREAM</value>
-			</property>
-			<property name="maxActiveSessions">1000</property>
-		</bean>
-	</beans>
-
+	<bean class="org.wildfly.clustering.web.spring.hotrod.annotation.HotRodHttpSessionConfiguration">
+		<property name="uri">
+			<value type="java.net.URI">hotrod://127.0.0.1:11222</value>
+		</property>
+		<property name="properties">
+			<props>
+				<prop key="infinispan.client.hotrod.tcp_keep_alive">true</prop>
+			</props>
+		</property>
+		<property name="granularity">
+			<value type="org.wildfly.clustering.web.spring.SessionPersistenceGranularity">SESSION</value>
+		</property>
+		<property name="marshallerFactory">
+			<value type="org.wildfly.clustering.web.spring.SessionMarshallerFactory">PROTOSTREAM</value>
+		</property>
+		<property name="maxActiveSessions">1000</property>
+	</bean>
+</beans>
+```
 
 ### Configuration Properties
 

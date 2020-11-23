@@ -30,6 +30,7 @@ import javax.servlet.ServletContext;
 import org.jboss.as.clustering.context.ContextClassLoaderReference;
 import org.jboss.as.clustering.context.ContextReferenceExecutor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.session.events.SessionExpiredEvent;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
 
@@ -42,7 +43,7 @@ public class ImmutableSessionExpirationListener implements SessionExpirationList
     private final Executor executor;
 
     public ImmutableSessionExpirationListener(ApplicationEventPublisher publisher, ServletContext context) {
-        this.expireAction = new ImmutableSessionDestroyAction(publisher, context);
+        this.expireAction = new ImmutableSessionDestroyAction(publisher, SessionExpiredEvent::new, context);
         this.executor = new ContextReferenceExecutor<>(context.getClassLoader(), ContextClassLoaderReference.INSTANCE);
     }
 

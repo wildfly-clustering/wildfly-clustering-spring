@@ -23,15 +23,18 @@
 package org.wildfly.clustering.web.spring;
 
 import java.time.Duration;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
+
+import javax.servlet.ServletContext;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.session.SessionRepository;
 import org.springframework.session.events.SessionCreatedEvent;
+import org.springframework.session.events.SessionDestroyedEvent;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
+import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
 
@@ -39,17 +42,20 @@ import org.wildfly.clustering.web.session.SessionManager;
  * @author Paul Ferraro
  */
 public class DistributableSessionRepository<B extends Batch> implements SessionRepository<DistributableSession<B>> {
+    // Workaround for https://github.com/spring-projects/spring-session/issues/1731
+    @SuppressWarnings("rawtypes")
+    private static final ThreadLocal<DistributableSession> CURRENT_SESSION = new ThreadLocal<>();
 
     private final SessionManager<Void, B> manager;
-    // Needed to obtain reference to session for use by deleteById(...)
-    private final Map<String, Session<Void>> sessions = new ConcurrentHashMap<>();
     private final ApplicationEventPublisher publisher;
     private final Optional<Duration> defaultTimeout;
+    private final Consumer<ImmutableSession> destroyAction;
 
-    public DistributableSessionRepository(SessionManager<Void, B> manager, Optional<Duration> defaultTimeout, ApplicationEventPublisher publisher) {
+    public DistributableSessionRepository(SessionManager<Void, B> manager, Optional<Duration> defaultTimeout, ApplicationEventPublisher publisher, ServletContext context) {
         this.manager = manager;
         this.defaultTimeout = defaultTimeout;
         this.publisher = publisher;
+        this.destroyAction = new ImmutableSessionDestroyAction(publisher, SessionDestroyedEvent::new, context);
     }
 
     @Override
@@ -60,12 +66,12 @@ public class DistributableSessionRepository<B extends Batch> implements SessionR
         B batch = batcher.createBatch();
         try {
             Session<Void> session = this.manager.createSession(id);
-            this.sessions.put(id, session);
             // This is present for servlet version < 4.0
             if (this.defaultTimeout.isPresent()) {
                 session.getMetaData().setMaxInactiveInterval(this.defaultTimeout.get());
             }
-            DistributableSession<B> result = new DistributableSession<>(this.manager, session, batcher.suspendBatch());
+            B suspendedBatch = batcher.suspendBatch();
+            DistributableSession<B> result = new DistributableSession<>(this.manager, session, suspendedBatch);
             this.publisher.publishEvent(new SessionCreatedEvent(this, result));
             close = false;
             return result;
@@ -75,22 +81,29 @@ public class DistributableSessionRepository<B extends Batch> implements SessionR
         } finally {
             if (close) {
                 batch.close();
-                this.sessions.remove(id);
             }
         }
     }
 
     @Override
     public DistributableSession<B> findById(String id) {
+        // Ugly workaround for bizarre behavior in org.springframework.session.web.http.SessionRepositoryFilter.SessionRepositoryRequestWrapper.commitSession()
+        // that triggers an extraneous SessionRepository.findById(...) for a recently saved requested session.
+        DistributableSession<B> current = CURRENT_SESSION.get();
+        if (current != null) {
+            CURRENT_SESSION.remove();
+            return current;
+        }
         boolean close = true;
         Batcher<B> batcher = this.manager.getBatcher();
         B batch = batcher.createBatch();
         try {
             Session<Void> session = this.manager.findSession(id);
             if (session == null) return null;
-            this.sessions.put(id, session);
-            DistributableSession<B> result = new DistributableSession<>(this.manager, session, batcher.suspendBatch());
+            B suspendedBatch = batcher.suspendBatch();
+            DistributableSession<B> result = new DistributableSession<>(this.manager, session, suspendedBatch);
             close = false;
+            CURRENT_SESSION.set(result);
             return result;
         } catch (RuntimeException | Error e) {
             batch.discard();
@@ -104,24 +117,19 @@ public class DistributableSessionRepository<B extends Batch> implements SessionR
 
     @Override
     public void deleteById(String id) {
-        Session<Void> session = this.sessions.remove(id);
-        if (session != null) {
-            session.invalidate();
-        } else {
-            Batcher<B> batcher = this.manager.getBatcher();
-            try (B batch = batcher.createBatch()) {
-                session = this.manager.findSession(id);
-                if (session != null) {
-                    session.invalidate();
-                }
+        try (Session<Void> session = this.manager.findSession(id)) {
+            if (session != null) {
+                this.destroyAction.accept(session);
+                session.invalidate();
             }
+        } finally {
+            // Remove thread local here - as there will not be an extraneous call to SessionRepository.findById(...)
+            CURRENT_SESSION.remove();
         }
     }
 
     @Override
     public void save(DistributableSession<B> session) {
-        try (Session<Void> closeable = this.sessions.remove(session.getId())) {
-            // Do nothing
-        }
+        session.close();
     }
 }
