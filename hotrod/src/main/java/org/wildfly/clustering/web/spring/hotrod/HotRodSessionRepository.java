@@ -161,16 +161,6 @@ public class HotRodSessionRepository implements SessionRepository<DistributableS
             }
 
             @Override
-            public String getConfigurationName() {
-                return null;
-            }
-
-            @Override
-            public String getContainerName() {
-                return null;
-            }
-
-            @Override
             public Immutability getImmutability() {
                 return immutability;
             }
