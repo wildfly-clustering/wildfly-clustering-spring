@@ -45,6 +45,7 @@
     </scm>
 
     <properties>
+        <jdk.min.version>11</jdk.min.version>
         <version.io.spring>5.3.1</version.io.spring>
         <version.io.spring.session>2.4.1</version.io.spring.session>
         <version.jakarta.annotation>1.3.5</version.jakarta.annotation>
