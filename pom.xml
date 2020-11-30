@@ -41,7 +41,7 @@
         <connection>scm:git:git://github.com:wildfly-clustering/wildfly-clustering-spring-session.git</connection>
         <developerConnection>scm:git:git@github.com:wildfly-clustering/wildfly-clustering-spring-session.git</developerConnection>
         <url>https://github.com/wildfly-clustering/wildfly-clustering-spring-session</url>
-        <tag>1.1.0.Final</tag>
+        <tag>1.1.x</tag>
     </scm>
 
     <properties>
