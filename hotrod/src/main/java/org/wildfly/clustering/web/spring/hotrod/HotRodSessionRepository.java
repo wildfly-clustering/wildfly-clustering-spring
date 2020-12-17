@@ -54,6 +54,7 @@ import org.wildfly.clustering.ee.immutable.DefaultImmutability;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.infinispan.client.manager.RemoteCacheManager;
 import org.wildfly.clustering.infinispan.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ClassLoaderResolver;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
@@ -105,7 +106,7 @@ public class HotRodSessionRepository implements SessionRepository<DistributableS
         URI uri = this.configuration.getUri();
         Configuration configuration = ((uri != null) ? HotRodURI.create(uri).toConfigurationBuilder() : new ConfigurationBuilder())
                 .withProperties(this.configuration.getProperties())
-                .marshaller(new ProtoStreamMarshaller(containerLoader))
+                .marshaller(new ProtoStreamMarshaller(new ClassLoaderResolver(containerLoader), containerLoader))
                 .classLoader(containerLoader)
                 .build();
 

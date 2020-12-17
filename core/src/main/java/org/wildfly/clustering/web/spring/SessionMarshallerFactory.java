@@ -22,7 +22,6 @@
 
 package org.wildfly.clustering.web.spring;
 
-import java.util.NoSuchElementException;
 import java.util.function.Function;
 
 import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
@@ -53,12 +52,7 @@ public enum SessionMarshallerFactory implements Function<ClassLoader, ByteBuffer
     PROTOSTREAM() {
         @Override
         public ByteBufferMarshaller apply(ClassLoader loader) {
-            SerializationContextBuilder builder = new SerializationContextBuilder();
-            try {
-                builder.register(loader);
-            } catch (NoSuchElementException e) {
-                // Ignore
-            }
+            SerializationContextBuilder builder = new SerializationContextBuilder(new org.wildfly.clustering.marshalling.protostream.ClassLoaderResolver(loader)).load(loader);
             return new ProtoStreamByteBufferMarshaller(builder.build());
         }
     },
