@@ -94,26 +94,23 @@ public class DistributableSessionRepository<B extends Batch> implements SessionR
             CURRENT_SESSION.remove();
             return current;
         }
-        // Workaround for WFLY-14118
-        synchronized (this) {
-            boolean close = true;
-            Batcher<B> batcher = this.manager.getBatcher();
-            B batch = batcher.createBatch();
-            try {
-                Session<Void> session = this.manager.findSession(id);
-                if (session == null) return null;
-                B suspendedBatch = batcher.suspendBatch();
-                DistributableSession<B> result = new DistributableSession<>(this.manager, session, suspendedBatch);
-                close = false;
-                CURRENT_SESSION.set(result);
-                return result;
-            } catch (RuntimeException | Error e) {
-                batch.discard();
-                throw e;
-            } finally {
-                if (close) {
-                    batch.close();
-                }
+        boolean close = true;
+        Batcher<B> batcher = this.manager.getBatcher();
+        B batch = batcher.createBatch();
+        try {
+            Session<Void> session = this.manager.findSession(id);
+            if (session == null) return null;
+            B suspendedBatch = batcher.suspendBatch();
+            DistributableSession<B> result = new DistributableSession<>(this.manager, session, suspendedBatch);
+            close = false;
+            CURRENT_SESSION.set(result);
+            return result;
+        } catch (RuntimeException | Error e) {
+            batch.discard();
+            throw e;
+        } finally {
+            if (close) {
+                batch.close();
             }
         }
     }
