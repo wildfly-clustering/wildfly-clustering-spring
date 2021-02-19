@@ -20,18 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring.hotrod.context;
+package org.wildfly.clustering.web.spring.context;
 
-import javax.servlet.annotation.WebListener;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
 /**
- * Custom servlet context listener that uses annotation-based registration, using our Config.
+ * A custom {@link org.springframework.web.context.ContextLoaderListener} that configures a Spring web application context via specified annotations.
  * @author Paul Ferraro
  */
-@WebListener
-public class ConfigContextLoaderListener extends org.wildfly.clustering.web.spring.context.ContextLoaderListener {
+public class ContextLoaderListener extends org.springframework.web.context.ContextLoaderListener {
 
-    public ConfigContextLoaderListener() {
-        super(Config.class);
+    public ContextLoaderListener(Class<?>... componentClasses) {
+        super(createWebApplicationContext(componentClasses));
+    }
+
+    private static WebApplicationContext createWebApplicationContext(Class<?>... componentClasses) {
+        AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+        context.register(componentClasses);
+        return context;
     }
 }

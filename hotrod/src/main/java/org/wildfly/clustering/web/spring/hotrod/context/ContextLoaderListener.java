@@ -22,22 +22,15 @@
 
 package org.wildfly.clustering.web.spring.hotrod.context;
 
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
-
 /**
  * A custom {@link org.springframework.web.context.ContextLoaderListener} that configures a Spring web application context via specified annotations.
  * @author Paul Ferraro
+ * @deprecated Replaced by {@link org.wildfly.clustering.web.spring.context.ContextLoaderListener} instead.
  */
-public class ContextLoaderListener extends org.springframework.web.context.ContextLoaderListener {
+@Deprecated
+public class ContextLoaderListener extends org.wildfly.clustering.web.spring.context.ContextLoaderListener {
 
     public ContextLoaderListener(Class<?>... componentClasses) {
-        super(createWebApplicationContext(componentClasses));
-    }
-
-    private static WebApplicationContext createWebApplicationContext(Class<?>... componentClasses) {
-        AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
-        context.register(componentClasses);
-        return context;
+        super(componentClasses);
     }
 }

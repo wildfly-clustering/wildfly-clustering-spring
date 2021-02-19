@@ -102,7 +102,7 @@ public class Config {
 
 ```java
 @WebListener
-public class MyContextLoaderListener extends org.wildfly.clustering.web.spring.hotrod.context.ContextLoaderListener { 
+public class MyContextLoaderListener extends org.wildfly.clustering.web.spring.context.ContextLoaderListener { 
 	public MyContextLoaderListener() {
 		// Specify spring session repository component class to super implementation
 		super(Config.class);
