@@ -27,32 +27,35 @@ import java.io.InputStream;
 import java.io.ObjectStreamClass;
 import java.lang.reflect.Proxy;
 
+import org.wildfly.clustering.marshalling.Externalizer;
+
 /**
- * An {@link java.io.ObjectInputStream} that resolves classes using a given {@link ClassResolver}.
+ * An {@link java.io.ObjectInputStream} that resolves classes using a given {@link ClassLoaderResolver}.
  * @author Paul Ferraro
  */
 public class ObjectInputStream extends java.io.ObjectInputStream {
 
-    private final ClassResolver resolver;
+    private final Externalizer<ClassLoader> externalizer;
 
-    public ObjectInputStream(InputStream input, ClassResolver resolver) throws IOException {
+    public ObjectInputStream(InputStream input, Externalizer<ClassLoader> externalizer) throws IOException {
         super(input);
-        this.resolver = resolver;
+        this.externalizer = externalizer;
     }
 
     @Override
     protected Class<?> resolveClass(ObjectStreamClass description) throws IOException, ClassNotFoundException {
-        return this.resolver.resolveClass(this, description.getName());
+        String className = description.getName();
+        return this.externalizer.readObject(this).loadClass(className);
     }
 
     @Override
     protected Class<?> resolveProxyClass(String[] interfaces) throws IOException, ClassNotFoundException {
         Class<?>[] interfaceClasses = new Class<?>[interfaces.length];
         for (int i = 0; i < interfaces.length; ++i) {
-            interfaceClasses[i] = this.resolver.resolveClass(this, interfaces[i]);
+            interfaceClasses[i] = this.externalizer.readObject(this).loadClass(interfaces[i]);
         }
         try {
-            return Proxy.getProxyClass(this.resolver.getClassLoader(), interfaceClasses);
+            return Proxy.getProxyClass(this.externalizer.readObject(this), interfaceClasses);
         } catch (IllegalArgumentException e) {
             throw new ClassNotFoundException(null, e);
         }

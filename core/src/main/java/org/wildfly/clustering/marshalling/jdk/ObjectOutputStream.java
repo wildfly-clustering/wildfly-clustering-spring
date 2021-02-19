@@ -25,26 +25,31 @@ package org.wildfly.clustering.marshalling.jdk;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.wildfly.clustering.marshalling.Externalizer;
+
 /**
- * An {@link java.io.ObjectInputStream} that annotates classes using a given {@link ClassResolver}.
+ * An {@link java.io.ObjectInputStream} that annotates classes using a given {@link ClassLoaderResolver}.
  * @author Paul Ferraro
  */
 public class ObjectOutputStream extends java.io.ObjectOutputStream {
 
-    private final ClassResolver resolver;
+    private final Externalizer<ClassLoader> externalizer;
 
-    public ObjectOutputStream(OutputStream output, ClassResolver resolver) throws IOException {
+    public ObjectOutputStream(OutputStream output, Externalizer<ClassLoader> externalizer) throws IOException {
         super(output);
-        this.resolver = resolver;
+        this.externalizer = externalizer;
     }
 
     @Override
     protected void annotateClass(Class<?> targetClass) throws IOException {
-        this.resolver.annotateClass(this, targetClass);
+        this.externalizer.writeObject(this, targetClass.getClassLoader());
     }
 
     @Override
     protected void annotateProxyClass(Class<?> proxyClass) throws IOException {
-        this.resolver.annotateClass(this, proxyClass);
+        for (Class<?> interfaceClass : proxyClass.getInterfaces()) {
+            this.externalizer.writeObject(this, interfaceClass.getClassLoader());
+        }
+        this.externalizer.writeObject(this, proxyClass.getClassLoader());
     }
 }

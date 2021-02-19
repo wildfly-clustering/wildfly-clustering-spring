@@ -30,6 +30,7 @@ import java.io.ObjectOutput;
 import java.io.OutputStream;
 import java.io.Serializable;
 
+import org.wildfly.clustering.marshalling.Externalizer;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 
 /**
@@ -38,10 +39,10 @@ import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
  * @author Paul Ferraro
  */
 public class JavaByteBufferMarshaller implements ByteBufferMarshaller {
-    private final ClassResolver resolver;
+    private final Externalizer<ClassLoader> externalizer;
 
-    public JavaByteBufferMarshaller(ClassResolver resolver) {
-        this.resolver = resolver;
+    public JavaByteBufferMarshaller(Externalizer<ClassLoader> externalizer) {
+        this.externalizer = externalizer;
     }
 
     @Override
@@ -51,7 +52,7 @@ public class JavaByteBufferMarshaller implements ByteBufferMarshaller {
 
     @Override
     public Object readFrom(InputStream in) throws IOException {
-        try (ObjectInput input = new ObjectInputStream(in, this.resolver)) {
+        try (ObjectInput input = new ObjectInputStream(in, this.externalizer)) {
             return input.readObject();
         } catch (ClassNotFoundException e) {
             InvalidClassException exception = new InvalidClassException(e.getMessage());
@@ -62,7 +63,7 @@ public class JavaByteBufferMarshaller implements ByteBufferMarshaller {
 
     @Override
     public void writeTo(OutputStream out, Object object) throws IOException {
-        try (ObjectOutput output = new ObjectOutputStream(out, this.resolver)) {
+        try (ObjectOutput output = new ObjectOutputStream(out, this.externalizer)) {
             output.writeObject(object);
         }
     }
