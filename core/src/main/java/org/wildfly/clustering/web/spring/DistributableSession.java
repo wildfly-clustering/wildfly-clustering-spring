@@ -38,6 +38,7 @@ public class DistributableSession<B extends Batch> implements org.springframewor
 
     private final SessionManager<Void, B> manager;
     private final B batch;
+    private final Instant startTime;
 
     private volatile Session<Void> session;
 
@@ -45,6 +46,7 @@ public class DistributableSession<B extends Batch> implements org.springframewor
         this.manager = manager;
         this.session = session;
         this.batch = batch;
+        this.startTime = session.getMetaData().isNew() ? session.getMetaData().getCreationTime() : Instant.now();
     }
 
     @Override
@@ -58,7 +60,7 @@ public class DistributableSession<B extends Batch> implements org.springframewor
                 newSession.getAttributes().setAttribute(name, oldSession.getAttributes().getAttribute(name));
             }
             newSession.getMetaData().setMaxInactiveInterval(oldSession.getMetaData().getMaxInactiveInterval());
-            newSession.getMetaData().setLastAccessedTime(oldSession.getMetaData().getLastAccessedTime());
+            newSession.getMetaData().setLastAccess(oldSession.getMetaData().getLastAccessStartTime(), oldSession.getMetaData().getLastAccessEndTime());
             this.session = newSession;
             oldSession.invalidate();
         }
@@ -92,7 +94,7 @@ public class DistributableSession<B extends Batch> implements org.springframewor
     @Override
     public Instant getLastAccessedTime() {
         validate(this.session);
-        return this.session.getMetaData().getLastAccessedTime();
+        return this.session.getMetaData().getLastAccessStartTime();
     }
 
     @Override
@@ -125,8 +127,7 @@ public class DistributableSession<B extends Batch> implements org.springframewor
 
     @Override
     public void setLastAccessedTime(Instant instant) {
-        validate(this.session);
-        this.session.getMetaData().setLastAccessedTime(instant);
+        // We've already captured this
     }
 
     @Override
@@ -148,6 +149,9 @@ public class DistributableSession<B extends Batch> implements org.springframewor
 
     @Override
     public void close() {
+        // According to §7.6 of the servlet specification:
+        // The session is considered to be accessed when a request that is part of the session is first handled by the servlet container.
+        this.session.getMetaData().setLastAccess(this.startTime, Instant.now());
         this.session.close();
     }
 }

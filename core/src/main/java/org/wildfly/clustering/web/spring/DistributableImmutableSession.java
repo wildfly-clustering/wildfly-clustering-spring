@@ -83,7 +83,7 @@ public class DistributableImmutableSession implements Session {
 
     @Override
     public Instant getLastAccessedTime() {
-        return this.session.getMetaData().getLastAccessedTime();
+        return this.session.getMetaData().getLastAccessStartTime();
     }
 
     @Override
