@@ -24,10 +24,9 @@ package org.wildfly.clustering.web.spring.annotation;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.AnnotationAttributes;
@@ -40,9 +39,9 @@ import org.springframework.session.Session;
  * Spring configuration bean for an indexed distributable session repository.
  * @author Paul Ferraro
  */
-public abstract class IndexedHttpSessionConfiguration extends HttpSessionConfiguration {
+public class IndexedHttpSessionConfiguration extends HttpSessionConfiguration {
 
-    private Set<String> indexes = Collections.singleton(FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME);
+    private Map<String, String> indexes = Collections.singletonMap("SPRING_SECURITY_CONTEXT", FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME);
     private IndexResolver<Session> resolver = new PrincipalNameIndexResolver<>();
 
     protected IndexedHttpSessionConfiguration(Class<? extends Annotation> annotationClass) {
@@ -50,7 +49,7 @@ public abstract class IndexedHttpSessionConfiguration extends HttpSessionConfigu
     }
 
     @Override
-    public Set<String> getIndexes() {
+    public Map<String, String> getIndexes() {
         return this.indexes;
     }
 
@@ -60,8 +59,8 @@ public abstract class IndexedHttpSessionConfiguration extends HttpSessionConfigu
     }
 
     @Autowired(required = false)
-    public void setIndexes(String[] indexes) {
-        this.indexes = new TreeSet<>(Arrays.asList(indexes));
+    public void setIndexes(Map<String, String> indexes) {
+        this.indexes = indexes;
     }
 
     @Autowired(required = false)
@@ -69,20 +68,20 @@ public abstract class IndexedHttpSessionConfiguration extends HttpSessionConfigu
         this.resolver = resolver;
     }
 
-    @Autowired(required = false)
-    public void setIndexResolverClass(@SuppressWarnings("rawtypes") Class<? extends IndexResolver> resolverClass) {
+    @Override
+    public void accept(AnnotationAttributes attributes) {
+        super.accept(attributes);
+        AnnotationAttributes indexing = attributes.getAnnotation("indexing");
+        Map<String, String> indexes = new TreeMap<>();
+        for (AnnotationAttributes index : indexing.getAnnotationArray("indexes")) {
+            indexes.put(index.getString("id"), index.getString("name"));
+        }
+        this.indexes = indexes;
+        Class<? extends IndexResolver<Session>> resolverClass = indexing.getClass("resolverClass");
         try {
             this.resolver = resolverClass.getConstructor().newInstance();
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new IllegalArgumentException(resolverClass.getCanonicalName());
         }
-    }
-
-    @Override
-    public void accept(AnnotationAttributes attributes) {
-        super.accept(attributes);
-        AnnotationAttributes indexing = attributes.getAnnotation("indexing");
-        this.setIndexes(indexing.getStringArray("indexes"));
-        this.setIndexResolverClass(indexing.getClass("resolverClass"));
     }
 }

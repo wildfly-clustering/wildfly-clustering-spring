@@ -36,6 +36,21 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Documented
 public @interface HotRod {
+    /**
+     * The HotRod URI.
+     * @return a HotRod URI.
+     */
     String uri();
+
+    /**
+     * The Infinispan server configuration template from which to create a remote cache.
+     * @return an Infinispan server template
+     */
     String template() default "org.infinispan.DIST_SYNC";
+
+    /**
+     * The HotRod client properties.
+     * @return an array of HotRod client properties.
+     */
+    Property[] properties() default {};
 }
