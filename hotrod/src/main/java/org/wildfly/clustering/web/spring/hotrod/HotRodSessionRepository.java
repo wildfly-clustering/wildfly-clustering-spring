@@ -25,8 +25,11 @@ package org.wildfly.clustering.web.spring.hotrod;
 import java.net.URI;
 import java.time.Duration;
 import java.util.EnumSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 import java.util.ServiceLoader;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import javax.servlet.ServletContext;
@@ -43,6 +46,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.session.SessionRepository;
+import org.springframework.session.events.SessionDestroyedEvent;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.ee.CompositeIterable;
@@ -73,6 +77,8 @@ import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.session.SpecificationProvider;
 import org.wildfly.clustering.web.spring.DistributableSession;
 import org.wildfly.clustering.web.spring.DistributableSessionRepository;
+import org.wildfly.clustering.web.spring.DistributableSessionRepositoryConfiguration;
+import org.wildfly.clustering.web.spring.ImmutableSessionDestroyAction;
 import org.wildfly.clustering.web.spring.ImmutableSessionExpirationListener;
 import org.wildfly.clustering.web.spring.SpringSpecificationProvider;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -83,9 +89,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 public class HotRodSessionRepository implements SessionRepository<DistributableSession<TransactionBatch>>, InitializingBean, DisposableBean, LocalContextFactory<Void>, Registrar<String>, Registration {
 
     private final HotRodSessionRepositoryConfiguration configuration;
-    private volatile RemoteCacheContainer container;
-    private volatile SessionManagerFactory<ServletContext, Void, TransactionBatch> managerFactory;
-    private volatile SessionManager<Void, TransactionBatch> manager;
+    private final List<Runnable> stopTasks = new LinkedList<>();
     private volatile SessionRepository<DistributableSession<TransactionBatch>> repository;
 
     public HotRodSessionRepository(HotRodSessionRepositoryConfiguration configuration) {
@@ -114,7 +118,7 @@ public class HotRodSessionRepository implements SessionRepository<DistributableS
 
         RemoteCacheContainer container = new RemoteCacheManager(this.getClass().getName(), configuration, this);
         container.start();
-        this.container = container;
+        this.stopTasks.add(container::stop);
 
         ByteBufferMarshaller marshaller = this.configuration.getMarshallerFactory().apply(context.getClassLoader());
         MarshalledValueFactory<ByteBufferMarshaller> marshalledValueFactory = new ByteBufferMarshalledValueFactory(marshaller);
@@ -172,7 +176,8 @@ public class HotRodSessionRepository implements SessionRepository<DistributableS
             }
         };
 
-        this.managerFactory = new HotRodSessionManagerFactory<>(sessionManagerFactoryConfig);
+        SessionManagerFactory<ServletContext, Void, TransactionBatch> managerFactory = new HotRodSessionManagerFactory<>(sessionManagerFactoryConfig);
+        this.stopTasks.add(managerFactory::close);
 
         Supplier<String> factory = this.configuration.getIdentifierFactory();
         IdentifierFactory<String> identifierFactory = new IdentifierFactory<String>() {
@@ -214,24 +219,54 @@ public class HotRodSessionRepository implements SessionRepository<DistributableS
                 return null;
             }
         };
-        this.manager = this.managerFactory.createSessionManager(sessionManagerConfiguration);
-        Duration timeout = Duration.ofMinutes(context.getSessionTimeout());
-        Optional<Duration> defaultTimeout = Optional.empty();
+        SessionManager<Void, TransactionBatch> manager = managerFactory.createSessionManager(sessionManagerConfiguration);
+        Optional<Duration> defaultTimeout = setDefaultMaxInactiveInterval(manager, Duration.ofMinutes(context.getSessionTimeout()));
+        manager.start();
+        this.stopTasks.add(manager::stop);
+        Consumer<ImmutableSession> sessionDestroyAction = new ImmutableSessionDestroyAction(publisher, SessionDestroyedEvent::new, context);
+        this.repository = new DistributableSessionRepository<>(new DistributableSessionRepositoryConfiguration<TransactionBatch>() {
+            @Override
+            public SessionManager<Void, TransactionBatch> getSessionManager() {
+                return manager;
+            }
+
+            @Override
+            public Optional<Duration> getDefaultTimeout() {
+                return defaultTimeout;
+            }
+
+            @Override
+            public ApplicationEventPublisher getEventPublisher() {
+                return publisher;
+            }
+
+            @Override
+            public ServletContext getServletContext() {
+                return context;
+            }
+
+            @Override
+            public Consumer<ImmutableSession> getSessionDestroyAction() {
+                return sessionDestroyAction;
+            }
+        });
+    }
+
+    private static Optional<Duration> setDefaultMaxInactiveInterval(SessionManager<Void, TransactionBatch> manager, Duration timeout) {
         try {
-            this.manager.setDefaultMaxInactiveInterval(timeout);
+            manager.setDefaultMaxInactiveInterval(timeout);
+            return Optional.empty();
         } catch (NoSuchMethodError error) {
             // Servlet version < 4.0
-            defaultTimeout = Optional.of(timeout);
+            return Optional.of(timeout);
         }
-        this.manager.start();
-        this.repository = new DistributableSessionRepository<>(this.manager, defaultTimeout, publisher, context);
     }
 
     @Override
     public void destroy() throws Exception {
-        this.manager.stop();
-        this.managerFactory.close();
-        this.container.stop();
+        for (Runnable task : this.stopTasks) {
+            task.run();
+        }
     }
 
     @Override

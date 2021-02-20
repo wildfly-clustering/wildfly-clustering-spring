@@ -26,12 +26,9 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import javax.servlet.ServletContext;
-
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.session.SessionRepository;
 import org.springframework.session.events.SessionCreatedEvent;
-import org.springframework.session.events.SessionDestroyedEvent;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.session.ImmutableSession;
@@ -51,11 +48,11 @@ public class DistributableSessionRepository<B extends Batch> implements SessionR
     private final Optional<Duration> defaultTimeout;
     private final Consumer<ImmutableSession> destroyAction;
 
-    public DistributableSessionRepository(SessionManager<Void, B> manager, Optional<Duration> defaultTimeout, ApplicationEventPublisher publisher, ServletContext context) {
-        this.manager = manager;
-        this.defaultTimeout = defaultTimeout;
-        this.publisher = publisher;
-        this.destroyAction = new ImmutableSessionDestroyAction(publisher, SessionDestroyedEvent::new, context);
+    public DistributableSessionRepository(DistributableSessionRepositoryConfiguration<B> configuration) {
+        this.manager = configuration.getSessionManager();
+        this.defaultTimeout = configuration.getDefaultTimeout();
+        this.publisher = configuration.getEventPublisher();
+        this.destroyAction = configuration.getSessionDestroyAction();
     }
 
     @Override
