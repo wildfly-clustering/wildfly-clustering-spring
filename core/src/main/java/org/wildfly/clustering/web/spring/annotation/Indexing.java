@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring.hotrod.annotation;
+package org.wildfly.clustering.web.spring.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -28,20 +28,27 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.wildfly.clustering.web.spring.annotation.SessionManager;
+import org.springframework.session.IndexResolver;
+import org.springframework.session.PrincipalNameIndexResolver;
 
 /**
- * Configures a session repository whose sessions are persisted to a remote Infinispan cluster accessed via HotRod.
+ * Configures the indexing characteristics of an indexed session repository.
  * @author Paul Ferraro
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Import(HotRodHttpSessionConfiguration.class)
-@Configuration(proxyBeanMethods = false)
-public @interface EnableHotRodHttpSession {
-    HotRod config();
-    SessionManager manager();
+public @interface Indexing {
+    /**
+     * The indexes recognized by this session repository.  Default indexes only includes the Spring Security principal.
+     * @return an array of index names
+     */
+    String[] indexes() default { "org.springframework.session.FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME" };
+
+    /**
+     * The index resolver class name.  Default resolver only resolves the Spring Security principal.
+     * @return an index resolver class.
+     */
+    @SuppressWarnings("rawtypes")
+    Class<? extends IndexResolver> resolverClass() default PrincipalNameIndexResolver.class;
 }

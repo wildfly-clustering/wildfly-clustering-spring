@@ -94,7 +94,7 @@ public class MyHttpSessionApplicationInitializer extends AbstractHttpSessionAppl
 
 ```java
 // Spring Session repository configuration
-@EnableHotRodHttpSession(uri = "hotrod://127.0.0.1:11222?tcp_keep_alive=true")
+@EnableHotRodHttpSession(config = @HotRod(uri = "hotrod://127.0.0.1:11222?tcp_keep_alive=true"), manager = @SessionManager(granularity = SessionPersistenceGranularity.ATTRIBUTE))
 public class Config {
 	// ...
 }

@@ -22,28 +22,30 @@
 
 package org.wildfly.clustering.web.spring;
 
-import java.time.Duration;
-import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import javax.servlet.ServletContext;
 
-import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.session.IndexResolver;
 import org.springframework.session.Session;
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.web.session.ImmutableSession;
-import org.wildfly.clustering.web.session.SessionManager;
+import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
+import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
 
 /**
+ * Configuration for a session repository.
  * @author Paul Ferraro
  */
-public interface DistributableSessionRepositoryConfiguration<B extends Batch> {
-    SessionManager<Void, B> getSessionManager();
-    Optional<Duration> getDefaultTimeout();
+public interface SessionRepositoryConfiguration {
+
+    Integer getMaxActiveSessions();
+    SessionAttributePersistenceStrategy getPersistenceStrategy();
+    Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory();
+    Supplier<String> getIdentifierFactory();
     ApplicationEventPublisher getEventPublisher();
     ServletContext getServletContext();
-    BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> getSessionDestroyAction();
-    IndexingConfiguration<B> getIndexingConfiguration();
+    Set<String> getIndexes();
+    IndexResolver<Session> getIndexResolver();
 }

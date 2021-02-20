@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -30,23 +30,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationAttributes;
-import org.wildfly.clustering.web.spring.annotation.HttpSessionConfiguration;
+import org.wildfly.clustering.web.spring.annotation.IndexedHttpSessionConfiguration;
 import org.wildfly.clustering.web.spring.hotrod.HotRodSessionRepository;
 import org.wildfly.clustering.web.spring.hotrod.HotRodSessionRepositoryConfiguration;
 
 /**
- * Spring configuration bean for a session repository whose sessions are persisted to a remote Infinispan cluster accessed via HotRod.
+ * Spring configuration bean for an indexed session repository whose sessions are persisted to a remote Infinispan cluster accessed via HotRod.
  * @author Paul Ferraro
  */
 @Configuration(proxyBeanMethods = false)
-public class HotRodHttpSessionConfiguration extends HttpSessionConfiguration implements HotRodSessionRepositoryConfiguration {
+public class IndexedHotRodHttpSessionConfiguration extends IndexedHttpSessionConfiguration implements HotRodSessionRepositoryConfiguration {
 
     private URI uri;
     private Properties properties = new Properties();
     private String templateName = DefaultTemplate.DIST_SYNC.getTemplateName();
 
-    public HotRodHttpSessionConfiguration() {
-        super(EnableHotRodHttpSession.class);
+    public IndexedHotRodHttpSessionConfiguration() {
+        super(EnableIndexedHotRodHttpSession.class);
     }
 
     @Bean

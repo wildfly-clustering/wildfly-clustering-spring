@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,19 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring.hotrod;
+package org.wildfly.clustering.web.spring.hotrod.annotation;
 
-import java.net.URI;
-import java.util.Properties;
-
-import org.wildfly.clustering.web.spring.SessionRepositoryConfiguration;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Configuration for a session repository whose sessions are persisted to a remote Infinispan cluster accessed via HotRod.
+ * Configures the HotRod client used by a session repository. 
  * @author Paul Ferraro
  */
-public interface HotRodSessionRepositoryConfiguration extends SessionRepositoryConfiguration {
-    URI getUri();
-    Properties getProperties();
-    String getTemplateName();
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+@Documented
+public @interface HotRod {
+    String uri();
+    String template() default "org.infinispan.DIST_SYNC";
 }

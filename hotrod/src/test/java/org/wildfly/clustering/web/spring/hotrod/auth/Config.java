@@ -20,17 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring.hotrod.context;
+package org.wildfly.clustering.web.spring.hotrod.auth;
+
+import org.wildfly.clustering.web.spring.SessionMarshallerFactory;
+import org.wildfly.clustering.web.spring.SessionPersistenceGranularity;
+import org.wildfly.clustering.web.spring.annotation.Indexing;
+import org.wildfly.clustering.web.spring.annotation.SessionManager;
+import org.wildfly.clustering.web.spring.hotrod.annotation.EnableIndexedHotRodHttpSession;
+import org.wildfly.clustering.web.spring.hotrod.annotation.HotRod;
 
 /**
- * A custom {@link org.springframework.web.context.ContextLoaderListener} that configures a Spring web application context via specified annotations.
+ * Test configuration for session manager.
  * @author Paul Ferraro
- * @deprecated Replaced by {@link org.wildfly.clustering.web.spring.context.ContextLoaderListener} instead.
  */
-@Deprecated
-public class ContextLoaderListener extends org.wildfly.clustering.web.spring.context.ContextLoaderListener {
+@EnableIndexedHotRodHttpSession(config = @HotRod(uri = "hotrod://127.0.0.1:11222", template = "default"), manager = @SessionManager(marshallerFactory = SessionMarshallerFactory.JBOSS, granularity = SessionPersistenceGranularity.ATTRIBUTE, maxActiveSessions = 100), indexing = @Indexing)
+public class Config {
 
-    public ContextLoaderListener(Class<?>... componentClasses) {
-        super(componentClasses);
-    }
 }

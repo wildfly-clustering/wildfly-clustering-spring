@@ -24,28 +24,38 @@ package org.wildfly.clustering.web.spring;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.BatchContext;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
+import org.wildfly.clustering.web.sso.SSO;
+import org.wildfly.clustering.web.sso.SSOManager;
 
 /**
+ * Spring Session implementation that delegates to a {@link Session} instance.
  * @author Paul Ferraro
  */
-public class DistributableSession<B extends Batch> implements org.springframework.session.Session, AutoCloseable {
+public class DistributableSession<B extends Batch> implements SpringSession {
 
     private final SessionManager<Void, B> manager;
     private final B batch;
     private final Instant startTime;
+    private final IndexingConfiguration<B> indexing;
+    private final AtomicBoolean closed = new AtomicBoolean(false);
 
     private volatile Session<Void> session;
 
-    public DistributableSession(SessionManager<Void, B> manager, Session<Void> session, B batch) {
+    public DistributableSession(SessionManager<Void, B> manager, Session<Void> session, B batch, IndexingConfiguration<B> indexing) {
         this.manager = manager;
         this.session = session;
         this.batch = batch;
+        this.indexing = indexing;
         this.startTime = session.getMetaData().isNew() ? session.getMetaData().getCreationTime() : Instant.now();
     }
 
@@ -64,6 +74,22 @@ public class DistributableSession<B extends Batch> implements org.springframewor
             this.session = newSession;
             oldSession.invalidate();
         }
+
+        // Update indexes
+        Map<String, String> indexes = this.indexing.getIndexResolver().resolveIndexesFor(this);
+        for (Map.Entry<String, String> entry : indexes.entrySet()) {
+            SSOManager<Void, String, String, Void, B> manager = this.indexing.getSSOManagers().get(entry.getKey());
+            if (manager != null) {
+                try (B batch = manager.getBatcher().createBatch()) {
+                    SSO<Void, String, String, Void> sso = manager.findSSO(entry.getValue());
+                    if (sso != null) {
+                        sso.getSessions().removeSession(oldSession.getId());
+                        sso.getSessions().addSession(id, id);
+                    }
+                }
+            }
+        }
+
         return id;
     }
 
@@ -111,18 +137,46 @@ public class DistributableSession<B extends Batch> implements org.springframewor
 
     @Override
     public void removeAttribute(String name) {
-        validate(this.session);
-        this.session.getAttributes().removeAttribute(name);
-        // N.B. org.springframework.session.web.http.HttpSessionAdapter already triggers HttpSessionBindingListener events
-        // However, Spring Session violates the servlet specification by not triggering HttpSessionAttributeListener events
+        this.setAttribute(name, null);
     }
 
     @Override
     public void setAttribute(String name, Object value) {
         validate(this.session);
+
+        Map<String, String> oldIndexes = this.indexing.getIndexResolver().resolveIndexesFor(this);
+
         this.session.getAttributes().setAttribute(name, value);
         // N.B. org.springframework.session.web.http.HttpSessionAdapter already triggers HttpSessionBindingListener events
         // However, Spring Session violates the servlet specification by not triggering HttpSessionAttributeListener events
+
+        // Update indexes
+        Map<String, String> indexes = this.indexing.getIndexResolver().resolveIndexesFor(this);
+        if (!oldIndexes.isEmpty() || !indexes.isEmpty()) {
+            Set<String> indexNames = new TreeSet<>();
+            indexNames.addAll(oldIndexes.keySet());
+            indexNames.addAll(indexes.keySet());
+            for (String indexName : indexNames) {
+                String oldIndexValue = oldIndexes.get(indexName);
+                String indexValue = indexes.get(indexName);
+                if (!Objects.equals(indexValue, oldIndexValue)) {
+                    SSOManager<Void, String, String, Void, B> manager = this.indexing.getSSOManagers().get(indexName);
+                    try (B batch = manager.getBatcher().createBatch()) {
+                        if (oldIndexValue != null) {
+                            SSO<Void, String, String, Void> sso = manager.findSSO(oldIndexValue);
+                            if (sso != null) {
+                                sso.invalidate();
+                            }
+                        }
+                        if (indexValue != null) {
+                            String sessionId = this.getId();
+                            SSO<Void, String, String, Void> sso = manager.createSSO(indexValue, null);
+                            sso.getSessions().addSession(sessionId, sessionId);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -149,9 +203,12 @@ public class DistributableSession<B extends Batch> implements org.springframewor
 
     @Override
     public void close() {
-        // According to §7.6 of the servlet specification:
-        // The session is considered to be accessed when a request that is part of the session is first handled by the servlet container.
-        this.session.getMetaData().setLastAccess(this.startTime, Instant.now());
-        this.session.close();
+        // Workaround for WFLY-14466
+        if (this.closed.compareAndSet(false, true)) {
+            // According to §7.6 of the servlet specification:
+            // The session is considered to be accessed when a request that is part of the session is first handled by the servlet container.
+            this.session.getMetaData().setLastAccess(this.startTime, Instant.now());
+            this.session.close();
+        }
     }
 }

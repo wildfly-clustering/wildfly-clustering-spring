@@ -23,32 +23,35 @@
 package org.wildfly.clustering.web.spring;
 
 import java.util.concurrent.Executor;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 
 import javax.servlet.ServletContext;
 
 import org.jboss.as.clustering.context.ContextClassLoaderReference;
 import org.jboss.as.clustering.context.ContextReferenceExecutor;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.session.Session;
 import org.springframework.session.events.SessionExpiredEvent;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
 
 /**
+ * Executes a destroy action using the classloader of the servlet context.
  * @author Paul Ferraro
  */
 public class ImmutableSessionExpirationListener implements SessionExpirationListener {
 
-    private final Consumer<ImmutableSession> expireAction;
+    private final BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> destroyAction;
     private final Executor executor;
 
-    public ImmutableSessionExpirationListener(ApplicationEventPublisher publisher, ServletContext context) {
-        this.expireAction = new ImmutableSessionDestroyAction(publisher, SessionExpiredEvent::new, context);
+    public ImmutableSessionExpirationListener(ServletContext context, BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> destroyAction) {
+        this.destroyAction = destroyAction;
         this.executor = new ContextReferenceExecutor<>(context.getClassLoader(), ContextClassLoaderReference.INSTANCE);
     }
 
     @Override
     public void sessionExpired(ImmutableSession session) {
-        this.executor.execute(() -> this.expireAction.accept(session));
+        this.executor.execute(() -> this.destroyAction.accept(session, SessionExpiredEvent::new));
     }
 }

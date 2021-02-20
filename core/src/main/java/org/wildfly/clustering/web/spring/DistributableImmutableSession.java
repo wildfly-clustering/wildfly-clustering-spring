@@ -26,13 +26,13 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Set;
 
-import org.springframework.session.Session;
 import org.wildfly.clustering.web.session.ImmutableSession;
 
 /**
+ * Immutable session implementation for use by {@link org.springframework.session.FindByIndexNameSessionRepository#findByIndexNameAndIndexValue(String, String)}.
  * @author Paul Ferraro
  */
-public class DistributableImmutableSession implements Session {
+public class DistributableImmutableSession implements SpringSession {
 
     private final ImmutableSession session;
 
@@ -99,5 +99,10 @@ public class DistributableImmutableSession implements Session {
     @Override
     public boolean isExpired() {
         return this.session.getMetaData().isExpired();
+    }
+
+    @Override
+    public void close() {
+        // Nothing to do
     }
 }

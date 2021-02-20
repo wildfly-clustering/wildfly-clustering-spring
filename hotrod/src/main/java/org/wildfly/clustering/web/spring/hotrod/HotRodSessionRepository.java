@@ -24,12 +24,18 @@ package org.wildfly.clustering.web.spring.hotrod;
 
 import java.net.URI;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
-import java.util.function.Consumer;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 import javax.servlet.ServletContext;
@@ -44,9 +50,11 @@ import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.infinispan.client.hotrod.impl.HotRodURI;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.session.SessionRepository;
-import org.springframework.session.events.SessionDestroyedEvent;
+import org.springframework.session.FindByIndexNameSessionRepository;
+import org.springframework.session.IndexResolver;
+import org.springframework.session.Session;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.ee.CompositeIterable;
@@ -67,6 +75,8 @@ import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.hotrod.session.HotRodSessionManagerFactory;
 import org.wildfly.clustering.web.hotrod.session.HotRodSessionManagerFactoryConfiguration;
 import org.wildfly.clustering.web.hotrod.session.SessionManagerNearCacheFactory;
+import org.wildfly.clustering.web.hotrod.sso.HotRodSSOManagerFactory;
+import org.wildfly.clustering.web.hotrod.sso.HotRodSSOManagerFactoryConfiguration;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.SessionAttributeImmutability;
 import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
@@ -75,22 +85,27 @@ import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionManagerConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.session.SpecificationProvider;
-import org.wildfly.clustering.web.spring.DistributableSession;
+import org.wildfly.clustering.web.spring.SpringSession;
 import org.wildfly.clustering.web.spring.DistributableSessionRepository;
 import org.wildfly.clustering.web.spring.DistributableSessionRepositoryConfiguration;
 import org.wildfly.clustering.web.spring.ImmutableSessionDestroyAction;
 import org.wildfly.clustering.web.spring.ImmutableSessionExpirationListener;
+import org.wildfly.clustering.web.spring.IndexingConfiguration;
 import org.wildfly.clustering.web.spring.SpringSpecificationProvider;
+import org.wildfly.clustering.web.sso.SSOManager;
+import org.wildfly.clustering.web.sso.SSOManagerConfiguration;
+import org.wildfly.clustering.web.sso.SSOManagerFactory;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
+ * A session repository whose sessions are persisted to a remote Infinispan cluster accessed via HotRod.
  * @author Paul Ferraro
  */
-public class HotRodSessionRepository implements SessionRepository<DistributableSession<TransactionBatch>>, InitializingBean, DisposableBean, LocalContextFactory<Void>, Registrar<String>, Registration {
+public class HotRodSessionRepository implements FindByIndexNameSessionRepository<SpringSession>, InitializingBean, DisposableBean, LocalContextFactory<Void>, Registrar<String>, Registration {
 
     private final HotRodSessionRepositoryConfiguration configuration;
     private final List<Runnable> stopTasks = new LinkedList<>();
-    private volatile SessionRepository<DistributableSession<TransactionBatch>> repository;
+    private volatile FindByIndexNameSessionRepository<SpringSession> repository;
 
     public HotRodSessionRepository(HotRodSessionRepositoryConfiguration configuration) {
         this.configuration = configuration;
@@ -126,7 +141,7 @@ public class HotRodSessionRepository implements SessionRepository<DistributableS
         ServiceLoader<Immutability> loadedImmutability = ServiceLoader.load(Immutability.class, Immutability.class.getClassLoader());
         Immutability immutability = new CompositeImmutability(new CompositeIterable<>(EnumSet.allOf(DefaultImmutability.class), EnumSet.allOf(SessionAttributeImmutability.class), loadedImmutability));
 
-        HotRodSessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, ByteBufferMarshaller, Void> sessionManagerFactoryConfig = new HotRodSessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, ByteBufferMarshaller, Void>() {
+        SessionManagerFactory<ServletContext, Void, TransactionBatch> managerFactory = new HotRodSessionManagerFactory<>(new HotRodSessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, ByteBufferMarshaller, Void>() {
             @Override
             public Integer getMaxActiveSessions() {
                 return maxActiveSessions;
@@ -174,9 +189,7 @@ public class HotRodSessionRepository implements SessionRepository<DistributableS
             public SpecificationProvider<HttpSession, ServletContext, HttpSessionActivationListener> getSpecificationProvider() {
                 return SpringSpecificationProvider.INSTANCE;
             }
-        };
-
-        SessionManagerFactory<ServletContext, Void, TransactionBatch> managerFactory = new HotRodSessionManagerFactory<>(sessionManagerFactoryConfig);
+        });
         this.stopTasks.add(managerFactory::close);
 
         Supplier<String> factory = this.configuration.getIdentifierFactory();
@@ -194,10 +207,56 @@ public class HotRodSessionRepository implements SessionRepository<DistributableS
             public void stop() {
             }
         };
-        ApplicationEventPublisher publisher = this.configuration.getEventPublisher();
-        SessionExpirationListener expirationListener = new ImmutableSessionExpirationListener(publisher, context);
 
-        SessionManagerConfiguration<ServletContext> sessionManagerConfiguration = new SessionManagerConfiguration<ServletContext>() {
+        Set<String> indexes = this.configuration.getIndexes();
+        Map<String, SSOManager<Void, String, String, Void, TransactionBatch>> managers = indexes.isEmpty() ? Collections.emptyMap() : new HashMap<>();
+        for (String indexName : indexes) {
+            configuration.addRemoteCache(indexName, builder -> builder.forceReturnValues(false).nearCacheMode(NearCacheMode.DISABLED).transactionMode(TransactionMode.NONE).templateName(templateName));
+
+            SSOManagerFactory<Void, String, String, TransactionBatch> ssoManagerFactory = new HotRodSSOManagerFactory<>(new HotRodSSOManagerFactoryConfiguration() {
+                @Override
+                public <K, V> RemoteCache<K, V> getRemoteCache() {
+                    return container.getCache(indexName);
+                }
+            });
+
+            SSOManager<Void, String, String, Void, TransactionBatch> ssoManager = ssoManagerFactory.createSSOManager(new SSOManagerConfiguration<ByteBufferMarshaller, Void>() {
+                @Override
+                public IdentifierFactory<String> getIdentifierFactory() {
+                    return identifierFactory;
+                }
+
+                @Override
+                public MarshalledValueFactory<ByteBufferMarshaller> getMarshalledValueFactory() {
+                    return marshalledValueFactory;
+                }
+
+                @Override
+                public LocalContextFactory<Void> getLocalContextFactory() {
+                    return HotRodSessionRepository.this;
+                }
+            });
+            managers.put(indexName, ssoManager);
+        }
+        IndexResolver<Session> resolver = this.configuration.getIndexResolver();
+        IndexingConfiguration<TransactionBatch> indexing = new IndexingConfiguration<TransactionBatch>() {
+            @Override
+            public Map<String, SSOManager<Void, String, String, Void, TransactionBatch>> getSSOManagers() {
+                return managers;
+            }
+
+            @Override
+            public IndexResolver<Session> getIndexResolver() {
+                return resolver;
+            }
+        };
+
+        ApplicationEventPublisher publisher = this.configuration.getEventPublisher();
+        BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> sessionDestroyAction = new ImmutableSessionDestroyAction<>(publisher, context, indexing);
+
+        SessionExpirationListener expirationListener = new ImmutableSessionExpirationListener(context, sessionDestroyAction);
+
+        SessionManager<Void, TransactionBatch> manager = managerFactory.createSessionManager(new SessionManagerConfiguration<ServletContext>() {
             @Override
             public ServletContext getServletContext() {
                 return context;
@@ -218,12 +277,11 @@ public class HotRodSessionRepository implements SessionRepository<DistributableS
                 // Spring session has no metrics capability
                 return null;
             }
-        };
-        SessionManager<Void, TransactionBatch> manager = managerFactory.createSessionManager(sessionManagerConfiguration);
+        });
         Optional<Duration> defaultTimeout = setDefaultMaxInactiveInterval(manager, Duration.ofMinutes(context.getSessionTimeout()));
         manager.start();
         this.stopTasks.add(manager::stop);
-        Consumer<ImmutableSession> sessionDestroyAction = new ImmutableSessionDestroyAction(publisher, SessionDestroyedEvent::new, context);
+
         this.repository = new DistributableSessionRepository<>(new DistributableSessionRepositoryConfiguration<TransactionBatch>() {
             @Override
             public SessionManager<Void, TransactionBatch> getSessionManager() {
@@ -246,8 +304,13 @@ public class HotRodSessionRepository implements SessionRepository<DistributableS
             }
 
             @Override
-            public Consumer<ImmutableSession> getSessionDestroyAction() {
+            public BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> getSessionDestroyAction() {
                 return sessionDestroyAction;
+            }
+
+            @Override
+            public IndexingConfiguration<TransactionBatch> getIndexingConfiguration() {
+                return indexing;
             }
         });
     }
@@ -264,8 +327,10 @@ public class HotRodSessionRepository implements SessionRepository<DistributableS
 
     @Override
     public void destroy() throws Exception {
-        for (Runnable task : this.stopTasks) {
-            task.run();
+        // Stop in reverse order
+        ListIterator<Runnable> tasks = this.stopTasks.listIterator(this.stopTasks.size() - 1);
+        while (tasks.hasPrevious()) {
+            tasks.previous().run();
         }
     }
 
@@ -284,12 +349,12 @@ public class HotRodSessionRepository implements SessionRepository<DistributableS
     }
 
     @Override
-    public DistributableSession<TransactionBatch> createSession() {
+    public SpringSession createSession() {
         return this.repository.createSession();
     }
 
     @Override
-    public DistributableSession<TransactionBatch> findById(String id) {
+    public SpringSession findById(String id) {
         return this.repository.findById(id);
     }
 
@@ -299,7 +364,12 @@ public class HotRodSessionRepository implements SessionRepository<DistributableS
     }
 
     @Override
-    public void save(DistributableSession<TransactionBatch> session) {
+    public void save(SpringSession session) {
         this.repository.save(session);
+    }
+
+    @Override
+    public Map<String, SpringSession> findByIndexNameAndIndexValue(String indexName, String indexValue) {
+        return this.repository.findByIndexNameAndIndexValue(indexName, indexValue);
     }
 }
