@@ -20,21 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.jdk;
+package org.wildfly.clustering.web.spring.hotrod.auth;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import org.wildfly.clustering.web.spring.SessionMarshallerFactory;
+import org.wildfly.clustering.web.spring.SessionPersistenceGranularity;
+import org.wildfly.clustering.web.spring.annotation.Indexing;
+import org.wildfly.clustering.web.spring.annotation.SessionManager;
+import org.wildfly.clustering.web.spring.hotrod.annotation.EnableIndexedHotRodHttpSession;
+import org.wildfly.clustering.web.spring.hotrod.annotation.HotRod;
 
 /**
- * Annotates a resolves {@link Class} instances to/from an object stream.
+ * Test configuration for session manager.
  * @author Paul Ferraro
  */
-public interface ClassResolver {
+@EnableIndexedHotRodHttpSession(config = @HotRod(uri = "hotrod://127.0.0.1:11222", template = "default"), manager = @SessionManager(marshallerFactory = SessionMarshallerFactory.JBOSS, granularity = SessionPersistenceGranularity.ATTRIBUTE, maxActiveSessions = 100), indexing = @Indexing)
+public class Config {
 
-    void annotateClass(ObjectOutput output, Class<?> targetClass) throws IOException;
-
-    Class<?> resolveClass(ObjectInput input, String className) throws IOException, ClassNotFoundException;
-
-    ClassLoader getClassLoader();
 }

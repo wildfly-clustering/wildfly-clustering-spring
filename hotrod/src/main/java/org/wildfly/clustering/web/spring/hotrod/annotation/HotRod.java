@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,24 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring.hotrod.context;
+package org.wildfly.clustering.web.spring.hotrod.annotation;
 
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * A custom {@link org.springframework.web.context.ContextLoaderListener} that configures a Spring web application context via specified annotations.
+ * Configures the HotRod client used by a session repository. 
  * @author Paul Ferraro
  */
-public class ContextLoaderListener extends org.springframework.web.context.ContextLoaderListener {
-
-    public ContextLoaderListener(Class<?>... componentClasses) {
-        super(createWebApplicationContext(componentClasses));
-    }
-
-    private static WebApplicationContext createWebApplicationContext(Class<?>... componentClasses) {
-        AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
-        context.register(componentClasses);
-        return context;
-    }
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+@Documented
+public @interface HotRod {
+    String uri();
+    String template() default "org.infinispan.DIST_SYNC";
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,36 +22,28 @@
 
 package org.wildfly.clustering.web.spring;
 
-import java.util.concurrent.Executor;
+import java.time.Duration;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
 import javax.servlet.ServletContext;
 
-import org.jboss.as.clustering.context.ContextClassLoaderReference;
-import org.jboss.as.clustering.context.ContextReferenceExecutor;
 import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.session.Session;
-import org.springframework.session.events.SessionExpiredEvent;
+import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.web.session.ImmutableSession;
-import org.wildfly.clustering.web.session.SessionExpirationListener;
+import org.wildfly.clustering.web.session.SessionManager;
 
 /**
- * Executes a destroy action using the classloader of the servlet context.
  * @author Paul Ferraro
  */
-public class ImmutableSessionExpirationListener implements SessionExpirationListener {
-
-    private final BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> destroyAction;
-    private final Executor executor;
-
-    public ImmutableSessionExpirationListener(ServletContext context, BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> destroyAction) {
-        this.destroyAction = destroyAction;
-        this.executor = new ContextReferenceExecutor<>(context.getClassLoader(), ContextClassLoaderReference.INSTANCE);
-    }
-
-    @Override
-    public void sessionExpired(ImmutableSession session) {
-        this.executor.execute(() -> this.destroyAction.accept(session, SessionExpiredEvent::new));
-    }
+public interface DistributableSessionRepositoryConfiguration<B extends Batch> {
+    SessionManager<Void, B> getSessionManager();
+    Optional<Duration> getDefaultTimeout();
+    ApplicationEventPublisher getEventPublisher();
+    ServletContext getServletContext();
+    BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> getSessionDestroyAction();
+    IndexingConfiguration<B> getIndexingConfiguration();
 }

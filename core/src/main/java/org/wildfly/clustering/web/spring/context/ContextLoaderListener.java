@@ -20,36 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.marshalling.jdk;
+package org.wildfly.clustering.web.spring.context;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
 /**
- * A {@link ClassResolver} that resolves classes against a given class loader.
+ * A custom {@link org.springframework.web.context.ContextLoaderListener} that configures a Spring web application context via specified annotations.
  * @author Paul Ferraro
  */
-public class ClassLoaderResolver implements ClassResolver {
+public class ContextLoaderListener extends org.springframework.web.context.ContextLoaderListener {
 
-    private final ClassLoader loader;
-
-    public ClassLoaderResolver(ClassLoader loader) {
-        this.loader = loader;
+    public ContextLoaderListener(Class<?>... componentClasses) {
+        super(createWebApplicationContext(componentClasses));
     }
 
-    @Override
-    public void annotateClass(ObjectOutput output, Class<?> targetClass) throws IOException {
-        // Do nothing
-    }
-
-    @Override
-    public Class<?> resolveClass(ObjectInput input, String className) throws IOException, ClassNotFoundException {
-        return this.loader.loadClass(className);
-    }
-
-    @Override
-    public ClassLoader getClassLoader() {
-        return this.loader;
+    private static WebApplicationContext createWebApplicationContext(Class<?>... componentClasses) {
+        AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+        context.register(componentClasses);
+        return context;
     }
 }

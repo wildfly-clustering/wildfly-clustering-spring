@@ -65,7 +65,7 @@ public enum SpringSpecificationProvider implements SpecificationProvider<HttpSes
 
             @Override
             public long getLastAccessedTime() {
-                return session.getMetaData().getLastAccessedTime().toEpochMilli();
+                return session.getMetaData().getLastAccessStartTime().toEpochMilli();
             }
 
             @Override

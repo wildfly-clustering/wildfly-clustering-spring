@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,19 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring.hotrod;
+package org.wildfly.clustering.web.spring;
 
-import java.net.URI;
-import java.util.Properties;
-
-import org.wildfly.clustering.web.spring.SessionRepositoryConfiguration;
+import org.springframework.session.Session;
 
 /**
- * Configuration for a session repository whose sessions are persisted to a remote Infinispan cluster accessed via HotRod.
+ * A session with with an explicit lifecycle.
  * @author Paul Ferraro
  */
-public interface HotRodSessionRepositoryConfiguration extends SessionRepositoryConfiguration {
-    URI getUri();
-    Properties getProperties();
-    String getTemplateName();
+public interface SpringSession extends Session, AutoCloseable {
+
+    /**
+     * To be invoked by {@link org.springframework.session.SessionRepository#save(Session)}.
+     */
+    @Override
+    void close();
 }

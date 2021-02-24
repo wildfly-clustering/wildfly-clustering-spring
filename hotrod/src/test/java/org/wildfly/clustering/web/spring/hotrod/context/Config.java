@@ -24,13 +24,15 @@ package org.wildfly.clustering.web.spring.hotrod.context;
 
 import org.wildfly.clustering.web.spring.SessionMarshallerFactory;
 import org.wildfly.clustering.web.spring.SessionPersistenceGranularity;
+import org.wildfly.clustering.web.spring.annotation.SessionManager;
 import org.wildfly.clustering.web.spring.hotrod.annotation.EnableHotRodHttpSession;
+import org.wildfly.clustering.web.spring.hotrod.annotation.HotRod;
 
 /**
  * Test configuration for session manager.
  * @author Paul Ferraro
  */
-@EnableHotRodHttpSession(uri = "hotrod://127.0.0.1:11222", marshallerFactory = SessionMarshallerFactory.PROTOSTREAM, granularity = SessionPersistenceGranularity.ATTRIBUTE, templateName = "default", maxActiveSessions = 100)
+@EnableHotRodHttpSession(config = @HotRod(uri = "hotrod://127.0.0.1:11222", template = "default"), manager = @SessionManager(marshallerFactory = SessionMarshallerFactory.PROTOSTREAM, granularity = SessionPersistenceGranularity.ATTRIBUTE, maxActiveSessions = 100))
 public class Config {
 
 }

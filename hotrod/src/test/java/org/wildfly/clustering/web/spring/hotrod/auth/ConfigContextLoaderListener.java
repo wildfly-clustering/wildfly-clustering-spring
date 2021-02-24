@@ -20,19 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring.hotrod;
+package org.wildfly.clustering.web.spring.hotrod.auth;
 
-import java.net.URI;
-import java.util.Properties;
-
-import org.wildfly.clustering.web.spring.SessionRepositoryConfiguration;
+import javax.servlet.annotation.WebListener;
 
 /**
- * Configuration for a session repository whose sessions are persisted to a remote Infinispan cluster accessed via HotRod.
+ * Custom servlet context listener that uses annotation-based registration, using our Config.
  * @author Paul Ferraro
  */
-public interface HotRodSessionRepositoryConfiguration extends SessionRepositoryConfiguration {
-    URI getUri();
-    Properties getProperties();
-    String getTemplateName();
+@WebListener
+public class ConfigContextLoaderListener extends org.wildfly.clustering.web.spring.context.ContextLoaderListener {
+
+    public ConfigContextLoaderListener() {
+        super(SecurityConfig.class, Config.class);
+    }
 }

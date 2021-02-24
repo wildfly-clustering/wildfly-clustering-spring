@@ -74,9 +74,8 @@ public class AnnotationSmokeITCase extends AbstractSmokeITCase {
                 ;
     }
 
-    @Override
     @Test
     public void test(@ArquillianResource(SessionServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1, @ArquillianResource(SessionServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
-        super.test(baseURL1, baseURL2);
+        this.accept(baseURL1, baseURL2);
     }
 }

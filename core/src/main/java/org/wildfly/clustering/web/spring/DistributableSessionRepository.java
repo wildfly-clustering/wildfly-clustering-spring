@@ -23,13 +23,17 @@
 package org.wildfly.clustering.web.spring;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 
-import javax.servlet.ServletContext;
-
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.session.SessionRepository;
+import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.session.events.SessionCreatedEvent;
 import org.springframework.session.events.SessionDestroyedEvent;
 import org.wildfly.clustering.ee.Batch;
@@ -37,29 +41,36 @@ import org.wildfly.clustering.ee.Batcher;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
+import org.wildfly.clustering.web.sso.SSO;
+import org.wildfly.clustering.web.sso.SSOManager;
 
 /**
+ * A session repository implementation based on a {@link SessionManager}.
+ * Additionally indexes sessions using a set of {@link SSOManager} instances.
  * @author Paul Ferraro
  */
-public class DistributableSessionRepository<B extends Batch> implements SessionRepository<DistributableSession<B>> {
+public class DistributableSessionRepository<B extends Batch> implements FindByIndexNameSessionRepository<SpringSession> {
     // Workaround for https://github.com/spring-projects/spring-session/issues/1731
-    @SuppressWarnings("rawtypes")
-    private static final ThreadLocal<DistributableSession> CURRENT_SESSION = new ThreadLocal<>();
+    private static final ThreadLocal<SpringSession> SAVED_SESSION = new ThreadLocal<>();
+    // Handle redundant calls to findById(...)
+    private static final ThreadLocal<SpringSession> CURRENT_SESSION = new ThreadLocal<>();
 
     private final SessionManager<Void, B> manager;
     private final ApplicationEventPublisher publisher;
     private final Optional<Duration> defaultTimeout;
-    private final Consumer<ImmutableSession> destroyAction;
+    private final BiConsumer<ImmutableSession, BiFunction<Object, org.springframework.session.Session, ApplicationEvent>> destroyAction;
+    private final IndexingConfiguration<B> indexing;
 
-    public DistributableSessionRepository(SessionManager<Void, B> manager, Optional<Duration> defaultTimeout, ApplicationEventPublisher publisher, ServletContext context) {
-        this.manager = manager;
-        this.defaultTimeout = defaultTimeout;
-        this.publisher = publisher;
-        this.destroyAction = new ImmutableSessionDestroyAction(publisher, SessionDestroyedEvent::new, context);
+    public DistributableSessionRepository(DistributableSessionRepositoryConfiguration<B> configuration) {
+        this.manager = configuration.getSessionManager();
+        this.defaultTimeout = configuration.getDefaultTimeout();
+        this.publisher = configuration.getEventPublisher();
+        this.destroyAction = configuration.getSessionDestroyAction();
+        this.indexing = configuration.getIndexingConfiguration();
     }
 
     @Override
-    public DistributableSession<B> createSession() {
+    public SpringSession createSession() {
         String id = this.manager.createIdentifier();
         boolean close = true;
         Batcher<B> batcher = this.manager.getBatcher();
@@ -71,7 +82,7 @@ public class DistributableSessionRepository<B extends Batch> implements SessionR
                 session.getMetaData().setMaxInactiveInterval(this.defaultTimeout.get());
             }
             B suspendedBatch = batcher.suspendBatch();
-            DistributableSession<B> result = new DistributableSession<>(this.manager, session, suspendedBatch);
+            DistributableSession<B> result = new DistributableSession<>(this.manager, session, suspendedBatch, this.indexing);
             this.publisher.publishEvent(new SessionCreatedEvent(this, result));
             close = false;
             return result;
@@ -86,12 +97,17 @@ public class DistributableSessionRepository<B extends Batch> implements SessionR
     }
 
     @Override
-    public DistributableSession<B> findById(String id) {
+    public SpringSession findById(String id) {
+        // Handle redundant calls to findById(...)
+        SpringSession current = CURRENT_SESSION.get();
+        if ((current != null) && current.getId().equals(id)) {
+            return current;
+        }
         // Ugly workaround for bizarre behavior in org.springframework.session.web.http.SessionRepositoryFilter.SessionRepositoryRequestWrapper.commitSession()
         // that triggers an extraneous SessionRepository.findById(...) for a recently saved requested session.
-        DistributableSession<B> current = CURRENT_SESSION.get();
-        if (current != null) {
-            CURRENT_SESSION.remove();
+        current = SAVED_SESSION.get();
+        if ((current != null) && current.getId().equals(id)) {
+            SAVED_SESSION.remove();
             return current;
         }
         boolean close = true;
@@ -101,7 +117,7 @@ public class DistributableSessionRepository<B extends Batch> implements SessionR
             Session<Void> session = this.manager.findSession(id);
             if (session == null) return null;
             B suspendedBatch = batcher.suspendBatch();
-            DistributableSession<B> result = new DistributableSession<>(this.manager, session, suspendedBatch);
+            DistributableSession<B> result = new DistributableSession<>(this.manager, session, suspendedBatch, this.indexing);
             close = false;
             CURRENT_SESSION.set(result);
             return result;
@@ -119,17 +135,50 @@ public class DistributableSessionRepository<B extends Batch> implements SessionR
     public void deleteById(String id) {
         try (Session<Void> session = this.manager.findSession(id)) {
             if (session != null) {
-                this.destroyAction.accept(session);
+                this.destroyAction.accept(session, SessionDestroyedEvent::new);
                 session.invalidate();
             }
         } finally {
-            // Remove thread local here - as there will not be an extraneous call to SessionRepository.findById(...)
             CURRENT_SESSION.remove();
+            SAVED_SESSION.remove();
         }
     }
 
     @Override
-    public void save(DistributableSession<B> session) {
+    public void save(SpringSession session) {
+        CURRENT_SESSION.remove();
+        if (!session.getCreationTime().equals(session.getLastAccessedTime())) {
+            // Ugly workaround for bizarre behavior in org.springframework.session.web.http.SessionRepositoryFilter.SessionRepositoryRequestWrapper.commitSession()
+            // that triggers an extraneous SessionRepository.findById(...) for a recently saved requested session.
+            SAVED_SESSION.set(session);
+        }
         session.close();
+    }
+
+    @Override
+    public Map<String, SpringSession> findByIndexNameAndIndexValue(String indexName, String indexValue) {
+        Set<String> sessions = Collections.emptySet();
+        SSOManager<Void, String, String, Void, B> manager = this.indexing.getSSOManagers().get(indexValue);
+        if (manager != null) {
+            try (Batch batch = manager.getBatcher().createBatch()) {
+                SSO<Void, String, String, Void> sso = manager.findSSO(indexValue);
+                if (sso != null) {
+                    sessions = sso.getSessions().getDeployments();
+                }
+            }
+        }
+        if (!sessions.isEmpty()) {
+            Map<String, SpringSession> result = new HashMap<>();
+            try (Batch batch = this.manager.getBatcher().createBatch()) {
+                for (String sessionId : sessions) {
+                    ImmutableSession session = this.manager.viewSession(sessionId);
+                    if (session != null) {
+                        result.put(sessionId, new DistributableImmutableSession(session));
+                    }
+                }
+            }
+            return result;
+        }
+        return Collections.emptyMap();
     }
 }

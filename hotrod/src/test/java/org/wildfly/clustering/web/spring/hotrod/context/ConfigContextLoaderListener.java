@@ -29,7 +29,7 @@ import javax.servlet.annotation.WebListener;
  * @author Paul Ferraro
  */
 @WebListener
-public class ConfigContextLoaderListener extends org.wildfly.clustering.web.spring.hotrod.context.ContextLoaderListener {
+public class ConfigContextLoaderListener extends org.wildfly.clustering.web.spring.context.ContextLoaderListener {
 
     public ConfigContextLoaderListener() {
         super(Config.class);

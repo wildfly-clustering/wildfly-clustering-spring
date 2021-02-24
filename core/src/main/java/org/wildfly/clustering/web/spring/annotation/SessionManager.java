@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring.hotrod.annotation;
+package org.wildfly.clustering.web.spring.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -28,20 +28,32 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.wildfly.clustering.web.spring.annotation.SessionManager;
+import org.wildfly.clustering.web.spring.SessionMarshallerFactory;
+import org.wildfly.clustering.web.spring.SessionPersistenceGranularity;
 
 /**
- * Configures a session repository whose sessions are persisted to a remote Infinispan cluster accessed via HotRod.
+ * Configures the session management characteristics of a session repository.
  * @author Paul Ferraro
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Import(HotRodHttpSessionConfiguration.class)
-@Configuration(proxyBeanMethods = false)
-public @interface EnableHotRodHttpSession {
-    HotRod config();
-    SessionManager manager();
+public @interface SessionManager {
+    /**
+     * Defines the marshaller implementation to use for session attribute marshalling.  Default uses JBoss Marshalling.
+     * @return a marshaller implementation
+     */
+    SessionMarshallerFactory marshallerFactory() default SessionMarshallerFactory.JBOSS;
+
+    /**
+     * Defines the granularity for persisting/replicating sessions, i.e. per session or per attribute.  Default is per-session.
+     * @return the session persistence granularity
+     */
+    SessionPersistenceGranularity granularity() default SessionPersistenceGranularity.SESSION;
+
+    /**
+     * The maximum number of sessions to retain in memory.  Default is limitless.
+     * @return the number of session to retain in memory.
+     */
+    int maxActiveSessions() default -1;
 }

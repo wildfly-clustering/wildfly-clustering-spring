@@ -20,19 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring.hotrod;
+package org.wildfly.clustering.web.spring.hotrod.annotation;
 
-import java.net.URI;
-import java.util.Properties;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import org.wildfly.clustering.web.spring.SessionRepositoryConfiguration;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.wildfly.clustering.web.spring.annotation.Indexing;
+import org.wildfly.clustering.web.spring.annotation.SessionManager;
 
 /**
- * Configuration for a session repository whose sessions are persisted to a remote Infinispan cluster accessed via HotRod.
+ * Configures an indexed session repository whose sessions are persisted to a remote Infinispan cluster accessed via HotRod.
  * @author Paul Ferraro
  */
-public interface HotRodSessionRepositoryConfiguration extends SessionRepositoryConfiguration {
-    URI getUri();
-    Properties getProperties();
-    String getTemplateName();
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+@Documented
+@Import(IndexedHotRodHttpSessionConfiguration.class)
+@Configuration(proxyBeanMethods = false)
+public @interface EnableIndexedHotRodHttpSession {
+    HotRod config();
+    SessionManager manager();
+    Indexing indexing();
 }

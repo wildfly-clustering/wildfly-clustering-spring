@@ -26,11 +26,12 @@ import java.util.function.Function;
 
 import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
-import org.wildfly.clustering.marshalling.jdk.ClassLoaderResolver;
 import org.wildfly.clustering.marshalling.jdk.JavaByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ClassLoaderResolver;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.spi.ValueExternalizer;
 
 /**
  * @author Paul Ferraro
@@ -40,7 +41,7 @@ public enum SessionMarshallerFactory implements Function<ClassLoader, ByteBuffer
     JAVA() {
         @Override
         public ByteBufferMarshaller apply(ClassLoader loader) {
-            return new JavaByteBufferMarshaller(new ClassLoaderResolver(loader));
+            return new JavaByteBufferMarshaller(new ValueExternalizer<>(loader));
         }
     },
     JBOSS() {
@@ -52,7 +53,7 @@ public enum SessionMarshallerFactory implements Function<ClassLoader, ByteBuffer
     PROTOSTREAM() {
         @Override
         public ByteBufferMarshaller apply(ClassLoader loader) {
-            SerializationContextBuilder builder = new SerializationContextBuilder(new org.wildfly.clustering.marshalling.protostream.ClassLoaderResolver(loader)).load(loader);
+            SerializationContextBuilder builder = new SerializationContextBuilder(new ClassLoaderResolver(loader)).load(loader);
             return new ProtoStreamByteBufferMarshaller(builder.build());
         }
     },
