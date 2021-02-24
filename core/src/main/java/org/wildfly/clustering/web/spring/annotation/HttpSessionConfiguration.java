@@ -25,7 +25,6 @@ package org.wildfly.clustering.web.spring.annotation;
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -99,8 +98,8 @@ public class HttpSessionConfiguration extends SpringHttpSessionConfiguration imp
     }
 
     @Override
-    public Set<String> getIndexes() {
-        return Collections.emptySet();
+    public Map<String, String> getIndexes() {
+        return Collections.emptyMap();
     }
 
     @Override
@@ -150,8 +149,9 @@ public class HttpSessionConfiguration extends SpringHttpSessionConfiguration imp
     public void accept(AnnotationAttributes attributes) {
         AnnotationAttributes manager = attributes.getAnnotation("manager");
         int maxActiveSessions = manager.getNumber("maxActiveSessions").intValue();
-        this.setMaxActiveSessions(maxActiveSessions < 0 ? null : maxActiveSessions);
-        this.setMarshallerFactory(manager.getEnum("marshallerFactory"));
-        this.setGranularity(manager.getEnum("granularity"));
+        this.maxActiveSessions = (maxActiveSessions >= 0) ? Integer.valueOf(maxActiveSessions) : null;
+        this.marshallerFactory = manager.getEnum("marshallerFactory");
+        SessionPersistenceGranularity strategy = manager.getEnum("granularity");
+        this.persistenceStrategy = strategy.get();
     }
 }

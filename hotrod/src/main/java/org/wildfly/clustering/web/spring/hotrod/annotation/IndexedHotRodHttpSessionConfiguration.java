@@ -88,7 +88,10 @@ public class IndexedHotRodHttpSessionConfiguration extends IndexedHttpSessionCon
     public void accept(AnnotationAttributes attributes) {
         super.accept(attributes);
         AnnotationAttributes config = attributes.getAnnotation("config");
-        this.setUri(URI.create(config.getString("uri")));
-        this.setTemplateName(config.getString("template"));
+        this.uri = URI.create(config.getString("uri"));
+        this.templateName = config.getString("template");
+        for (AnnotationAttributes property : config.getAnnotationArray("properties")) {
+            this.properties.setProperty(property.getString("name"), property.getString("value"));
+        }
     }
 }

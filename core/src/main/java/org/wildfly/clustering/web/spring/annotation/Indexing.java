@@ -43,7 +43,7 @@ public @interface Indexing {
      * The indexes recognized by this session repository.  Default indexes only includes the Spring Security principal.
      * @return an array of index names
      */
-    String[] indexes() default { "org.springframework.session.FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME" };
+    Index[] indexes() default { @Index(id = "SPRING_SECURITY_CONTEXT", name = "org.springframework.session.FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME") };
 
     /**
      * The index resolver class name.  Default resolver only resolves the Spring Security principal.

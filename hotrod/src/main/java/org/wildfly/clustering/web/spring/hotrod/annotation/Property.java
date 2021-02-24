@@ -20,32 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring;
+package org.wildfly.clustering.web.spring.hotrod.annotation;
 
-import java.util.Map;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
-import javax.servlet.ServletContext;
-
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.session.IndexResolver;
-import org.springframework.session.Session;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
-import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Configuration for a session repository.
+ * Configures a property. 
  * @author Paul Ferraro
  */
-public interface SessionRepositoryConfiguration {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+@Documented
+public @interface Property {
+    /**
+     * The property name.
+     * @return the property name
+     */
+    String name();
 
-    Integer getMaxActiveSessions();
-    SessionAttributePersistenceStrategy getPersistenceStrategy();
-    Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory();
-    Supplier<String> getIdentifierFactory();
-    ApplicationEventPublisher getEventPublisher();
-    ServletContext getServletContext();
-    Map<String, String> getIndexes();
-    IndexResolver<Session> getIndexResolver();
+    /**
+     * The property value.
+     * @return the property value
+     */
+    String value();
 }

@@ -50,7 +50,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable().httpBasic()
             .and().authorizeRequests().antMatchers("/").hasRole("ADMIN").anyRequest().authenticated()
-            .and().sessionManagement().sessionFixation().none().maximumSessions(1).sessionRegistry(sessionRegistry());
+            .and().sessionManagement().maximumSessions(1).sessionRegistry(sessionRegistry());
     }
 
     @SuppressWarnings("deprecation")

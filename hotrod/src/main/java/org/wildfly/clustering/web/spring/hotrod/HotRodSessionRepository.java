@@ -33,7 +33,6 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
-import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -208,15 +207,17 @@ public class HotRodSessionRepository implements FindByIndexNameSessionRepository
             }
         };
 
-        Set<String> indexes = this.configuration.getIndexes();
+        Map<String, String> indexes = this.configuration.getIndexes();
         Map<String, SSOManager<Void, String, String, Void, TransactionBatch>> managers = indexes.isEmpty() ? Collections.emptyMap() : new HashMap<>();
-        for (String indexName : indexes) {
-            configuration.addRemoteCache(indexName, builder -> builder.forceReturnValues(false).nearCacheMode(NearCacheMode.DISABLED).transactionMode(TransactionMode.NONE).templateName(templateName));
+        for (Map.Entry<String, String> entry : indexes.entrySet()) {
+            String cacheName = String.format("%s/%s", deploymentName, entry.getKey());
+            String indexName = entry.getValue();
+            configuration.addRemoteCache(cacheName, builder -> builder.forceReturnValues(false).nearCacheMode(NearCacheMode.DISABLED).transactionMode(TransactionMode.NONE).templateName(templateName));
 
             SSOManagerFactory<Void, String, String, TransactionBatch> ssoManagerFactory = new HotRodSSOManagerFactory<>(new HotRodSSOManagerFactoryConfiguration() {
                 @Override
                 public <K, V> RemoteCache<K, V> getRemoteCache() {
-                    return container.getCache(indexName);
+                    return container.getCache(cacheName);
                 }
             });
 
