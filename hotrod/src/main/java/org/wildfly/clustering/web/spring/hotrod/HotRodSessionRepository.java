@@ -65,7 +65,7 @@ import org.wildfly.clustering.ee.immutable.DefaultImmutability;
 import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
 import org.wildfly.clustering.infinispan.client.manager.RemoteCacheManager;
 import org.wildfly.clustering.infinispan.marshalling.protostream.ProtoStreamMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ClassLoaderResolver;
+import org.wildfly.clustering.marshalling.protostream.SimpleClassLoaderMarshaller;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
@@ -77,6 +77,7 @@ import org.wildfly.clustering.web.hotrod.session.SessionManagerNearCacheFactory;
 import org.wildfly.clustering.web.hotrod.sso.HotRodSSOManagerFactory;
 import org.wildfly.clustering.web.hotrod.sso.HotRodSSOManagerFactoryConfiguration;
 import org.wildfly.clustering.web.session.ImmutableSession;
+import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.SessionAttributeImmutability;
 import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
@@ -84,12 +85,12 @@ import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionManagerConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.session.SpecificationProvider;
-import org.wildfly.clustering.web.spring.SpringSession;
 import org.wildfly.clustering.web.spring.DistributableSessionRepository;
 import org.wildfly.clustering.web.spring.DistributableSessionRepositoryConfiguration;
 import org.wildfly.clustering.web.spring.ImmutableSessionDestroyAction;
 import org.wildfly.clustering.web.spring.ImmutableSessionExpirationListener;
 import org.wildfly.clustering.web.spring.IndexingConfiguration;
+import org.wildfly.clustering.web.spring.SpringSession;
 import org.wildfly.clustering.web.spring.SpringSpecificationProvider;
 import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.SSOManagerConfiguration;
@@ -124,7 +125,7 @@ public class HotRodSessionRepository implements FindByIndexNameSessionRepository
         URI uri = this.configuration.getUri();
         Configuration configuration = ((uri != null) ? HotRodURI.create(uri).toConfigurationBuilder() : new ConfigurationBuilder())
                 .withProperties(this.configuration.getProperties())
-                .marshaller(new ProtoStreamMarshaller(new ClassLoaderResolver(containerLoader), containerLoader))
+                .marshaller(new ProtoStreamMarshaller(new SimpleClassLoaderMarshaller(containerLoader), containerLoader))
                 .classLoader(containerLoader)
                 .build();
 
@@ -274,7 +275,7 @@ public class HotRodSessionRepository implements FindByIndexNameSessionRepository
             }
 
             @Override
-            public Recordable<ImmutableSession> getInactiveSessionRecorder() {
+            public Recordable<ImmutableSessionMetaData> getInactiveSessionRecorder() {
                 // Spring session has no metrics capability
                 return null;
             }

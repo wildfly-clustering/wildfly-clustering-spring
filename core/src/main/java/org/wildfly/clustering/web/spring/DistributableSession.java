@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.BatchContext;
@@ -47,7 +46,6 @@ public class DistributableSession<B extends Batch> implements SpringSession {
     private final B batch;
     private final Instant startTime;
     private final IndexingConfiguration<B> indexing;
-    private final AtomicBoolean closed = new AtomicBoolean(false);
 
     private volatile Session<Void> session;
 
@@ -202,13 +200,15 @@ public class DistributableSession<B extends Batch> implements SpringSession {
     }
 
     @Override
+    public boolean isNew() {
+        return this.session.getMetaData().isNew();
+    }
+
+    @Override
     public void close() {
-        // Workaround for WFLY-14466
-        if (this.closed.compareAndSet(false, true)) {
-            // According to §7.6 of the servlet specification:
-            // The session is considered to be accessed when a request that is part of the session is first handled by the servlet container.
-            this.session.getMetaData().setLastAccess(this.startTime, Instant.now());
-            this.session.close();
-        }
+        // According to §7.6 of the servlet specification:
+        // The session is considered to be accessed when a request that is part of the session is first handled by the servlet container.
+        this.session.getMetaData().setLastAccess(this.startTime, Instant.now());
+        this.session.close();
     }
 }

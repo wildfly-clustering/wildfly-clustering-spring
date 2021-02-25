@@ -147,7 +147,7 @@ public class DistributableSessionRepository<B extends Batch> implements FindByIn
     @Override
     public void save(SpringSession session) {
         CURRENT_SESSION.remove();
-        if (!session.getCreationTime().equals(session.getLastAccessedTime())) {
+        if (!session.isNew()) {
             // Ugly workaround for bizarre behavior in org.springframework.session.web.http.SessionRepositoryFilter.SessionRepositoryRequestWrapper.commitSession()
             // that triggers an extraneous SessionRepository.findById(...) for a recently saved requested session.
             SAVED_SESSION.set(session);

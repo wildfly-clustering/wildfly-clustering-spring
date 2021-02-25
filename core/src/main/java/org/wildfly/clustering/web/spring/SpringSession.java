@@ -31,6 +31,12 @@ import org.springframework.session.Session;
 public interface SpringSession extends Session, AutoCloseable {
 
     /**
+     * Indicates whether this session was created during the current request.
+     * @return true, if this session was newly created, false otherwise.
+     */
+    boolean isNew();
+
+    /**
      * To be invoked by {@link org.springframework.session.SessionRepository#save(Session)}.
      */
     @Override

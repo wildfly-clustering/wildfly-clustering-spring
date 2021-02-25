@@ -102,6 +102,11 @@ public class DistributableImmutableSession implements SpringSession {
     }
 
     @Override
+    public boolean isNew() {
+        return this.session.getMetaData().isNew();
+    }
+
+    @Override
     public void close() {
         // Nothing to do
     }
