@@ -39,14 +39,14 @@ import org.wildfly.clustering.web.spring.hotrod.HotRodSessionRepositoryConfigura
  * @author Paul Ferraro
  */
 @Configuration(proxyBeanMethods = false)
-public class IndexedHotRodHttpSessionConfiguration extends IndexedHttpSessionConfiguration implements HotRodSessionRepositoryConfiguration {
+public class HotRodIndexedHttpSessionConfiguration extends IndexedHttpSessionConfiguration implements HotRodSessionRepositoryConfiguration {
 
     private URI uri;
     private Properties properties = new Properties();
     private String templateName = DefaultTemplate.DIST_SYNC.getTemplateName();
 
-    public IndexedHotRodHttpSessionConfiguration() {
-        super(EnableIndexedHotRodHttpSession.class);
+    public HotRodIndexedHttpSessionConfiguration() {
+        super(EnableHotRodIndexedHttpSession.class);
     }
 
     @Bean

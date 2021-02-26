@@ -40,9 +40,9 @@ import org.wildfly.clustering.web.spring.annotation.SessionManager;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Import(IndexedHotRodHttpSessionConfiguration.class)
+@Import(HotRodIndexedHttpSessionConfiguration.class)
 @Configuration(proxyBeanMethods = false)
-public @interface EnableIndexedHotRodHttpSession {
+public @interface EnableHotRodIndexedHttpSession {
     HotRod config();
     SessionManager manager();
     Indexing indexing();
