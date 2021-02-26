@@ -36,10 +36,9 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.clustering.marshalling.Externalizer;
-import org.wildfly.clustering.web.spring.hotrod.context.HttpSessionApplicationInitializer;
-import org.wildfly.clustering.web.spring.hotrod.servlet.SessionServlet;
 import org.wildfly.clustering.web.spring.servlet.MutableIntegerExternalizer;
-import org.wildfly.clustering.web.spring.servlet.ServletHandler;
+import org.wildfly.clustering.web.spring.servlet.SessionServlet;
+import org.wildfly.clustering.web.spring.servlet.context.HttpSessionApplicationInitializer;
 
 /**
  * @author Paul Ferraro
@@ -66,9 +65,8 @@ public class BeanSmokeITCase extends AbstractSmokeITCase {
 
     private static Archive<?> deployment() {
         return ShrinkWrap.create(WebArchive.class, BeanSmokeITCase.class.getSimpleName() + ".war")
-                .addPackage(ServletHandler.class.getPackage())
                 .addPackage(SessionServlet.class.getPackage())
-                .addClass(HttpSessionApplicationInitializer.class)
+                .addPackage(HttpSessionApplicationInitializer.class.getPackage())
                 .addAsWebInfResource(BeanSmokeITCase.class.getPackage(), "applicationContext-bean.xml", "applicationContext.xml")
                 .addAsServiceProvider(Externalizer.class, MutableIntegerExternalizer.class)
                 .setWebXML(AbstractSmokeITCase.class.getPackage(), "web.xml")

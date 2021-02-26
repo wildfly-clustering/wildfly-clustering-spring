@@ -20,19 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring.servlet;
+package org.wildfly.clustering.web.spring.servlet.context;
 
-import java.io.IOException;
+import org.springframework.session.web.context.AbstractHttpSessionApplicationInitializer;
 
 /**
+ * Empty initializer that explicitly prevents dynamic registration of a servlet context listener,
+ * as this must be declared explicitly (either via web.xml or {@link javax.servlet.annotation.WebListener} annotation).
  * @author Paul Ferraro
  */
-public interface ServletService {
-    default ServletSession getSession() {
-        return this.getSession(true);
-    }
-    ServletSession getSession(boolean create);
-
-    void setHeader(String name, int value) throws IOException;
-    void setHeader(String name, String value) throws IOException;
+public class HttpSessionApplicationInitializer extends AbstractHttpSessionApplicationInitializer {
 }

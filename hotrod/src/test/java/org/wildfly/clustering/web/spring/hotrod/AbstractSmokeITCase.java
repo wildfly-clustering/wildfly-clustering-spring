@@ -40,7 +40,7 @@ import org.infinispan.server.test.junit4.InfinispanServerRuleBuilder;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.rules.TestRule;
-import org.wildfly.clustering.web.spring.servlet.ServletHandler;
+import org.wildfly.clustering.web.spring.servlet.SessionServlet;
 import org.wildfly.common.function.ExceptionBiConsumer;
 
 /**
@@ -73,8 +73,8 @@ public abstract class AbstractSmokeITCase implements ExceptionBiConsumer<URL, UR
 
     @Override
     public void accept(URL baseURL1, URL baseURL2) throws Exception {
-        URI uri1 = ServletHandler.createURI(baseURL1);
-        URI uri2 = ServletHandler.createURI(baseURL2);
+        URI uri1 = SessionServlet.createURI(baseURL1);
+        URI uri2 = SessionServlet.createURI(baseURL2);
 
         try (CloseableHttpClient client = this.provider.apply(baseURL1, baseURL2)) {
             String sessionId = null;
@@ -84,8 +84,8 @@ public abstract class AbstractSmokeITCase implements ExceptionBiConsumer<URL, UR
                     for (int j = 0; j < 4; j++) {
                         try (CloseableHttpResponse response = client.execute(new HttpGet(uri))) {
                             Assert.assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
-                            Assert.assertEquals(String.valueOf(value++), response.getFirstHeader(ServletHandler.VALUE).getValue());
-                            String requestSessionId = response.getFirstHeader(ServletHandler.SESSION_ID).getValue();
+                            Assert.assertEquals(String.valueOf(value++), response.getFirstHeader(SessionServlet.VALUE).getValue());
+                            String requestSessionId = response.getFirstHeader(SessionServlet.SESSION_ID).getValue();
                             if (sessionId == null) {
                                 sessionId = requestSessionId;
                             } else {
@@ -99,11 +99,11 @@ public abstract class AbstractSmokeITCase implements ExceptionBiConsumer<URL, UR
             }
             try (CloseableHttpResponse response = client.execute(new HttpDelete(uri1))) {
                 Assert.assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(sessionId, response.getFirstHeader(ServletHandler.SESSION_ID).getValue());
+                Assert.assertEquals(sessionId, response.getFirstHeader(SessionServlet.SESSION_ID).getValue());
             }
             try (CloseableHttpResponse response = client.execute(new HttpHead(uri2))) {
                 Assert.assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
-                String newSessionId = response.containsHeader(ServletHandler.SESSION_ID) ? response.getFirstHeader(ServletHandler.SESSION_ID).getValue() : null;
+                String newSessionId = response.containsHeader(SessionServlet.SESSION_ID) ? response.getFirstHeader(SessionServlet.SESSION_ID).getValue() : null;
                 Assert.assertNotEquals(sessionId, newSessionId);
             }
         }

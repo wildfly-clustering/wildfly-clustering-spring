@@ -49,10 +49,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.clustering.web.spring.hotrod.auth.ConfigContextLoaderListener;
-import org.wildfly.clustering.web.spring.hotrod.context.HttpSessionApplicationInitializer;
-import org.wildfly.clustering.web.spring.hotrod.servlet.SessionServlet;
-import org.wildfly.clustering.web.spring.servlet.ServletHandler;
+import org.wildfly.clustering.web.spring.servlet.SessionServlet;
 import org.wildfly.clustering.web.spring.servlet.TestSerializationContextInitializer;
+import org.wildfly.clustering.web.spring.servlet.context.HttpSessionApplicationInitializer;
 
 /**
  * @author Paul Ferraro
@@ -79,8 +78,8 @@ public class AuthSmokeITCase extends AbstractSmokeITCase {
 
     private static Archive<?> deployment() {
         return ShrinkWrap.create(WebArchive.class, AuthSmokeITCase.class.getSimpleName() + ".war")
-                .addPackage(ServletHandler.class.getPackage())
                 .addPackage(SessionServlet.class.getPackage())
+                .addPackage(HttpSessionApplicationInitializer.class.getPackage())
                 .addPackage(ConfigContextLoaderListener.class.getPackage())
                 .addClass(HttpSessionApplicationInitializer.class)
                 .addAsWebInfResource(AnnotationSmokeITCase.class.getPackage(), "applicationContext-annotation.xml", "applicationContext.xml")
@@ -102,7 +101,7 @@ public class AuthSmokeITCase extends AbstractSmokeITCase {
 
     @Test
     public void test(@ArquillianResource(SessionServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1, @ArquillianResource(SessionServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
-        URI uri1 = ServletHandler.createURI(baseURL1);
+        URI uri1 = SessionServlet.createURI(baseURL1);
         // Verify that authentication is required
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             try (CloseableHttpResponse response = client.execute(new HttpHead(uri1))) {

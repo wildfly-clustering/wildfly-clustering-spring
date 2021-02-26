@@ -37,9 +37,9 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.clustering.web.spring.hotrod.context.ConfigContextLoaderListener;
-import org.wildfly.clustering.web.spring.hotrod.servlet.SessionServlet;
-import org.wildfly.clustering.web.spring.servlet.ServletHandler;
+import org.wildfly.clustering.web.spring.servlet.SessionServlet;
 import org.wildfly.clustering.web.spring.servlet.TestSerializationContextInitializer;
+import org.wildfly.clustering.web.spring.servlet.context.HttpSessionApplicationInitializer;
 
 /**
  * @author Paul Ferraro
@@ -66,8 +66,8 @@ public class AnnotationSmokeITCase extends AbstractSmokeITCase {
 
     private static Archive<?> deployment() {
         return ShrinkWrap.create(WebArchive.class, AnnotationSmokeITCase.class.getSimpleName() + ".war")
-                .addPackage(ServletHandler.class.getPackage())
                 .addPackage(SessionServlet.class.getPackage())
+                .addPackage(HttpSessionApplicationInitializer.class.getPackage())
                 .addPackage(ConfigContextLoaderListener.class.getPackage())
                 .addAsWebInfResource(AnnotationSmokeITCase.class.getPackage(), "applicationContext-annotation.xml", "applicationContext.xml")
                 .addAsServiceProvider(SerializationContextInitializer.class.getName(), TestSerializationContextInitializer.class.getName() + "Impl")
