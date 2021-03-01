@@ -46,10 +46,6 @@ import org.wildfly.clustering.web.spring.servlet.context.HttpSessionApplicationI
 @RunWith(Arquillian.class)
 @RunAsClient
 public class BeanSmokeITCase extends AbstractSmokeITCase {
-    public static final String CONTAINER_1 = "tomcat-1";
-    public static final String CONTAINER_2 = "tomcat-2";
-    public static final String DEPLOYMENT_1 = "deployment-1";
-    public static final String DEPLOYMENT_2 = "deployment-2";
 
     @Deployment(name = DEPLOYMENT_1, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -67,9 +63,9 @@ public class BeanSmokeITCase extends AbstractSmokeITCase {
         return ShrinkWrap.create(WebArchive.class, BeanSmokeITCase.class.getSimpleName() + ".war")
                 .addPackage(SessionServlet.class.getPackage())
                 .addPackage(HttpSessionApplicationInitializer.class.getPackage())
-                .addAsWebInfResource(BeanSmokeITCase.class.getPackage(), "applicationContext-bean.xml", "applicationContext.xml")
+                .addAsWebInfResource(BeanSmokeITCase.class.getPackage(), "applicationContext.xml", "applicationContext.xml")
                 .addAsServiceProvider(Externalizer.class, MutableIntegerExternalizer.class)
-                .setWebXML(AbstractSmokeITCase.class.getPackage(), "web.xml")
+                .setWebXML(org.wildfly.clustering.web.spring.AbstractSmokeITCase.class.getPackage(), "web.xml")
                 ;
     }
 

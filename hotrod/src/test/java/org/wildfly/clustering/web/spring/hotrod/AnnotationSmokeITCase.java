@@ -47,10 +47,6 @@ import org.wildfly.clustering.web.spring.servlet.context.HttpSessionApplicationI
 @RunWith(Arquillian.class)
 @RunAsClient
 public class AnnotationSmokeITCase extends AbstractSmokeITCase {
-    public static final String CONTAINER_1 = "tomcat-1";
-    public static final String CONTAINER_2 = "tomcat-2";
-    public static final String DEPLOYMENT_1 = "deployment-1";
-    public static final String DEPLOYMENT_2 = "deployment-2";
 
     @Deployment(name = DEPLOYMENT_1, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -69,7 +65,7 @@ public class AnnotationSmokeITCase extends AbstractSmokeITCase {
                 .addPackage(SessionServlet.class.getPackage())
                 .addPackage(HttpSessionApplicationInitializer.class.getPackage())
                 .addPackage(ConfigContextLoaderListener.class.getPackage())
-                .addAsWebInfResource(AnnotationSmokeITCase.class.getPackage(), "applicationContext-annotation.xml", "applicationContext.xml")
+                .addAsWebInfResource(org.wildfly.clustering.web.spring.AbstractSmokeITCase.class.getPackage(), "applicationContext.xml", "applicationContext.xml")
                 .addAsServiceProvider(SerializationContextInitializer.class.getName(), TestSerializationContextInitializer.class.getName() + "Impl")
                 ;
     }

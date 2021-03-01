@@ -48,6 +48,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.clustering.web.spring.auth.SecurityInitializer;
 import org.wildfly.clustering.web.spring.hotrod.auth.ConfigContextLoaderListener;
 import org.wildfly.clustering.web.spring.servlet.SessionServlet;
 import org.wildfly.clustering.web.spring.servlet.TestSerializationContextInitializer;
@@ -59,10 +60,6 @@ import org.wildfly.clustering.web.spring.servlet.context.HttpSessionApplicationI
 @RunWith(Arquillian.class)
 @RunAsClient
 public class AuthSmokeITCase extends AbstractSmokeITCase {
-    public static final String CONTAINER_1 = "tomcat-1";
-    public static final String CONTAINER_2 = "tomcat-2";
-    public static final String DEPLOYMENT_1 = "deployment-1";
-    public static final String DEPLOYMENT_2 = "deployment-2";
 
     @Deployment(name = DEPLOYMENT_1, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -81,8 +78,9 @@ public class AuthSmokeITCase extends AbstractSmokeITCase {
                 .addPackage(SessionServlet.class.getPackage())
                 .addPackage(HttpSessionApplicationInitializer.class.getPackage())
                 .addPackage(ConfigContextLoaderListener.class.getPackage())
+                .addPackage(SecurityInitializer.class.getPackage())
                 .addClass(HttpSessionApplicationInitializer.class)
-                .addAsWebInfResource(AnnotationSmokeITCase.class.getPackage(), "applicationContext-annotation.xml", "applicationContext.xml")
+                .addAsWebInfResource(org.wildfly.clustering.web.spring.AbstractSmokeITCase.class.getPackage(), "applicationContext.xml", "applicationContext.xml")
                 .addAsServiceProvider(SerializationContextInitializer.class.getName(), TestSerializationContextInitializer.class.getName() + "Impl")
                 ;
     }

@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.web.spring.hotrod.auth;
+package org.wildfly.clustering.web.spring.auth;
 
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
 

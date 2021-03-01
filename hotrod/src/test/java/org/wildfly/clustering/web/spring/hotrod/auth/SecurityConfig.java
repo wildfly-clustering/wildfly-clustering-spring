@@ -23,44 +23,22 @@
 package org.wildfly.clustering.web.spring.hotrod.auth;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.session.Session;
-import org.springframework.session.security.SpringSessionBackedSessionRegistry;
+import org.springframework.session.FindByIndexNameSessionRepository;
+import org.wildfly.clustering.web.spring.SpringSession;
+import org.wildfly.clustering.web.spring.auth.AbstractSecurityConfig;
 import org.wildfly.clustering.web.spring.hotrod.HotRodSessionRepository;
 
 /**
  * @author Paul Ferraro
  */
 @EnableWebSecurity
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+public class SecurityConfig extends AbstractSecurityConfig {
     @Autowired
     HotRodSessionRepository repository;
 
-    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication().withUser("admin").password(passwordEncoder().encode("password")).roles("ADMIN");
-    }
-
     @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable().httpBasic()
-            .and().authorizeRequests().antMatchers("/").hasRole("ADMIN").anyRequest().authenticated()
-            .and().sessionManagement().maximumSessions(1).sessionRegistry(sessionRegistry());
-    }
-
-    @SuppressWarnings("deprecation")
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return org.springframework.security.crypto.password.NoOpPasswordEncoder.getInstance();
-    }
-
-    @Bean
-    public SpringSessionBackedSessionRegistry<? extends Session> sessionRegistry() {
-        return new SpringSessionBackedSessionRegistry<>(this.repository);
+    public FindByIndexNameSessionRepository<SpringSession> get() {
+        return this.repository;
     }
 }

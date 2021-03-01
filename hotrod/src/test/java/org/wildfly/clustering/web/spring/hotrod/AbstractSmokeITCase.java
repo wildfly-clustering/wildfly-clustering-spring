@@ -22,31 +22,20 @@
 
 package org.wildfly.clustering.web.spring.hotrod;
 
-import java.net.URI;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.function.BiFunction;
 
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.infinispan.server.test.core.ServerRunMode;
 import org.infinispan.server.test.core.TestSystemPropertyNames;
 import org.infinispan.server.test.junit4.InfinispanServerRuleBuilder;
-import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.rules.TestRule;
-import org.wildfly.clustering.web.spring.servlet.SessionServlet;
-import org.wildfly.common.function.ExceptionBiConsumer;
 
 /**
  * @author Paul Ferraro
  */
-public abstract class AbstractSmokeITCase implements ExceptionBiConsumer<URL, URL, Exception> {
+public abstract class AbstractSmokeITCase extends org.wildfly.clustering.web.spring.AbstractSmokeITCase {
 
     private static final String INFINISPAN_SERVER_HOME = System.getProperty("infinispan.server.home");
 
@@ -57,55 +46,11 @@ public abstract class AbstractSmokeITCase implements ExceptionBiConsumer<URL, UR
                 .numServers(1)
                 .build();
 
-    private static CloseableHttpClient createClient(URL url1, URL url2) {
-        return HttpClients.createDefault();
-    }
-
-    private final BiFunction<URL, URL, CloseableHttpClient> provider;
-
     AbstractSmokeITCase() {
-        this(AbstractSmokeITCase::createClient);
+        super(false);
     }
 
     AbstractSmokeITCase(BiFunction<URL, URL, CloseableHttpClient> provider) {
-        this.provider = provider;
-    }
-
-    @Override
-    public void accept(URL baseURL1, URL baseURL2) throws Exception {
-        URI uri1 = SessionServlet.createURI(baseURL1);
-        URI uri2 = SessionServlet.createURI(baseURL2);
-
-        try (CloseableHttpClient client = this.provider.apply(baseURL1, baseURL2)) {
-            String sessionId = null;
-            int value = 0;
-            for (int i = 0; i < 4; i++) {
-                for (URI uri : Arrays.asList(uri1, uri2)) {
-                    for (int j = 0; j < 4; j++) {
-                        try (CloseableHttpResponse response = client.execute(new HttpGet(uri))) {
-                            Assert.assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
-                            Assert.assertEquals(String.valueOf(value++), response.getFirstHeader(SessionServlet.VALUE).getValue());
-                            String requestSessionId = response.getFirstHeader(SessionServlet.SESSION_ID).getValue();
-                            if (sessionId == null) {
-                                sessionId = requestSessionId;
-                            } else {
-                                Assert.assertEquals(sessionId, requestSessionId);
-                            }
-                        }
-                    }
-                    // Grace time between failover requests
-                    Thread.sleep(500);
-                }
-            }
-            try (CloseableHttpResponse response = client.execute(new HttpDelete(uri1))) {
-                Assert.assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(sessionId, response.getFirstHeader(SessionServlet.SESSION_ID).getValue());
-            }
-            try (CloseableHttpResponse response = client.execute(new HttpHead(uri2))) {
-                Assert.assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
-                String newSessionId = response.containsHeader(SessionServlet.SESSION_ID) ? response.getFirstHeader(SessionServlet.SESSION_ID).getValue() : null;
-                Assert.assertNotEquals(sessionId, newSessionId);
-            }
-        }
+        super(false, provider);
     }
 }

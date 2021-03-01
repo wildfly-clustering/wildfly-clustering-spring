@@ -61,6 +61,12 @@
             <artifactId>wildfly-clustering-web-hotrod</artifactId>
         </dependency>
 
+        <!--dependency>
+            <groupId>org.jboss.marshalling</groupId>
+            <artifactId>jboss-marshalling-river</artifactId>
+            <scope>runtime</scope>
+        </dependency-->
+
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-spring-session-core</artifactId>
@@ -93,11 +99,6 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-config</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-web</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
