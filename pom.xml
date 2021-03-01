@@ -68,6 +68,7 @@
         <version.org.infinispan.server>${version.org.infinispan}</version.org.infinispan.server>
         <version.org.jboss.arquillian>1.6.0.Final</version.org.jboss.arquillian>
         <version.org.jboss.arquillian.container.tomcat>1.1.0.Final</version.org.jboss.arquillian.container.tomcat>
+        <version.org.jboss.marshalling>2.0.9.Final</version.org.jboss.marshalling>
         <version.org.kohsuke.metainf-services>1.8</version.org.kohsuke.metainf-services>
         <version.org.wildfly>23.0.0.Beta1</version.org.wildfly>
         <version.junit>4.13.2</version.junit>
@@ -76,6 +77,7 @@
     <modules>
         <module>core</module>
         <module>hotrod</module>
+        <module>infinispan</module>
     </modules>
 
     <build>
@@ -199,6 +201,11 @@
                 <version>${version.org.jboss.arquillian.container.tomcat}</version>
             </dependency>
             <dependency>
+                <groupId>org.jboss.marshalling</groupId>
+                <artifactId>jboss-marshalling-river</artifactId>
+                <version>${version.org.jboss.marshalling}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.kohsuke.metainf-services</groupId>
                 <artifactId>metainf-services</artifactId>
                 <version>${version.org.kohsuke.metainf-services}</version>
@@ -234,10 +241,6 @@
                 <version>${version.org.wildfly}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.jboss.msc</groupId>
-                        <artifactId>jboss-msc</artifactId>
-                    </exclusion>
-                    <exclusion>
                         <groupId>org.wildfly.core</groupId>
                         <artifactId>wildfly-controller</artifactId>
                     </exclusion>
@@ -245,9 +248,22 @@
                         <groupId>org.wildfly</groupId>
                         <artifactId>wildfly-clustering-service</artifactId>
                     </exclusion>
-                    <exclusion>
+                    <!-- Workaround WFLY-14498 -->
+                    <!--exclusion>
                         <groupId>org.wildfly</groupId>
                         <artifactId>wildfly-naming</artifactId>
+                    </exclusion-->
+                    <exclusion>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-naming-client</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly.core</groupId>
+                        <artifactId>wildfly-server</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly.wildfly-http-client</groupId>
+                        <artifactId>wildfly-http-naming-client</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -266,6 +282,17 @@
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-clustering-infinispan-marshalling</artifactId>
                 <version>${version.org.wildfly}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-infinispan-spi</artifactId>
+                <version>${version.org.wildfly}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-clustering-common</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.wildfly</groupId>
@@ -295,10 +322,10 @@
                 <artifactId>wildfly-clustering-marshalling-protostream</artifactId>
                 <version>${version.org.wildfly}</version>
                 <exclusions>
-                    <!--exclusion>
+                    <exclusion>
                         <groupId>org.jboss.modules</groupId>
                         <artifactId>jboss-modules</artifactId>
-                    </exclusion-->
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -309,6 +336,21 @@
                     <exclusion>
                         <groupId>org.jboss.msc</groupId>
                         <artifactId>jboss-msc</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-server</artifactId>
+                <version>${version.org.wildfly}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-clustering-singleton-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly.core</groupId>
+                        <artifactId>wildfly-controller</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -326,6 +368,17 @@
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-clustering-web-hotrod</artifactId>
+                <version>${version.org.wildfly}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-clustering-common</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-web-infinispan</artifactId>
                 <version>${version.org.wildfly}</version>
                 <exclusions>
                     <exclusion>
