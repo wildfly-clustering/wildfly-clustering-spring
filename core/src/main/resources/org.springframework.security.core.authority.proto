@@ -1,0 +1,8 @@
+package org.springframework.security.core.authority;
+
+/**
+ * @TypeId(330)
+ */
+message SimpleGrantedAuthority {
+	optional	string	authority	= 1;
+}

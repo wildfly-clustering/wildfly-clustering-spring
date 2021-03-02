@@ -1,0 +1,13 @@
+package org.springframework.security.core.userdetails;
+
+import "java.util.proto";
+
+/**
+ * @TypeId(350)
+ */
+message User {
+	required	string	username	= 1;
+	optional	string	password	= 2;
+	repeated	bytes	authority	= 3;
+	optional	java.util.BitSet	flags	= 4;
+}

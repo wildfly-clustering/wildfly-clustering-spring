@@ -1,0 +1,9 @@
+package org.springframework.security.web.authentication;
+
+/**
+ * @TypeId(320)
+ */
+message WebAuthenticationDetails {
+	optional	string	remoteAddress	= 1;
+	optional	string	sessionId	= 2;
+}

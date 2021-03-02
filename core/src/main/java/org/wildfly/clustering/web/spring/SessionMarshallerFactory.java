@@ -22,6 +22,7 @@
 
 package org.wildfly.clustering.web.spring;
 
+import java.util.EnumSet;
 import java.util.function.Function;
 
 import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
@@ -32,6 +33,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilde
 import org.wildfly.clustering.marshalling.protostream.SimpleClassLoaderMarshaller;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.spi.ValueExternalizer;
+import org.wildfly.clustering.web.spring.security.SpringSecuritySerializationContextInitializerProvider;
 
 /**
  * @author Paul Ferraro
@@ -53,7 +55,9 @@ public enum SessionMarshallerFactory implements Function<ClassLoader, ByteBuffer
     PROTOSTREAM() {
         @Override
         public ByteBufferMarshaller apply(ClassLoader loader) {
-            SerializationContextBuilder builder = new SerializationContextBuilder(new SimpleClassLoaderMarshaller(loader)).load(loader);
+            SerializationContextBuilder builder = new SerializationContextBuilder(new SimpleClassLoaderMarshaller(loader)).load(loader)
+                    .register(EnumSet.allOf(SpringSecuritySerializationContextInitializerProvider.class))
+                    ;
             return new ProtoStreamByteBufferMarshaller(builder.build());
         }
     },

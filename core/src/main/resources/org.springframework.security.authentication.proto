@@ -1,0 +1,33 @@
+package org.springframework.security.authentication;
+
+/**
+ * @TypeId(310)
+ */
+message AnonymousAuthenticationToken {
+	optional	sfixed32	hash	= 1;
+	optional	bytes	principal	= 2;
+	optional	bytes	credentials	= 3;
+	repeated	bytes	authority	= 4;
+	optional	bytes	details	= 5;
+}
+
+/**
+ * @TypeId(311)
+ */
+message RememberMeAuthenticationToken {
+	optional	sfixed32	hash	= 1;
+	optional	bytes	principal	= 2;
+	optional	bytes	credentials	= 3;
+	repeated	bytes	authority	= 4;
+	optional	bytes	details	= 5;
+}
+
+/**
+ * @TypeId(312)
+ */
+message UsernamePasswordAuthenticationToken {
+	optional	bytes	principal	= 1;
+	optional	bytes	credentials	= 2;
+	repeated	bytes	authority	= 3;
+	optional	bytes	details	= 4;
+}

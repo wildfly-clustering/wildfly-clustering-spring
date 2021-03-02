@@ -1,0 +1,20 @@
+package org.springframework.security.web.authentication.preauth;
+
+/**
+ * @TypeId(318)
+ */
+message PreAuthenticatedAuthenticationToken {
+	optional	bytes	principal	= 1;
+	optional	bytes	credentials	= 2;
+	repeated	bytes	authority	= 3;
+	optional	bytes	details	= 4;
+}
+
+/**
+ * @TypeId(328)
+ */
+message PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails {
+	optional	string	remoteAddress	= 1;
+	optional	string	sessionId	= 2;
+	repeated	bytes	authority	= 3;
+}

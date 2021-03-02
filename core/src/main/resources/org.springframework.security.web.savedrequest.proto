@@ -1,0 +1,41 @@
+package org.springframework.security.web.savedrequest;
+
+import "java.util.proto";
+import "org.springframework.http.proto";
+import "org.wildfly.clustering.web.spring.security.proto";
+
+/**
+ * @TypeId(300)
+ */
+message DefaultSavedRequest {
+	optional	org.springframework.http.HttpMethod	method	= 1;
+	optional	org.wildfly.clustering.web.spring.security.Scheme	scheme	= 2;
+	optional	string	serverName	= 3;
+	optional	uint32	serverPort	= 4;
+	optional	string	contextPath	= 5;
+	optional	string	servletPath	= 6;
+	optional	string	query	= 7;
+	repeated	string	parameterName	= 8;
+	repeated	string	parameterValue	= 9;
+	repeated	bytes	parameterValues	= 10;
+	repeated	string	headerName	= 11;
+	repeated	string	headerValue	= 12;
+	repeated	bytes	headerValues	= 13;
+	repeated	java.util.Locale	locale	= 14;
+	repeated	SavedCookie	cookie	= 15;
+	optional	string	pathInfo	= 16;
+}
+
+/**
+ * @TypeId(301)
+ */
+message SavedCookie {
+	optional	string	name	= 1;
+	optional	string	secureName	= 2;
+	optional	string	value	= 3;
+	optional	string	comment	= 4;
+	optional	string	domain	= 5;
+	optional	uint32	maxAge	= 6;
+	optional	string	path	= 7;
+	optional	uint32	version	= 8;
+}

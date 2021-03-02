@@ -1,0 +1,8 @@
+package org.springframework.security.core.context;
+
+/**
+ * @TypeId(340)
+ */
+message SecurityContextImpl {
+	optional	bytes	authentication	= 1;
+}

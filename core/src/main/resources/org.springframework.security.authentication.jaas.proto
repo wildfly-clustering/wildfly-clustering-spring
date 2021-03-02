@@ -1,0 +1,19 @@
+package org.springframework.security.authentication.jaas;
+
+/**
+ * @TypeId(315)
+ */
+message JaasAuthenticationToken {
+	optional	bytes	principal	= 1;
+	optional	bytes	credentials	= 2;
+	repeated	bytes	authority	= 3;
+	optional	bytes	details	= 4;
+}
+
+/**
+ * @TypeId(335)
+ */
+message JaasGrantedAuthority {
+	optional	string	authority	= 1;
+	optional	bytes	principal	= 2;
+}
