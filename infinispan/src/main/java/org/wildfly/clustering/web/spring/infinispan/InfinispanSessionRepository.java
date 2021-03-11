@@ -136,6 +136,7 @@ import org.wildfly.clustering.web.spring.IndexingConfiguration;
 import org.wildfly.clustering.web.spring.SessionMarshallerFactory;
 import org.wildfly.clustering.web.spring.SpringSession;
 import org.wildfly.clustering.web.spring.SpringSpecificationProvider;
+import org.wildfly.clustering.web.spring.security.SpringSecurityImmutability;
 import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.SSOManagerConfiguration;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
@@ -300,7 +301,7 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
         MarshalledValueFactory<ByteBufferMarshaller> marshalledValueFactory = new ByteBufferMarshalledValueFactory(marshaller);
 
         ServiceLoader<Immutability> loadedImmutability = ServiceLoader.load(Immutability.class, Immutability.class.getClassLoader());
-        Immutability immutability = new CompositeImmutability(new CompositeIterable<>(EnumSet.allOf(DefaultImmutability.class), EnumSet.allOf(SessionAttributeImmutability.class), loadedImmutability));
+        Immutability immutability = new CompositeImmutability(new CompositeIterable<>(EnumSet.allOf(DefaultImmutability.class), EnumSet.allOf(SessionAttributeImmutability.class), EnumSet.allOf(SpringSecurityImmutability.class), loadedImmutability));
 
         Supplier<String> factory = this.configuration.getIdentifierFactory();
         IdentifierFactory<String> identifierFactory = new IdentifierFactory<String>() {

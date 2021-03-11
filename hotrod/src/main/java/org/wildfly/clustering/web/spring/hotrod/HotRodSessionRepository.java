@@ -92,6 +92,7 @@ import org.wildfly.clustering.web.spring.ImmutableSessionExpirationListener;
 import org.wildfly.clustering.web.spring.IndexingConfiguration;
 import org.wildfly.clustering.web.spring.SpringSession;
 import org.wildfly.clustering.web.spring.SpringSpecificationProvider;
+import org.wildfly.clustering.web.spring.security.SpringSecurityImmutability;
 import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.SSOManagerConfiguration;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
@@ -139,7 +140,7 @@ public class HotRodSessionRepository implements FindByIndexNameSessionRepository
         MarshalledValueFactory<ByteBufferMarshaller> marshalledValueFactory = new ByteBufferMarshalledValueFactory(marshaller);
 
         ServiceLoader<Immutability> loadedImmutability = ServiceLoader.load(Immutability.class, Immutability.class.getClassLoader());
-        Immutability immutability = new CompositeImmutability(new CompositeIterable<>(EnumSet.allOf(DefaultImmutability.class), EnumSet.allOf(SessionAttributeImmutability.class), loadedImmutability));
+        Immutability immutability = new CompositeImmutability(new CompositeIterable<>(EnumSet.allOf(DefaultImmutability.class), EnumSet.allOf(SessionAttributeImmutability.class), EnumSet.allOf(SpringSecurityImmutability.class), loadedImmutability));
 
         SessionManagerFactory<ServletContext, Void, TransactionBatch> managerFactory = new HotRodSessionManagerFactory<>(new HotRodSessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, ByteBufferMarshaller, Void>() {
             @Override
