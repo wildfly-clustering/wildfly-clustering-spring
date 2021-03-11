@@ -73,6 +73,9 @@ import org.infinispan.remoting.transport.jgroups.JGroupsChannelConfigurator;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.infinispan.util.concurrent.BlockingManager;
 import org.infinispan.util.concurrent.NonBlockingManager;
+import org.jboss.as.clustering.context.ContextClassLoaderReference;
+import org.jboss.as.clustering.context.ContextReferenceExecutor;
+import org.jboss.as.clustering.context.Contextualizer;
 import org.jboss.as.clustering.context.DefaultExecutorService;
 import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.jgroups.JChannel;
@@ -93,6 +96,7 @@ import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.immutable.CompositeImmutability;
 import org.wildfly.clustering.ee.immutable.DefaultImmutability;
 import org.wildfly.clustering.infinispan.spi.DataContainerConfigurationBuilder;
+import org.wildfly.clustering.infinispan.spi.DefaultNonBlockingThreadFactory;
 import org.wildfly.clustering.infinispan.spi.affinity.DefaultKeyAffinityServiceFactory;
 import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.infinispan.spi.marshalling.InfinispanProtoStreamMarshaller;
@@ -235,6 +239,11 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
             public Predicate<ByteBuffer> getUnknownForkPredicate() {
                 return buffer -> buffer.remaining() == 0;
             }
+
+            @Override
+            public Function<ClassLoader, Contextualizer> getContextualizerFactory() {
+                return loader -> new ContextReferenceExecutor<>(loader, ContextClassLoaderReference.INSTANCE);
+            }
         }) : new LocalCommandDispatcherFactory(new LocalGroup(transport.nodeName()));
         if (channel != null) {
             ChannelCommandDispatcherFactory factory = (ChannelCommandDispatcherFactory) dispatcherFactory;
@@ -270,7 +279,7 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
             builder.expiration().lifespan(-1).maxIdle(-1);
         }
 
-        EvictionStrategy eviction = (maxActiveSessions != null) ? EvictionStrategy.REMOVE : EvictionStrategy.NONE;
+        EvictionStrategy eviction = (maxActiveSessions != null) ? EvictionStrategy.REMOVE : EvictionStrategy.MANUAL;
         builder.memory().storage(StorageType.HEAP)
                 .whenFull(eviction)
                 .maxCount((maxActiveSessions != null) ? maxActiveSessions.longValue() : -1)

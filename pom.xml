@@ -70,7 +70,7 @@
         <version.org.jboss.arquillian.container.tomcat>1.1.0.Final</version.org.jboss.arquillian.container.tomcat>
         <version.org.jboss.marshalling>2.0.9.Final</version.org.jboss.marshalling>
         <version.org.kohsuke.metainf-services>1.8</version.org.kohsuke.metainf-services>
-        <version.org.wildfly>23.0.0.Beta1</version.org.wildfly>
+        <version.org.wildfly>23.0.0.Final</version.org.wildfly>
         <version.junit>4.13.2</version.junit>
     </properties>
 
@@ -248,11 +248,10 @@
                         <groupId>org.wildfly</groupId>
                         <artifactId>wildfly-clustering-service</artifactId>
                     </exclusion>
-                    <!-- Workaround WFLY-14498 -->
-                    <!--exclusion>
+                    <exclusion>
                         <groupId>org.wildfly</groupId>
                         <artifactId>wildfly-naming</artifactId>
-                    </exclusion-->
+                    </exclusion>
                     <exclusion>
                         <groupId>org.wildfly</groupId>
                         <artifactId>wildfly-naming-client</artifactId>

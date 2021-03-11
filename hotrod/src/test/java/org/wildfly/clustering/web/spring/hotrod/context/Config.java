@@ -32,7 +32,7 @@ import org.wildfly.clustering.web.spring.hotrod.annotation.HotRod;
  * Test configuration for session manager.
  * @author Paul Ferraro
  */
-@EnableHotRodHttpSession(config = @HotRod(uri = "hotrod://127.0.0.1:11222", template = "default"), manager = @SessionManager(marshallerFactory = SessionMarshallerFactory.PROTOSTREAM, granularity = SessionPersistenceGranularity.ATTRIBUTE, maxActiveSessions = 100))
+@EnableHotRodHttpSession(config = @HotRod(uri = "hotrod://127.0.0.1:11222", template = "default"), manager = @SessionManager(marshallerFactory = SessionMarshallerFactory.PROTOSTREAM, granularity = SessionPersistenceGranularity.ATTRIBUTE))
 public class Config {
 
 }

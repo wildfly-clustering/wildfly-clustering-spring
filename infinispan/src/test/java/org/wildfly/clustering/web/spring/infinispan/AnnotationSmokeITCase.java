@@ -27,7 +27,6 @@ import java.net.URL;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -45,7 +44,6 @@ import org.wildfly.clustering.web.spring.servlet.context.HttpSessionApplicationI
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
-@RunAsClient
 public class AnnotationSmokeITCase extends AbstractSmokeITCase {
 
     @Deployment(name = DEPLOYMENT_1, testable = false, managed = false)

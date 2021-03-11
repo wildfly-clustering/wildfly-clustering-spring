@@ -171,7 +171,7 @@ public class DistributableSessionRepository<B extends Batch> implements FindByIn
             Map<String, SpringSession> result = new HashMap<>();
             try (Batch batch = this.manager.getBatcher().createBatch()) {
                 for (String sessionId : sessions) {
-                    ImmutableSession session = this.manager.viewSession(sessionId);
+                    ImmutableSession session = this.manager.readSession(sessionId);
                     if (session != null) {
                         result.put(sessionId, new DistributableImmutableSession(session));
                     }

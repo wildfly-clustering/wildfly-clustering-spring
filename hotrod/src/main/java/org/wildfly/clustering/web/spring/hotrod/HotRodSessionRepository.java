@@ -129,7 +129,7 @@ public class HotRodSessionRepository implements FindByIndexNameSessionRepository
                 .classLoader(containerLoader)
                 .build();
 
-        configuration.addRemoteCache(deploymentName, builder -> builder.forceReturnValues(false).nearCacheMode(NearCacheMode.INVALIDATED).transactionMode(TransactionMode.NONE).templateName(templateName));
+        configuration.addRemoteCache(deploymentName, builder -> builder.forceReturnValues(false).nearCacheMode((maxActiveSessions == null) || (maxActiveSessions.intValue() <= 0) ? NearCacheMode.DISABLED : NearCacheMode.INVALIDATED).transactionMode(TransactionMode.NONE).templateName(templateName));
 
         RemoteCacheContainer container = new RemoteCacheManager(this.getClass().getName(), configuration, this);
         container.start();
