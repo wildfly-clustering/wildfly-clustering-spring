@@ -6,9 +6,9 @@
     <cache-container name="default" default-cache="default">
         <transport/>
         <distributed-cache-configuration name="default">
-            <!--persistence passivation="true">
-                <file-store purge="true" path="${env.CATALINA_HOME}/work"/>
-            </persistence-->
+            <persistence passivation="true">
+                <file-store purge="true" path="infinispan"/>
+            </persistence>
         </distributed-cache-configuration>
     </cache-container>
 </infinispan>
