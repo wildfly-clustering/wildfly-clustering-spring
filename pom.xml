@@ -32,7 +32,7 @@
 
     <groupId>org.wildfly.clustering</groupId>
     <artifactId>wildfly-clustering-spring-session</artifactId>
-    <version>3.0.0.Beta1-SNAPSHOT</version>
+    <version>3.0.0.Final</version>
     <packaging>pom</packaging>
 
     <name>Distributed session management for Spring Session</name>
@@ -41,7 +41,7 @@
         <connection>scm:git:git://github.com:wildfly-clustering/wildfly-clustering-spring-session.git</connection>
         <developerConnection>scm:git:git@github.com:wildfly-clustering/wildfly-clustering-spring-session.git</developerConnection>
         <url>https://github.com/wildfly-clustering/wildfly-clustering-spring-session</url>
-        <tag>HEAD</tag>
+        <tag>3.0.0.Final</tag>
     </scm>
 
     <!-- Spring Security does not yet have a final release that is compatible with Spring 5.3.x! -->
