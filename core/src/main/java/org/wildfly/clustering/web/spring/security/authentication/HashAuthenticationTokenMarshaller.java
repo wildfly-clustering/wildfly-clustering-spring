@@ -31,7 +31,7 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map.Entry;
 import java.util.function.ToIntFunction;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
@@ -64,16 +64,15 @@ public class HashAuthenticationTokenMarshaller<T extends AbstractAuthenticationT
     public T readFrom(ProtoStreamReader reader) throws IOException {
         AuthenticationTokenConfiguration config = this.marshaller.getBuilder();
         int hash = DEFAULT_HASH;
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            int index = WireFormat.getTagFieldNumber(tag);
+            int index = WireType.getTagFieldNumber(tag);
             if (index == HASH_INDEX) {
                 hash = reader.readSFixed32();
             } else if (index >= TOKEN_INDEX && index < TOKEN_INDEX + this.marshaller.getFields()) {
                 config = this.marshaller.readField(reader, index - TOKEN_INDEX, config);
             } else {
-                reading = (tag != 0) && reader.skipField(tag);
+                reader.skipField(tag);
             }
         }
         Object principal = config.getPrincipal();

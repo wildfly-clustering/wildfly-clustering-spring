@@ -27,7 +27,7 @@ import java.util.BitSet;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.wildfly.clustering.marshalling.protostream.Any;
@@ -55,10 +55,9 @@ public class UserDetailsMarshaller implements ProtoStreamMarshaller<User> {
     public User readFrom(ProtoStreamReader reader) throws IOException {
         User.UserBuilder builder = User.builder().password("");
         List<GrantedAuthority> authorities = new LinkedList<>();
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            switch (WireFormat.getTagFieldNumber(tag)) {
+            switch (WireType.getTagFieldNumber(tag)) {
                 case USERNAME_INDEX:
                     builder.username(reader.readString());
                     break;
@@ -76,8 +75,7 @@ public class UserDetailsMarshaller implements ProtoStreamMarshaller<User> {
                     builder.accountLocked(flags.get(ACCOUNT_LOCKED));
                     break;
                 default:
-                    reading = (tag != 0) && reader.skipField(tag);
-                    break;
+                    reader.skipField(tag);
             }
         }
         if (!authorities.isEmpty()) {

@@ -24,7 +24,7 @@ package org.wildfly.clustering.web.spring.security.web.savedrequest;
 
 import java.io.IOException;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.springframework.security.web.savedrequest.SavedCookie;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
@@ -56,10 +56,9 @@ public class SavedCookieMarshaller implements ProtoStreamMarshaller<SavedCookie>
         String path = null;
         boolean secure = false;
         int version = DEFAULT_VERSION;
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            switch (WireFormat.getTagFieldNumber(tag)) {
+            switch (WireType.getTagFieldNumber(tag)) {
                 case SECURE_NAME_INDEX:
                     secure = true;
                 case NAME_INDEX:
@@ -84,7 +83,7 @@ public class SavedCookieMarshaller implements ProtoStreamMarshaller<SavedCookie>
                     version = reader.readUInt32();
                     break;
                 default:
-                    reading = (tag != 0) && reader.skipField(tag);
+                    reader.skipField(tag);
             }
         }
         return new SavedCookie(name, value, comment, domain, maxAge, path, secure, version);

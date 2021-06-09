@@ -25,7 +25,7 @@ package org.wildfly.clustering.web.spring.security.authentication.jaas;
 import java.io.IOException;
 import java.security.Principal;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.springframework.security.authentication.jaas.JaasGrantedAuthority;
 import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
@@ -44,10 +44,9 @@ public class JaasGrantedAuthorityMarshaller implements ProtoStreamMarshaller<Jaa
     public JaasGrantedAuthority readFrom(ProtoStreamReader reader) throws IOException {
         Principal principal = null;
         String role = null;
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            switch (WireFormat.getTagFieldNumber(tag)) {
+            switch (WireType.getTagFieldNumber(tag)) {
                 case ROLE_INDEX:
                     role = reader.readString();
                     break;
@@ -55,7 +54,7 @@ public class JaasGrantedAuthorityMarshaller implements ProtoStreamMarshaller<Jaa
                     principal = (Principal) reader.readObject(Any.class).get();
                     break;
                 default:
-                    reading = (tag != 0) && reader.skipField(tag);
+                    reader.skipField(tag);
             }
         }
         return new JaasGrantedAuthority(role, principal);

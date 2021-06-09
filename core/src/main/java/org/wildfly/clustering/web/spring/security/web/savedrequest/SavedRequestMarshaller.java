@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.Cookie;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.security.web.savedrequest.SavedCookie;
@@ -91,10 +91,9 @@ public class SavedRequestMarshaller implements ProtoStreamMarshaller<DefaultSave
         List<String[]> headerValues = new LinkedList<>();
         List<Locale> locales = new LinkedList<>();
         List<SavedCookie> cookies = new LinkedList<>();
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            switch (WireFormat.getTagFieldNumber(tag)) {
+            switch (WireType.getTagFieldNumber(tag)) {
                 case METHOD_INDEX:
                     builder.setMethod(reader.readEnum(HttpMethod.class).name());
                     break;
@@ -144,7 +143,7 @@ public class SavedRequestMarshaller implements ProtoStreamMarshaller<DefaultSave
                     cookies.add(reader.readObject(SavedCookie.class));
                     break;
                 default:
-                    reading = (tag != 0) && reader.skipField(tag);
+                    reader.skipField(tag);
             }
         }
         if (!parameterNames.isEmpty()) {

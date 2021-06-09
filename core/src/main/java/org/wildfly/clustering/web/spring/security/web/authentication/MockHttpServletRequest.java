@@ -188,6 +188,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
         return null;
     }
 
+    @Deprecated
     @Override
     public String getRealPath(String path) {
         return null;
@@ -368,6 +369,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
         return false;
     }
 
+    @Deprecated
     @Override
     public boolean isRequestedSessionIdFromUrl() {
         return false;
@@ -437,7 +439,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
             return 0;
         }
 
-        @SuppressWarnings("deprecation")
+        @Deprecated
         @Override
         public javax.servlet.http.HttpSessionContext getSessionContext() {
             return null;
@@ -448,6 +450,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
             return null;
         }
 
+        @Deprecated
         @Override
         public Object getValue(String name) {
             return null;
@@ -467,6 +470,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
         public void setAttribute(String name, Object value) {
         }
 
+        @Deprecated
         @Override
         public void putValue(String name, Object value) {
         }
@@ -475,6 +479,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
         public void removeAttribute(String name) {
         }
 
+        @Deprecated
         @Override
         public void removeValue(String name) {
         }
