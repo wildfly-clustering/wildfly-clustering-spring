@@ -44,15 +44,6 @@
         <tag>HEAD</tag>
     </scm>
 
-    <!-- Spring Security does not yet have a final release that is compatible with Spring 5.3.x! -->
-    <repositories>
-        <repository>
-            <id>SpringFramework</id>
-            <name>Sping Framework milestone releases</name>
-            <url>https://maven.springframework.org/milestone/</url>
-        </repository>
-    </repositories>
-
     <properties>
         <jdk.min.version>11</jdk.min.version>
         <jdk.release.version>8</jdk.release.version>
