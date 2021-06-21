@@ -68,6 +68,8 @@ import org.infinispan.globalstate.ConfigurationStorage;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.impl.ListenerInvocation;
+import org.infinispan.protostream.SerializationContext;
+import org.infinispan.protostream.SerializationContextInitializer;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.jgroups.JGroupsChannelConfigurator;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
@@ -257,7 +259,31 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
                 .expirationThreadPool().threadFactory(new DefaultThreadFactory(ExpirationManager.class))
                 .listenerThreadPool().threadFactory(new DefaultThreadFactory(ListenerInvocation.class))
                 .nonBlockingThreadPool().threadFactory(new DefaultNonBlockingThreadFactory(NonBlockingManager.class))
-                .serialization().marshaller(new InfinispanProtoStreamMarshaller(new SimpleClassLoaderMarshaller(containerLoader), containerLoader))
+                .serialization()
+                    .marshaller(new InfinispanProtoStreamMarshaller(new SimpleClassLoaderMarshaller(containerLoader), builder -> builder.load(containerLoader)))
+                    // Register dummy serialization context initializer, to bypass service loading in org.infinispan.marshall.protostream.impl.SerializationContextRegistryImpl
+                    // Otherwise marshaller auto-detection will not work
+                    .addContextInitializer(new SerializationContextInitializer() {
+                        @Deprecated
+                        @Override
+                        public String getProtoFile() {
+                            return null;
+                        }
+    
+                        @Deprecated
+                        @Override
+                        public String getProtoFileName() {
+                            return null;
+                        }
+    
+                        @Override
+                        public void registerMarshallers(SerializationContext context) {
+                        }
+    
+                        @Override
+                        public void registerSchema(SerializationContext context) {
+                        }
+                    })
                 .globalState().configurationStorage(ConfigurationStorage.IMMUTABLE).disable();
 
         @SuppressWarnings("resource")

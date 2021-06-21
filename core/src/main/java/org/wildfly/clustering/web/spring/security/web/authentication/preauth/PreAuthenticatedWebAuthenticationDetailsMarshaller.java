@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.infinispan.protostream.impl.WireFormat;
+import org.infinispan.protostream.descriptors.WireType;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails;
 import org.wildfly.clustering.marshalling.protostream.Any;
@@ -49,16 +49,15 @@ public class PreAuthenticatedWebAuthenticationDetailsMarshaller implements Proto
     public PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails readFrom(ProtoStreamReader reader) throws IOException {
         HttpServletRequestBuilder builder = HttpServletRequestMarshaller.INSTANCE.getBuilder();
         List<GrantedAuthority> authorities = new LinkedList<>();
-        boolean reading = true;
-        while (reading) {
+        while (!reader.isAtEnd()) {
             int tag = reader.readTag();
-            int index = WireFormat.getTagFieldNumber(tag);
+            int index = WireType.getTagFieldNumber(tag);
             if (index >= HTTP_SERVLET_REQUEST_INDEX && index < AUTHORITIY_INDEX) {
                 builder = HttpServletRequestMarshaller.INSTANCE.readField(reader, index - HTTP_SERVLET_REQUEST_INDEX, builder);
             } else if (index == AUTHORITIY_INDEX) {
                 authorities.add((GrantedAuthority) reader.readObject(Any.class).get());
             } else {
-                reading = (tag != 0) && reader.skipField(tag);
+                reader.skipField(tag);
             }
         }
         return new PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails(builder.build(), authorities);

@@ -126,7 +126,7 @@ public class HotRodSessionRepository implements FindByIndexNameSessionRepository
         URI uri = this.configuration.getUri();
         Configuration configuration = ((uri != null) ? HotRodURI.create(uri).toConfigurationBuilder() : new ConfigurationBuilder())
                 .withProperties(this.configuration.getProperties())
-                .marshaller(new ProtoStreamMarshaller(new SimpleClassLoaderMarshaller(containerLoader), containerLoader))
+                .marshaller(new ProtoStreamMarshaller(new SimpleClassLoaderMarshaller(containerLoader), builder -> builder.load(containerLoader)))
                 .classLoader(containerLoader)
                 .build();
 

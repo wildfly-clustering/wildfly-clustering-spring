@@ -27,7 +27,7 @@
     <parent>
         <groupId>org.wildfly.clustering</groupId>
         <artifactId>wildfly-clustering-spring-session</artifactId>
-        <version>3.0.1.Final-SNAPSHOT</version>
+        <version>4.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-clustering-spring-session-hotrod</artifactId>
@@ -61,11 +61,11 @@
             <artifactId>wildfly-clustering-web-hotrod</artifactId>
         </dependency>
 
-        <!--dependency>
+        <dependency>
             <groupId>org.jboss.marshalling</groupId>
             <artifactId>jboss-marshalling-river</artifactId>
             <scope>runtime</scope>
-        </dependency-->
+        </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>

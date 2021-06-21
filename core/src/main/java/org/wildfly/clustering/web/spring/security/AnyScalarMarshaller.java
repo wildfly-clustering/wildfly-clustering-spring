@@ -24,6 +24,7 @@ package org.wildfly.clustering.web.spring.security;
 
 import java.io.IOException;
 
+import org.infinispan.protostream.descriptors.WireType;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 import org.wildfly.clustering.marshalling.protostream.Scalar;
@@ -56,7 +57,7 @@ public class AnyScalarMarshaller<T> implements ScalarMarshaller<T> {
     }
 
     @Override
-    public int getWireType() {
+    public WireType getWireType() {
         return Scalar.ANY.getWireType();
     }
 }
