@@ -47,6 +47,7 @@ import javax.servlet.http.HttpUpgradeHandler;
 import javax.servlet.http.Part;
 
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
+import org.wildfly.clustering.web.spring.AbstractHttpSession;
 
 public class MockHttpServletRequest implements HttpServletRequest {
     private final String remoteAddress;
@@ -401,7 +402,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
         return null;
     }
 
-    private static class MockHttpSession implements HttpSession {
+    private static class MockHttpSession extends AbstractHttpSession {
         private final String sessionId;
 
         MockHttpSession(String sessionId) {
@@ -437,19 +438,8 @@ public class MockHttpServletRequest implements HttpServletRequest {
             return 0;
         }
 
-        @SuppressWarnings("deprecation")
-        @Override
-        public javax.servlet.http.HttpSessionContext getSessionContext() {
-            return null;
-        }
-
         @Override
         public Object getAttribute(String name) {
-            return null;
-        }
-
-        @Override
-        public Object getValue(String name) {
             return null;
         }
 
@@ -459,24 +449,11 @@ public class MockHttpServletRequest implements HttpServletRequest {
         }
 
         @Override
-        public String[] getValueNames() {
-            return null;
-        }
-
-        @Override
         public void setAttribute(String name, Object value) {
         }
 
         @Override
-        public void putValue(String name, Object value) {
-        }
-
-        @Override
         public void removeAttribute(String name) {
-        }
-
-        @Override
-        public void removeValue(String name) {
         }
 
         @Override
