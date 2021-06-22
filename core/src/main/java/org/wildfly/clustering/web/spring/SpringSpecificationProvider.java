@@ -42,7 +42,7 @@ public enum SpringSpecificationProvider implements SpecificationProvider<HttpSes
 
     @Override
     public HttpSession createHttpSession(ImmutableSession session, ServletContext context) {
-        return new HttpSession() {
+        return new AbstractHttpSession() {
             @Override
             public String getId() {
                 return session.getId();
@@ -101,46 +101,6 @@ public enum SpringSpecificationProvider implements SpecificationProvider<HttpSes
             @Override
             public void setMaxInactiveInterval(int interval) {
                 // Ignore
-            }
-
-            @Deprecated
-            @Override
-            public String[] getValueNames() {
-                return Collections.list(this.getAttributeNames()).toArray(new String[0]);
-            }
-
-            @Deprecated
-            @Override
-            public Object getValue(String name) {
-                return this.getAttribute(name);
-            }
-
-            @Deprecated
-            @Override
-            public void putValue(String name, Object value) {
-                this.setAttribute(name, value);
-            }
-
-            @Deprecated
-            @Override
-            public void removeValue(String name) {
-                this.removeAttribute(name);
-            }
-
-            @Deprecated
-            @Override
-            public javax.servlet.http.HttpSessionContext getSessionContext() {
-                return new javax.servlet.http.HttpSessionContext() {
-                    @Override
-                    public Enumeration<String> getIds() {
-                        return Collections.enumeration(Collections.<String>emptyList());
-                    }
-
-                    @Override
-                    public HttpSession getSession(String sessionId) {
-                        return null;
-                    }
-                };
             }
         };
     }

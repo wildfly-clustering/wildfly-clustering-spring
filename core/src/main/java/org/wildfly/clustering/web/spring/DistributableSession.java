@@ -28,11 +28,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.BatchContext;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
+import org.wildfly.clustering.web.session.oob.OOBSession;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.SSOManager;
 
@@ -46,6 +48,7 @@ public class DistributableSession<B extends Batch> implements SpringSession {
     private final B batch;
     private final Instant startTime;
     private final IndexingConfiguration<B> indexing;
+    private final AtomicBoolean closed = new AtomicBoolean(false);
 
     private volatile Session<Void> session;
 
@@ -60,17 +63,24 @@ public class DistributableSession<B extends Batch> implements SpringSession {
     @Override
     public String changeSessionId() {
         Session<Void> oldSession = this.session;
-        validate(oldSession);
         String id = this.manager.createIdentifier();
         try (BatchContext context = this.resumeBatch()) {
             Session<Void> newSession = this.manager.createSession(id);
-            for (String name: oldSession.getAttributes().getAttributeNames()) {
-                newSession.getAttributes().setAttribute(name, oldSession.getAttributes().getAttribute(name));
+            try {
+                for (String name: oldSession.getAttributes().getAttributeNames()) {
+                    newSession.getAttributes().setAttribute(name, oldSession.getAttributes().getAttribute(name));
+                }
+                newSession.getMetaData().setMaxInactiveInterval(oldSession.getMetaData().getMaxInactiveInterval());
+                newSession.getMetaData().setLastAccess(oldSession.getMetaData().getLastAccessStartTime(), oldSession.getMetaData().getLastAccessEndTime());
+                oldSession.invalidate();
+                this.session = newSession;
+            } catch (IllegalStateException e) {
+                if (!oldSession.isValid()) {
+                    oldSession.close();
+                }
+                newSession.invalidate();
+                throw e;
             }
-            newSession.getMetaData().setMaxInactiveInterval(oldSession.getMetaData().getMaxInactiveInterval());
-            newSession.getMetaData().setLastAccess(oldSession.getMetaData().getLastAccessStartTime(), oldSession.getMetaData().getLastAccessEndTime());
-            this.session = newSession;
-            oldSession.invalidate();
         }
 
         // Update indexes
@@ -94,20 +104,41 @@ public class DistributableSession<B extends Batch> implements SpringSession {
     @SuppressWarnings("unchecked")
     @Override
     public <T> T getAttribute(String name) {
-        validate(this.session);
-        return (T) this.session.getAttributes().getAttribute(name);
+        Session<Void> session = this.session;
+        try (BatchContext context = this.resumeBatch()) {
+            return (T) session.getAttributes().getAttribute(name);
+        } catch (IllegalStateException e) {
+            if (!session.isValid()) {
+                session.close();
+            }
+            throw e;
+        }
     }
 
     @Override
     public Set<String> getAttributeNames() {
-        validate(this.session);
-        return this.session.getAttributes().getAttributeNames();
+        Session<Void> session = this.session;
+        try (BatchContext context = this.resumeBatch()) {
+            return session.getAttributes().getAttributeNames();
+        } catch (IllegalStateException e) {
+            if (!session.isValid()) {
+                session.close();
+            }
+            throw e;
+        }
     }
 
     @Override
     public Instant getCreationTime() {
-        validate(this.session);
-        return this.session.getMetaData().getCreationTime();
+        Session<Void> session = this.session;
+        try (BatchContext context = this.resumeBatch()) {
+            return session.getMetaData().getCreationTime();
+        } catch (IllegalStateException e) {
+            if (!session.isValid()) {
+                session.close();
+            }
+            throw e;
+        }
     }
 
     @Override
@@ -117,20 +148,41 @@ public class DistributableSession<B extends Batch> implements SpringSession {
 
     @Override
     public Instant getLastAccessedTime() {
-        validate(this.session);
-        return this.session.getMetaData().getLastAccessStartTime();
+        Session<Void> session = this.session;
+        try (BatchContext context = this.resumeBatch()) {
+            return session.getMetaData().getLastAccessStartTime();
+        } catch (IllegalStateException e) {
+            if (!session.isValid()) {
+                session.close();
+            }
+            throw e;
+        }
     }
 
     @Override
     public Duration getMaxInactiveInterval() {
-        validate(this.session);
-        return this.session.getMetaData().getMaxInactiveInterval();
+        Session<Void> session = this.session;
+        try (BatchContext context = this.resumeBatch()) {
+            return session.getMetaData().getMaxInactiveInterval();
+        } catch (IllegalStateException e) {
+            if (!session.isValid()) {
+                session.close();
+            }
+            throw e;
+        }
     }
 
     @Override
     public boolean isExpired() {
-        validate(this.session);
-        return this.session.getMetaData().isExpired();
+        Session<Void> session = this.session;
+        try (BatchContext context = this.resumeBatch()) {
+            return session.getMetaData().isExpired();
+        } catch (IllegalStateException e) {
+            if (!session.isValid()) {
+                session.close();
+            }
+            throw e;
+        }
     }
 
     @Override
@@ -140,11 +192,18 @@ public class DistributableSession<B extends Batch> implements SpringSession {
 
     @Override
     public void setAttribute(String name, Object value) {
-        validate(this.session);
-
         Map<String, String> oldIndexes = this.indexing.getIndexResolver().resolveIndexesFor(this);
 
-        this.session.getAttributes().setAttribute(name, value);
+        Session<Void> session = this.session;
+        try (BatchContext context = this.resumeBatch()) {
+            session.getAttributes().setAttribute(name, value);
+        } catch (IllegalStateException e) {
+            if (!session.isValid()) {
+                session.close();
+            }
+            throw e;
+        }
+
         // N.B. org.springframework.session.web.http.HttpSessionAdapter already triggers HttpSessionBindingListener events
         // However, Spring Session violates the servlet specification by not triggering HttpSessionAttributeListener events
 
@@ -167,7 +226,7 @@ public class DistributableSession<B extends Batch> implements SpringSession {
                             }
                         }
                         if (indexValue != null) {
-                            String sessionId = this.getId();
+                            String sessionId = session.getId();
                             SSO<Void, String, String, Void> sso = manager.createSSO(indexValue, null);
                             sso.getSessions().addSession(sessionId, sessionId);
                         }
@@ -184,19 +243,15 @@ public class DistributableSession<B extends Batch> implements SpringSession {
 
     @Override
     public void setMaxInactiveInterval(Duration duration) {
-        validate(this.session);
-        this.session.getMetaData().setMaxInactiveInterval(duration);
-    }
-
-    private static void validate(Session<Void> session) {
-        if (!session.isValid()) {
-            throw new IllegalStateException(String.format("Session %s is not valid", session.getId()));
+        Session<Void> session = this.session;
+        try (BatchContext context = this.resumeBatch()) {
+            session.getMetaData().setMaxInactiveInterval(duration);
+        } catch (IllegalStateException e) {
+            if (!session.isValid()) {
+                session.close();
+            }
+            throw e;
         }
-    }
-
-    private BatchContext resumeBatch() {
-        B batch = (this.batch.getState() != Batch.State.CLOSED) ? this.batch : null;
-        return this.manager.getBatcher().resumeBatch(batch);
     }
 
     @Override
@@ -206,9 +261,34 @@ public class DistributableSession<B extends Batch> implements SpringSession {
 
     @Override
     public void close() {
-        // According to §7.6 of the servlet specification:
-        // The session is considered to be accessed when a request that is part of the session is first handled by the servlet container.
-        this.session.getMetaData().setLastAccess(this.startTime, Instant.now());
-        this.session.close();
+        // Spring session lifecycle logic is a mess.  Ensure we only close a session once.
+        if (this.closed.compareAndSet(false, true)) {
+            Session<Void> requestSession = this.session;
+            try (BatchContext context = this.resumeBatch()) {
+                // If batch was discarded, close it
+                if (this.batch.getState() == Batch.State.DISCARDED) {
+                    this.batch.close();
+                }
+                // If batch is closed, close valid session in a new batch
+                try (Batch batch = (this.batch.getState() == Batch.State.CLOSED) && requestSession.isValid() ? this.manager.getBatcher().createBatch() : this.batch) {
+                    // Ensure session is closed, even if invalid
+                    try (Session<Void> session = requestSession) {
+                        if (session.isValid()) {
+                            // According to §7.6 of the servlet specification:
+                            // The session is considered to be accessed when a request that is part of the session is first handled by the servlet container.
+                            session.getMetaData().setLastAccess(this.startTime, Instant.now());
+                        }
+                    }
+                }
+            } finally {
+                // Switch to OOB session, in case this session is referenced outside the scope of this request
+                this.session = new OOBSession<>(this.manager, requestSession.getId(), null);
+            }
+        }
+    }
+
+    private BatchContext resumeBatch() {
+        B batch = (this.batch != null) && (this.batch.getState() != Batch.State.CLOSED) ? this.batch : null;
+        return this.manager.getBatcher().resumeBatch(batch);
     }
 }
