@@ -26,7 +26,6 @@ import java.io.IOException;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -56,13 +55,13 @@ public class AuthenticationMarshaller<A extends Authentication> implements Field
     public AuthenticationTokenConfiguration readField(ProtoStreamReader reader, int index, AuthenticationTokenConfiguration config) throws IOException {
         switch (index) {
             case PRINCIPAL_INDEX:
-                return config.setPrincipal(reader.readObject(Any.class).get());
+                return config.setPrincipal(reader.readAny());
             case CREDENTIALS_INDEX:
-                return config.setCredentials(reader.readObject(Any.class).get());
+                return config.setCredentials(reader.readAny());
             case GRANTED_AUTHORITY_INDEX:
-                return config.addAuthority((GrantedAuthority) reader.readObject(Any.class).get());
+                return config.addAuthority(reader.readAny(GrantedAuthority.class));
             case DETAILS_INDEX:
-                return config.setDetails(reader.readObject(Any.class).get());
+                return config.setDetails(reader.readAny());
             default:
                 return config;
         }
@@ -72,18 +71,18 @@ public class AuthenticationMarshaller<A extends Authentication> implements Field
     public void writeFields(ProtoStreamWriter writer, int startIndex, A token) throws IOException {
         Object principal = token.getPrincipal();
         if (principal != null) {
-            writer.writeObject(startIndex + PRINCIPAL_INDEX, new Any(token.getPrincipal()));
+            writer.writeAny(startIndex + PRINCIPAL_INDEX, token.getPrincipal());
         }
         Object credentials = token.getCredentials();
         if (!this.getBuilder().getCredentials().equals(credentials)) {
-            writer.writeObject(startIndex + CREDENTIALS_INDEX, new Any(credentials));
+            writer.writeAny(startIndex + CREDENTIALS_INDEX, credentials);
         }
         for (GrantedAuthority authority : token.getAuthorities()) {
-            writer.writeObject(startIndex + GRANTED_AUTHORITY_INDEX, new Any(authority));
+            writer.writeAny(startIndex + GRANTED_AUTHORITY_INDEX, authority);
         }
         Object details = token.getDetails();
         if (details != null) {
-            writer.writeObject(startIndex + DETAILS_INDEX, new Any(details));
+            writer.writeAny(startIndex + DETAILS_INDEX, details);
         }
     }
 }

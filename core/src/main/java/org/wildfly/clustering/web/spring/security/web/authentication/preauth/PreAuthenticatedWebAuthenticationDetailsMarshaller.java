@@ -29,7 +29,6 @@ import java.util.List;
 import org.infinispan.protostream.descriptors.WireType;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails;
-import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -55,7 +54,7 @@ public class PreAuthenticatedWebAuthenticationDetailsMarshaller implements Proto
             if (index >= HTTP_SERVLET_REQUEST_INDEX && index < AUTHORITIY_INDEX) {
                 builder = HttpServletRequestMarshaller.INSTANCE.readField(reader, index - HTTP_SERVLET_REQUEST_INDEX, builder);
             } else if (index == AUTHORITIY_INDEX) {
-                authorities.add((GrantedAuthority) reader.readObject(Any.class).get());
+                authorities.add(reader.readAny(GrantedAuthority.class));
             } else {
                 reader.skipField(tag);
             }
@@ -67,7 +66,7 @@ public class PreAuthenticatedWebAuthenticationDetailsMarshaller implements Proto
     public void writeTo(ProtoStreamWriter writer, PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails details) throws IOException {
         HttpServletRequestMarshaller.INSTANCE.writeFields(writer, HTTP_SERVLET_REQUEST_INDEX, new MockHttpServletRequest(details));
         for (GrantedAuthority authority : details.getGrantedAuthorities()) {
-            writer.writeObject(AUTHORITIY_INDEX, new Any(authority));
+            writer.writeAny(AUTHORITIY_INDEX, authority);
         }
     }
 

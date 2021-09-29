@@ -37,8 +37,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -78,7 +76,6 @@ import org.infinispan.util.concurrent.NonBlockingManager;
 import org.jboss.as.clustering.context.ContextClassLoaderReference;
 import org.jboss.as.clustering.context.ContextReferenceExecutor;
 import org.jboss.as.clustering.context.Contextualizer;
-import org.jboss.as.clustering.context.DefaultExecutorService;
 import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.jgroups.JChannel;
 import org.jgroups.jmx.JmxConfigurator;
@@ -345,9 +342,7 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
             }
         };
 
-        ExecutorService affinityExecutor = Executors.newCachedThreadPool(new DefaultThreadFactory(this.getClass()));
-        this.stopTasks.add(() -> WildFlySecurityManager.doUnchecked(affinityExecutor, DefaultExecutorService.SHUTDOWN_NOW_ACTION));
-        KeyAffinityServiceFactory affinityFactory = new DefaultKeyAffinityServiceFactory(affinityExecutor, 10);
+        KeyAffinityServiceFactory affinityFactory = new DefaultKeyAffinityServiceFactory();
 
         Map<String, String> indexes = this.configuration.getIndexes();
         Map<String, SSOManager<Void, String, String, Void, TransactionBatch>> managers = indexes.isEmpty() ? Collections.emptyMap() : new HashMap<>();

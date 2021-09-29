@@ -27,7 +27,6 @@ import java.security.Principal;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.springframework.security.authentication.jaas.JaasGrantedAuthority;
-import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -51,7 +50,7 @@ public class JaasGrantedAuthorityMarshaller implements ProtoStreamMarshaller<Jaa
                     role = reader.readString();
                     break;
                 case PRINCIPAL_INDEX:
-                    principal = (Principal) reader.readObject(Any.class).get();
+                    principal = reader.readAny(Principal.class);
                     break;
                 default:
                     reader.skipField(tag);
@@ -68,7 +67,7 @@ public class JaasGrantedAuthorityMarshaller implements ProtoStreamMarshaller<Jaa
         }
         Principal principal = authority.getPrincipal();
         if (principal != null) {
-            writer.writeObject(PRINCIPAL_INDEX, new Any(principal));
+            writer.writeAny(PRINCIPAL_INDEX, principal);
         }
     }
 

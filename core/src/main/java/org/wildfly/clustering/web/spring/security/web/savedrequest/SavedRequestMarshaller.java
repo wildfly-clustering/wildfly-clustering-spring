@@ -39,7 +39,6 @@ import org.infinispan.protostream.descriptors.WireType;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.security.web.savedrequest.SavedCookie;
-import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -125,7 +124,7 @@ public class SavedRequestMarshaller implements ProtoStreamMarshaller<DefaultSave
                     parameterValues.add(new String[] { reader.readString() });
                     break;
                 case PARAMETER_VALUES_INDEX:
-                    parameterValues.add((String[]) reader.readObject(Any.class).get());
+                    parameterValues.add(reader.readAny(String[].class));
                     break;
                 case HEADER_NAME_INDEX:
                     headerNames.add(reader.readString());
@@ -134,7 +133,7 @@ public class SavedRequestMarshaller implements ProtoStreamMarshaller<DefaultSave
                     headerValues.add(new String[] { reader.readString() });
                     break;
                 case HEADER_VALUES_INDEX:
-                    headerValues.add((String[]) reader.readObject(Any.class).get());
+                    headerValues.add(reader.readAny(String[].class));
                     break;
                 case LOCALE_INDEX:
                     locales.add(reader.readObject(Locale.class));
@@ -256,7 +255,7 @@ public class SavedRequestMarshaller implements ProtoStreamMarshaller<DefaultSave
                 if (parameterValues.length == 1) {
                     writer.writeString(PARAMETER_VALUE_INDEX, parameterValues[0]);
                 } else {
-                    writer.writeObject(PARAMETER_VALUES_INDEX, new Any(parameterValues));
+                    writer.writeAny(PARAMETER_VALUES_INDEX, parameterValues);
                 }
             }
         }
@@ -266,7 +265,7 @@ public class SavedRequestMarshaller implements ProtoStreamMarshaller<DefaultSave
             if (headerValues.size() == 1) {
                 writer.writeString(HEADER_VALUE_INDEX, headerValues.get(0));
             } else {
-                writer.writeObject(HEADER_VALUES_INDEX, new Any(headerValues.toArray(new String[0])));
+                writer.writeAny(HEADER_VALUES_INDEX, headerValues.toArray(new String[0]));
             }
         }
         for (Locale locale : request.getLocales()) {

@@ -30,7 +30,6 @@ import java.util.List;
 import org.infinispan.protostream.descriptors.WireType;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
-import org.wildfly.clustering.marshalling.protostream.Any;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -65,7 +64,7 @@ public class UserDetailsMarshaller implements ProtoStreamMarshaller<User> {
                     builder.password(reader.readString());
                     break;
                 case AUTHORITY_INDEX:
-                    authorities.add((GrantedAuthority) reader.readObject(Any.class).get());
+                    authorities.add(reader.readAny(GrantedAuthority.class));
                     break;
                 case FLAGS:
                     BitSet flags = reader.readObject(BitSet.class);
@@ -92,7 +91,7 @@ public class UserDetailsMarshaller implements ProtoStreamMarshaller<User> {
             writer.writeString(PASSWORD_INDEX, password);
         }
         for (GrantedAuthority authority : user.getAuthorities()) {
-            writer.writeObject(AUTHORITY_INDEX, new Any(authority));
+            writer.writeAny(AUTHORITY_INDEX, authority);
         }
         BitSet flags = new BitSet(FLAGS);
         if (!user.isEnabled()) {
