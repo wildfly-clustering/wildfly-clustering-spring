@@ -285,8 +285,6 @@
                         </goals>
                         <configuration>
                             <trimStackTrace>false</trimStackTrace>
-                            <!-- Workaround for @ClassRule Infinispan Server -->
-                            <reuseForks>false</reuseForks>
                             <systemPropertyVariables>
                                 <infinispan.server.home>${project.build.directory}/infinispan-server-${version.org.infinispan}</infinispan.server.home>
                             </systemPropertyVariables>
