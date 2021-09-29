@@ -7,7 +7,7 @@
 
     <bean class="org.wildfly.clustering.web.spring.hotrod.annotation.HotRodHttpSessionConfiguration">
         <property name="uri">
-            <value type="java.net.URI">hotrod://127.0.0.1:11222</value>
+            <value type="java.net.URI">hotrod://testsuite-application-user:testsuite-application-password@127.0.0.1:11222</value>
         </property>
         <property name="properties">
             <props>
