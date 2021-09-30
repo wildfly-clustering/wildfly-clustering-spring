@@ -56,7 +56,7 @@
         <version.org.apache.tomcat>9.0.48</version.org.apache.tomcat>
         <version.org.infinispan>12.1.7.Final</version.org.infinispan>
         <version.org.infinispan.protostream>4.4.1.Final</version.org.infinispan.protostream>
-        <version.org.infinispan.server>${version.org.infinispan}</version.org.infinispan.server>
+        <version.org.infinispan.server>13.0.0.CR2</version.org.infinispan.server>
         <version.org.infinispan.server.driver>13.0.0.Dev03</version.org.infinispan.server.driver>
         <version.org.jboss.arquillian>1.6.0.Final</version.org.jboss.arquillian>
         <version.org.jboss.arquillian.container.tomcat>1.1.0.Final</version.org.jboss.arquillian.container.tomcat>
