@@ -119,7 +119,7 @@
             </testResource>
             <testResource>
                 <directory>src/test/resources/infinispan</directory>
-                <targetPath>${project.build.directory}/infinispan-server-${version.org.infinispan}/server/conf</targetPath>
+                <targetPath>${project.build.directory}/infinispan-server-${version.org.infinispan.server}/server/conf</targetPath>
                 <includes>
                     <include>**</include>
                 </includes>
@@ -154,7 +154,7 @@
                             <goal>wget</goal>
                         </goals>
                         <configuration>
-                            <url>https://downloads.jboss.org/infinispan/${version.org.infinispan}/infinispan-server-${version.org.infinispan}.zip</url>
+                            <url>https://downloads.jboss.org/infinispan/${version.org.infinispan.server}/infinispan-server-${version.org.infinispan.server}.zip</url>
                             <unpack>true</unpack>
                         </configuration>
                     </execution>
@@ -286,7 +286,7 @@
                         <configuration>
                             <trimStackTrace>false</trimStackTrace>
                             <systemPropertyVariables>
-                                <infinispan.server.home>${project.build.directory}/infinispan-server-${version.org.infinispan}</infinispan.server.home>
+                                <infinispan.server.home>${project.build.directory}/infinispan-server-${version.org.infinispan.server}</infinispan.server.home>
                             </systemPropertyVariables>
                         </configuration>
                     </execution>
