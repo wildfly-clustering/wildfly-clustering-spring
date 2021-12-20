@@ -63,7 +63,7 @@ public class DistributableSession<B extends Batch> implements SpringSession {
     @Override
     public String changeSessionId() {
         Session<Void> oldSession = this.session;
-        String id = this.manager.createIdentifier();
+        String id = this.manager.getIdentifierFactory().get();
         try (BatchContext context = this.resumeBatch()) {
             Session<Void> newSession = this.manager.createSession(id);
             try {

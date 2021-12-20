@@ -71,7 +71,7 @@ public class DistributableSessionRepository<B extends Batch> implements FindByIn
 
     @Override
     public SpringSession createSession() {
-        String id = this.manager.createIdentifier();
+        String id = this.manager.getIdentifierFactory().get();
         boolean close = true;
         Batcher<B> batcher = this.manager.getBatcher();
         B batch = batcher.createBatch();
