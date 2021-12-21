@@ -69,7 +69,6 @@ import org.wildfly.clustering.marshalling.protostream.SimpleClassLoaderMarshalle
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
-import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.hotrod.session.HotRodSessionManagerFactory;
 import org.wildfly.clustering.web.hotrod.session.HotRodSessionManagerFactoryConfiguration;
@@ -193,21 +192,7 @@ public class HotRodSessionRepository implements FindByIndexNameSessionRepository
         });
         this.stopTasks.add(managerFactory::close);
 
-        Supplier<String> factory = this.configuration.getIdentifierFactory();
-        IdentifierFactory<String> identifierFactory = new IdentifierFactory<String>() {
-            @Override
-            public String createIdentifier() {
-                return factory.get();
-            }
-
-            @Override
-            public void start() {
-            }
-
-            @Override
-            public void stop() {
-            }
-        };
+        Supplier<String> identifierFactory = this.configuration.getIdentifierFactory();
 
         Map<String, String> indexes = this.configuration.getIndexes();
         Map<String, SSOManager<Void, String, String, Void, TransactionBatch>> managers = indexes.isEmpty() ? Collections.emptyMap() : new HashMap<>();
@@ -225,7 +210,7 @@ public class HotRodSessionRepository implements FindByIndexNameSessionRepository
 
             SSOManager<Void, String, String, Void, TransactionBatch> ssoManager = ssoManagerFactory.createSSOManager(new SSOManagerConfiguration<ByteBufferMarshaller, Void>() {
                 @Override
-                public IdentifierFactory<String> getIdentifierFactory() {
+                public Supplier<String> getIdentifierFactory() {
                     return identifierFactory;
                 }
 
@@ -266,7 +251,7 @@ public class HotRodSessionRepository implements FindByIndexNameSessionRepository
             }
 
             @Override
-            public IdentifierFactory<String> getIdentifierFactory() {
+            public Supplier<String> getIdentifierFactory() {
                 return identifierFactory;
             }
 

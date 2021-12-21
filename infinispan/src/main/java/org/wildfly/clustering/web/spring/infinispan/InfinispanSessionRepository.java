@@ -111,7 +111,6 @@ import org.wildfly.clustering.server.group.CacheGroupConfiguration;
 import org.wildfly.clustering.server.group.LocalGroup;
 import org.wildfly.clustering.spi.NodeFactory;
 import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagerFactory;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagerFactoryConfiguration;
@@ -266,17 +265,17 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
                         public String getProtoFile() {
                             return null;
                         }
-    
+
                         @Deprecated
                         @Override
                         public String getProtoFileName() {
                             return null;
                         }
-    
+
                         @Override
                         public void registerMarshallers(SerializationContext context) {
                         }
-    
+
                         @Override
                         public void registerSchema(SerializationContext context) {
                         }
@@ -326,21 +325,7 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
         ServiceLoader<Immutability> loadedImmutability = ServiceLoader.load(Immutability.class, Immutability.class.getClassLoader());
         Immutability immutability = new CompositeImmutability(new CompositeIterable<>(EnumSet.allOf(DefaultImmutability.class), EnumSet.allOf(SessionAttributeImmutability.class), EnumSet.allOf(SpringSecurityImmutability.class), loadedImmutability));
 
-        Supplier<String> factory = this.configuration.getIdentifierFactory();
-        IdentifierFactory<String> identifierFactory = new IdentifierFactory<String>() {
-            @Override
-            public String createIdentifier() {
-                return factory.get();
-            }
-
-            @Override
-            public void start() {
-            }
-
-            @Override
-            public void stop() {
-            }
-        };
+        Supplier<String> identifierFactory = this.configuration.getIdentifierFactory();
 
         KeyAffinityServiceFactory affinityFactory = new DefaultKeyAffinityServiceFactory();
 
@@ -371,7 +356,7 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
 
             SSOManager<Void, String, String, Void, TransactionBatch> ssoManager = ssoManagerFactory.createSSOManager(new SSOManagerConfiguration<ByteBufferMarshaller, Void>() {
                 @Override
-                public IdentifierFactory<String> getIdentifierFactory() {
+                public Supplier<String> getIdentifierFactory() {
                     return identifierFactory;
                 }
 
@@ -493,7 +478,7 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
             }
 
             @Override
-            public IdentifierFactory<String> getIdentifierFactory() {
+            public Supplier<String> getIdentifierFactory() {
                 return identifierFactory;
             }
 
