@@ -35,6 +35,10 @@
 
     <name>Distributed session management for Spring Session: Infinispan integration</name>
 
+    <properties>
+        <catalina.home>${project.build.directory}/apache-tomcat-${version.org.apache.tomcat}</catalina.home>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>jakarta.servlet</groupId>
@@ -127,7 +131,7 @@
             </testResource>
             <testResource>
                 <directory>src/test/resources/tomcat</directory>
-                <targetPath>${project.build.directory}/apache-tomcat-${version.org.apache.tomcat}/conf</targetPath>
+                <targetPath>${catalina.home}/conf</targetPath>
                 <includes>
                     <include>**</include>
                 </includes>
@@ -175,7 +179,7 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/apache-tomcat-${version.org.apache.tomcat}/lib/</outputDirectory>
+                            <outputDirectory>${catalina.home}/lib/</outputDirectory>
                             <includeScope>runtime</includeScope>
                         </configuration>
                     </execution>
@@ -186,7 +190,7 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/apache-tomcat-${version.org.apache.tomcat}/lib/</outputDirectory>
+                            <outputDirectory>${catalina.home}/lib/</outputDirectory>
                             <includeScope>test</includeScope>
                             <includeGroupIds>org.springframework.security</includeGroupIds>
                         </configuration>
@@ -207,7 +211,7 @@
                             <excludeDefaultDirectories>true</excludeDefaultDirectories>
                             <filesets>
                                 <fileset>
-                                    <directory>${project.build.directory}/apache-tomcat-${version.org.apache.tomcat}/webapps</directory>
+                                    <directory>${catalina.home}/webapps</directory>
                                     <includes>
                                         <include>ROOT/**</include>
                                         <include>docs/**</include>
@@ -233,7 +237,7 @@
                             <outputDirectory>${project.build.directory}/tomcat-1</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${project.build.directory}/apache-tomcat-${version.org.apache.tomcat}</directory>
+                                    <directory>${catalina.home}</directory>
                                 </resource>
                             </resources>
                         </configuration>
@@ -248,7 +252,7 @@
                             <outputDirectory>${project.build.directory}/tomcat-2</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${project.build.directory}/apache-tomcat-${version.org.apache.tomcat}</directory>
+                                    <directory>${catalina.home}</directory>
                                 </resource>
                             </resources>
                         </configuration>

@@ -186,7 +186,7 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
         TransportConfiguration transport = global.transport().create();
 
         JGroupsChannelConfigurator configurator = (transport.transport() != null) ? new JChannelConfigurator(context, transport) : null;
-        JChannel channel = (configurator != null) ? configurator.createChannel() : null;
+        JChannel channel = (configurator != null) ? configurator.createChannel(null) : null;
         if (channel != null) {
             channel.setName(transport.nodeName());
             channel.setDiscardOwnMessages(true);
