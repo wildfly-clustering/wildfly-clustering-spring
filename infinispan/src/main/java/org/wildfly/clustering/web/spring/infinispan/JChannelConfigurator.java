@@ -53,6 +53,7 @@ import org.jgroups.fork.UnknownForkHandler;
 import org.jgroups.protocols.FORK;
 import org.jgroups.stack.Configurator;
 import org.jgroups.stack.Protocol;
+import org.jgroups.util.SocketFactory;
 import org.jgroups.util.StackType;
 import org.jgroups.util.Util;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -112,7 +113,7 @@ public class JChannelConfigurator implements JGroupsChannelConfigurator {
     }
 
     @Override
-    public JChannel createChannel() throws Exception {
+    public JChannel createChannel(String name) throws Exception {
         FORK fork = new FORK();
         fork.setUnknownForkHandler(new UnknownForkHandler() {
             private final short id = ClassConfigurator.getProtocolId(RequestCorrelator.class);
@@ -169,5 +170,9 @@ public class JChannelConfigurator implements JGroupsChannelConfigurator {
         protocols.add(fork);
 
         return new JChannel(protocols);
+    }
+
+    @Override
+    public void setSocketFactory(SocketFactory socketFactory) {
     }
 }

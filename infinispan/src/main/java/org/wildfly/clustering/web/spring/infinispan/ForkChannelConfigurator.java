@@ -28,6 +28,7 @@ import org.infinispan.remoting.transport.jgroups.JGroupsChannelConfigurator;
 import org.jgroups.JChannel;
 import org.jgroups.conf.ProtocolConfiguration;
 import org.jgroups.fork.ForkChannel;
+import org.jgroups.util.SocketFactory;
 
 /**
  * @author Paul Ferraro
@@ -58,7 +59,11 @@ public class ForkChannelConfigurator implements JGroupsChannelConfigurator {
     }
 
     @Override
-    public JChannel createChannel() throws Exception {
+    public JChannel createChannel(String name) throws Exception {
         return new ForkChannel(this.channel, this.channel.getClusterName(), this.forkName);
+    }
+
+    @Override
+    public void setSocketFactory(SocketFactory socketFactory) {
     }
 }
