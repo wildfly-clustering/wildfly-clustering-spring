@@ -25,7 +25,7 @@ package org.wildfly.clustering.web.spring.hotrod;
 import java.net.URL;
 import java.util.function.BiFunction;
 
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.infinispan.server.test.core.ServerRunMode;
 import org.infinispan.server.test.core.TestSystemPropertyNames;
 import org.infinispan.server.test.junit4.InfinispanServerRuleBuilder;
