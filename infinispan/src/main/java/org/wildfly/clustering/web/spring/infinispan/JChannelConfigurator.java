@@ -40,6 +40,7 @@ import org.infinispan.commons.util.StringPropertyReplacer;
 import org.infinispan.configuration.global.TransportConfiguration;
 import org.infinispan.remoting.transport.jgroups.JGroupsChannelConfigurator;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
+import org.jgroups.ChannelListener;
 import org.jgroups.Global;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
@@ -174,5 +175,9 @@ public class JChannelConfigurator implements JGroupsChannelConfigurator {
 
     @Override
     public void setSocketFactory(SocketFactory socketFactory) {
+    }
+
+    @Override
+    public void addChannelListener(ChannelListener listener) {
     }
 }

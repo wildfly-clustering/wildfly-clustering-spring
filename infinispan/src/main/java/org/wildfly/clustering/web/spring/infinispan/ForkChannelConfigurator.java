@@ -25,6 +25,7 @@ package org.wildfly.clustering.web.spring.infinispan;
 import java.util.List;
 
 import org.infinispan.remoting.transport.jgroups.JGroupsChannelConfigurator;
+import org.jgroups.ChannelListener;
 import org.jgroups.JChannel;
 import org.jgroups.conf.ProtocolConfiguration;
 import org.jgroups.fork.ForkChannel;
@@ -65,5 +66,10 @@ public class ForkChannelConfigurator implements JGroupsChannelConfigurator {
 
     @Override
     public void setSocketFactory(SocketFactory socketFactory) {
+    }
+
+    @Override
+    public void addChannelListener(ChannelListener listener) {
+        this.channel.addChannelListener(listener);
     }
 }

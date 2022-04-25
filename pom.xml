@@ -52,17 +52,16 @@
         <version.io.spring.session>2.6.2</version.io.spring.session>
         <version.jakarta.annotation>1.3.5</version.jakarta.annotation>
         <version.jakarta.servlet>4.0.3</version.jakarta.servlet>
-        <version.org.apache.httpcomponents>4.5.13</version.org.apache.httpcomponents>
+        <version.org.apache.httpcomponents>5.1.3</version.org.apache.httpcomponents>
         <version.org.apache.tomcat>9.0.62</version.org.apache.tomcat>
-        <version.org.infinispan>13.0.6.Final</version.org.infinispan>
-        <version.org.infinispan.protostream>4.4.1.Final</version.org.infinispan.protostream>
-        <version.org.infinispan.server>13.0.8.Final</version.org.infinispan.server>
-        <version.org.infinispan.server.driver>${version.org.infinispan.server}</version.org.infinispan.server.driver>
+        <version.org.infinispan>13.0.9.Final</version.org.infinispan>
+        <version.org.infinispan.protostream>4.4.2.Final</version.org.infinispan.protostream>
+        <version.org.infinispan.server>${version.org.infinispan}</version.org.infinispan.server>
         <version.org.jboss.arquillian>1.6.0.Final</version.org.jboss.arquillian>
         <version.org.jboss.arquillian.container.tomcat>1.1.0.Final</version.org.jboss.arquillian.container.tomcat>
         <version.org.jboss.marshalling>2.0.12.Final</version.org.jboss.marshalling>
         <version.org.kohsuke.metainf-services>1.9</version.org.kohsuke.metainf-services>
-        <version.org.wildfly>26.1.0.Beta1</version.org.wildfly>
+        <version.org.wildfly>26.1.0.Final</version.org.wildfly>
         <version.junit>4.13.2</version.junit>
     </properties>
 
@@ -145,8 +144,8 @@
                 <version>${version.jakarta.servlet}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpclient</artifactId>
+                <groupId>org.apache.httpcomponents.client5</groupId>
+                <artifactId>httpclient5</artifactId>
                 <version>${version.org.apache.httpcomponents}</version>
             </dependency>
             <dependency>
@@ -168,7 +167,7 @@
             <dependency>
                 <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-server-testdriver-junit4</artifactId>
-                <version>${version.org.infinispan.server.driver}</version>
+                <version>${version.org.infinispan.server}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.infinispan</groupId>

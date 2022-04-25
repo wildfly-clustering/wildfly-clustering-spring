@@ -25,16 +25,16 @@ package org.wildfly.clustering.web.spring.infinispan;
 import java.net.URI;
 import java.net.URL;
 
-import org.apache.http.HttpStatus;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.Credentials;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpHead;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.hc.client5.http.auth.AuthScope;
+import org.apache.hc.client5.http.auth.Credentials;
+import org.apache.hc.client5.http.auth.CredentialsStore;
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
+import org.apache.hc.client5.http.classic.methods.HttpHead;
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.HttpStatus;
 import org.infinispan.protostream.SerializationContextInitializer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -89,8 +89,8 @@ public class AuthSmokeITCase extends AbstractSmokeITCase {
     }
 
     private static CloseableHttpClient createClient(URL url1, URL url2) {
-        CredentialsProvider provider = new BasicCredentialsProvider();
-        Credentials credentials = new UsernamePasswordCredentials("admin", "password");
+        CredentialsStore provider = new BasicCredentialsProvider();
+        Credentials credentials = new UsernamePasswordCredentials("admin", "password".toCharArray());
         provider.setCredentials(new AuthScope(url1.getHost(), url1.getPort()), credentials);
         provider.setCredentials(new AuthScope(url2.getHost(), url2.getPort()), credentials);
         return HttpClients.custom().setDefaultCredentialsProvider(provider).build();
@@ -102,7 +102,7 @@ public class AuthSmokeITCase extends AbstractSmokeITCase {
         // Verify that authentication is required
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             try (CloseableHttpResponse response = client.execute(new HttpHead(uri1))) {
-                Assert.assertEquals(HttpStatus.SC_UNAUTHORIZED, response.getStatusLine().getStatusCode());
+                Assert.assertEquals(HttpStatus.SC_UNAUTHORIZED, response.getCode());
             }
         }
         this.accept(baseURL1, baseURL2);

@@ -25,7 +25,7 @@ package org.wildfly.clustering.web.spring.infinispan;
 import java.net.URL;
 import java.util.function.BiFunction;
 
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.test.api.ArquillianResource;
