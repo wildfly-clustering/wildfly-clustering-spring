@@ -73,10 +73,6 @@ import org.infinispan.remoting.transport.jgroups.JGroupsChannelConfigurator;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.infinispan.util.concurrent.BlockingManager;
 import org.infinispan.util.concurrent.NonBlockingManager;
-import org.jboss.as.clustering.context.ContextClassLoaderReference;
-import org.jboss.as.clustering.context.ContextReferenceExecutor;
-import org.jboss.as.clustering.context.Contextualizer;
-import org.jboss.as.clustering.context.DefaultThreadFactory;
 import org.jgroups.JChannel;
 import org.jgroups.jmx.JmxConfigurator;
 import org.springframework.beans.factory.DisposableBean;
@@ -88,29 +84,28 @@ import org.springframework.session.IndexResolver;
 import org.springframework.session.Session;
 import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
-import org.wildfly.clustering.ee.CompositeIterable;
+import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.immutable.CompositeImmutability;
 import org.wildfly.clustering.ee.immutable.DefaultImmutability;
-import org.wildfly.clustering.infinispan.spi.DataContainerConfigurationBuilder;
-import org.wildfly.clustering.infinispan.spi.DefaultNonBlockingThreadFactory;
-import org.wildfly.clustering.infinispan.spi.affinity.DefaultKeyAffinityServiceFactory;
-import org.wildfly.clustering.infinispan.spi.affinity.KeyAffinityServiceFactory;
-import org.wildfly.clustering.infinispan.spi.marshalling.InfinispanProtoStreamMarshaller;
+import org.wildfly.clustering.infinispan.affinity.KeyAffinityServiceFactory;
+import org.wildfly.clustering.infinispan.affinity.impl.DefaultKeyAffinityServiceFactory;
+import org.wildfly.clustering.infinispan.container.DataContainerConfigurationBuilder;
+import org.wildfly.clustering.infinispan.marshall.InfinispanProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SimpleClassLoaderMarshaller;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
-import org.wildfly.clustering.server.dispatcher.ChannelCommandDispatcherFactory;
-import org.wildfly.clustering.server.dispatcher.ChannelCommandDispatcherFactoryConfiguration;
-import org.wildfly.clustering.server.dispatcher.LocalCommandDispatcherFactory;
-import org.wildfly.clustering.server.group.CacheGroup;
-import org.wildfly.clustering.server.group.CacheGroupConfiguration;
-import org.wildfly.clustering.server.group.LocalGroup;
-import org.wildfly.clustering.spi.NodeFactory;
-import org.wildfly.clustering.spi.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.server.NodeFactory;
+import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.server.infinispan.dispatcher.ChannelCommandDispatcherFactory;
+import org.wildfly.clustering.server.infinispan.dispatcher.ChannelCommandDispatcherFactoryConfiguration;
+import org.wildfly.clustering.server.infinispan.dispatcher.LocalCommandDispatcherFactory;
+import org.wildfly.clustering.server.infinispan.group.CacheGroup;
+import org.wildfly.clustering.server.infinispan.group.CacheGroupConfiguration;
+import org.wildfly.clustering.server.infinispan.group.LocalGroup;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagerFactory;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagerFactoryConfiguration;
@@ -138,6 +133,7 @@ import org.wildfly.clustering.web.spring.security.SpringSecurityImmutability;
 import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.SSOManagerConfiguration;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
+import org.wildfly.common.iteration.CompositeIterable;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -237,11 +233,6 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
             @Override
             public Predicate<ByteBuffer> getUnknownForkPredicate() {
                 return buffer -> buffer.remaining() == 0;
-            }
-
-            @Override
-            public Function<ClassLoader, Contextualizer> getContextualizerFactory() {
-                return loader -> new ContextReferenceExecutor<>(loader, ContextClassLoaderReference.INSTANCE);
             }
         }) : new LocalCommandDispatcherFactory(new LocalGroup(transport.nodeName()));
         if (channel != null) {
@@ -373,7 +364,7 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
             managers.put(indexName, ssoManager);
         }
         IndexResolver<Session> resolver = this.configuration.getIndexResolver();
-        IndexingConfiguration<TransactionBatch> indexing = new IndexingConfiguration<TransactionBatch>() {
+        IndexingConfiguration<TransactionBatch> indexing = new IndexingConfiguration<>() {
             @Override
             public Map<String, SSOManager<Void, String, String, Void, TransactionBatch>> getSSOManagers() {
                 return managers;

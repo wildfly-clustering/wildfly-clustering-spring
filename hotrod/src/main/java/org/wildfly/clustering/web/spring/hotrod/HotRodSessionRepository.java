@@ -42,6 +42,8 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionActivationListener;
 
 import org.infinispan.client.hotrod.RemoteCache;
+import org.infinispan.client.hotrod.RemoteCacheContainer;
+import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
@@ -54,16 +56,11 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.session.IndexResolver;
 import org.springframework.session.Session;
-import org.wildfly.clustering.Registrar;
-import org.wildfly.clustering.Registration;
-import org.wildfly.clustering.ee.CompositeIterable;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.immutable.CompositeImmutability;
 import org.wildfly.clustering.ee.immutable.DefaultImmutability;
-import org.wildfly.clustering.infinispan.client.RemoteCacheContainer;
-import org.wildfly.clustering.infinispan.client.manager.RemoteCacheManager;
 import org.wildfly.clustering.infinispan.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SimpleClassLoaderMarshaller;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
@@ -72,7 +69,6 @@ import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.hotrod.session.HotRodSessionManagerFactory;
 import org.wildfly.clustering.web.hotrod.session.HotRodSessionManagerFactoryConfiguration;
-import org.wildfly.clustering.web.hotrod.session.SessionManagerNearCacheFactory;
 import org.wildfly.clustering.web.hotrod.sso.HotRodSSOManagerFactory;
 import org.wildfly.clustering.web.hotrod.sso.HotRodSSOManagerFactoryConfiguration;
 import org.wildfly.clustering.web.session.ImmutableSession;
@@ -95,13 +91,14 @@ import org.wildfly.clustering.web.spring.security.SpringSecurityImmutability;
 import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.SSOManagerConfiguration;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
+import org.wildfly.common.iteration.CompositeIterable;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A session repository whose sessions are persisted to a remote Infinispan cluster accessed via HotRod.
  * @author Paul Ferraro
  */
-public class HotRodSessionRepository implements FindByIndexNameSessionRepository<SpringSession>, InitializingBean, DisposableBean, LocalContextFactory<Void>, Registrar<String>, Registration {
+public class HotRodSessionRepository implements FindByIndexNameSessionRepository<SpringSession>, InitializingBean, DisposableBean, LocalContextFactory<Void> {
 
     private final HotRodSessionRepositoryConfiguration configuration;
     private final List<Runnable> stopTasks = new LinkedList<>();
@@ -131,7 +128,8 @@ public class HotRodSessionRepository implements FindByIndexNameSessionRepository
 
         configuration.addRemoteCache(deploymentName, builder -> builder.forceReturnValues(false).nearCacheMode((maxActiveSessions == null) || (maxActiveSessions.intValue() <= 0) ? NearCacheMode.DISABLED : NearCacheMode.INVALIDATED).transactionMode(TransactionMode.NONE).templateName(templateName));
 
-        RemoteCacheContainer container = new RemoteCacheManager(this.getClass().getName(), configuration, this);
+        @SuppressWarnings("resource")
+        RemoteCacheContainer container = new RemoteCacheManager(configuration);
         container.start();
         this.stopTasks.add(container::stop);
 
@@ -174,10 +172,13 @@ public class HotRodSessionRepository implements FindByIndexNameSessionRepository
 
             @Override
             public <K, V> RemoteCache<K, V> getCache() {
+                return container.getCache(this.getDeploymentName());
+/*
                 String cacheName = this.getDeploymentName();
                 try (RemoteCacheContainer.NearCacheRegistration registration = container.registerNearCacheFactory(cacheName, new SessionManagerNearCacheFactory<>(this.getMaxActiveSessions(), this.getAttributePersistenceStrategy()))) {
                     return container.getCache(cacheName);
                 }
+*/
             }
 
             @Override
@@ -227,7 +228,7 @@ public class HotRodSessionRepository implements FindByIndexNameSessionRepository
             managers.put(indexName, ssoManager);
         }
         IndexResolver<Session> resolver = this.configuration.getIndexResolver();
-        IndexingConfiguration<TransactionBatch> indexing = new IndexingConfiguration<TransactionBatch>() {
+        IndexingConfiguration<TransactionBatch> indexing = new IndexingConfiguration<>() {
             @Override
             public Map<String, SSOManager<Void, String, String, Void, TransactionBatch>> getSSOManagers() {
                 return managers;
@@ -320,15 +321,6 @@ public class HotRodSessionRepository implements FindByIndexNameSessionRepository
         while (tasks.hasPrevious()) {
             tasks.previous().run();
         }
-    }
-
-    @Override
-    public Registration register(String name) {
-        return this;
-    }
-
-    @Override
-    public void close() {
     }
 
     @Override

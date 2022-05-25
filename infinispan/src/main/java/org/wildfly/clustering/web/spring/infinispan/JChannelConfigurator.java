@@ -150,7 +150,7 @@ public class JChannelConfigurator implements JGroupsChannelConfigurator {
         for (ProtocolConfiguration configuration : configurations) {
             String protocolName = configuration.getProtocolName();
             String className = protocolName.startsWith(Global.PREFIX) ? protocolName : Global.PREFIX + protocolName;
-            PrivilegedExceptionAction<Protocol> action = new PrivilegedExceptionAction<Protocol>() {
+            PrivilegedExceptionAction<Protocol> action = new PrivilegedExceptionAction<>() {
                 @Override
                 public Protocol run() throws Exception {
                     try {
