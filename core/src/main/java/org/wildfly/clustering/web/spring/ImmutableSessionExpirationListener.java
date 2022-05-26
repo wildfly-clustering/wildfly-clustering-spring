@@ -28,11 +28,11 @@ import java.util.function.BiFunction;
 
 import javax.servlet.ServletContext;
 
-import org.jboss.as.clustering.context.ContextClassLoaderReference;
-import org.jboss.as.clustering.context.ContextReferenceExecutor;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.session.Session;
 import org.springframework.session.events.SessionExpiredEvent;
+import org.wildfly.clustering.context.ContextClassLoaderReference;
+import org.wildfly.clustering.context.ContextReferenceExecutor;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
 

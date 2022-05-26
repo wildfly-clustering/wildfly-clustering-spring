@@ -48,6 +48,7 @@ public class ObjectInputStream extends java.io.ObjectInputStream {
         return this.externalizer.readObject(this).loadClass(className);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     protected Class<?> resolveProxyClass(String[] interfaces) throws IOException, ClassNotFoundException {
         Class<?>[] interfaceClasses = new Class<?>[interfaces.length];

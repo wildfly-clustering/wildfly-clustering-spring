@@ -24,12 +24,12 @@ package org.wildfly.clustering.web.spring.auth;
 
 import java.util.function.Supplier;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.session.security.SpringSessionBackedSessionRegistry;
 import org.wildfly.clustering.web.spring.SpringSession;
@@ -37,24 +37,24 @@ import org.wildfly.clustering.web.spring.SpringSession;
 /**
  * @author Paul Ferraro
  */
-public abstract class AbstractSecurityConfig extends WebSecurityConfigurerAdapter implements Supplier<FindByIndexNameSessionRepository<SpringSession>> {
+public abstract class AbstractSecurityConfig implements Supplier<FindByIndexNameSessionRepository<SpringSession>> {
 
-    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication().withUser("admin").password(passwordEncoder().encode("password")).roles("ADMIN");
-    }
-
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable().httpBasic()
-            .and().authorizeRequests().antMatchers("/").hasRole("ADMIN").anyRequest().authenticated()
-            .and().sessionManagement().maximumSessions(1).sessionRegistry(sessionRegistry());
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.csrf().disable()
+            .httpBasic()
+                .and().authorizeRequests().antMatchers("/").hasRole("ADMIN").anyRequest().authenticated()
+                .and().sessionManagement().maximumSessions(1).sessionRegistry(sessionRegistry())
+                ;
+        return http.build();
     }
 
     @SuppressWarnings("deprecation")
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return org.springframework.security.crypto.password.NoOpPasswordEncoder.getInstance();
+    public UserDetailsService userDetailsService() {
+        InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
+        manager.createUser(User.withDefaultPasswordEncoder().username("admin").password("password").roles("ADMIN").build());
+        return manager;
     }
 
     @Bean

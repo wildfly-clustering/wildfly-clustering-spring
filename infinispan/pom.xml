@@ -54,11 +54,11 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-clustering-infinispan-spi</artifactId>
+            <artifactId>wildfly-clustering-infinispan-embedded-spi</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-clustering-server</artifactId>
+            <artifactId>wildfly-clustering-server-infinispan</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
