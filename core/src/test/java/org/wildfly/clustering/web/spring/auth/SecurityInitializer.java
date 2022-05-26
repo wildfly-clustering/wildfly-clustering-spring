@@ -28,5 +28,4 @@ import org.springframework.security.web.context.AbstractSecurityWebApplicationIn
  * @author Paul Ferraro
  */
 public class SecurityInitializer extends AbstractSecurityWebApplicationInitializer {
-
 }
