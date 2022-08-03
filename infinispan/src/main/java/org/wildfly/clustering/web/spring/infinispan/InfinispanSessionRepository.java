@@ -311,7 +311,6 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
         this.stopTasks.add(container::stop);
 
         ByteBufferMarshaller marshaller = marshallerFactory.apply(context.getClassLoader());
-        MarshalledValueFactory<ByteBufferMarshaller> marshalledValueFactory = new ByteBufferMarshalledValueFactory(marshaller);
 
         ServiceLoader<Immutability> loadedImmutability = ServiceLoader.load(Immutability.class, Immutability.class.getClassLoader());
         Immutability immutability = new CompositeImmutability(new CompositeIterable<>(EnumSet.allOf(DefaultImmutability.class), EnumSet.allOf(SessionAttributeImmutability.class), EnumSet.allOf(SpringSecurityImmutability.class), loadedImmutability));
@@ -353,7 +352,7 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
 
                 @Override
                 public MarshalledValueFactory<ByteBufferMarshaller> getMarshalledValueFactory() {
-                    return marshalledValueFactory;
+                    return new ByteBufferMarshalledValueFactory(marshaller);
                 }
 
                 @Override
@@ -394,7 +393,7 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
         });
         this.stopTasks.add(group::close);
 
-        SessionManagerFactory<ServletContext, Void, TransactionBatch> managerFactory = new InfinispanSessionManagerFactory<>(new InfinispanSessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, ByteBufferMarshaller, Void>() {
+        SessionManagerFactory<ServletContext, Void, TransactionBatch> managerFactory = new InfinispanSessionManagerFactory<>(new InfinispanSessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, Void>() {
             @Override
             public Integer getMaxActiveSessions() {
                 return maxActiveSessions;
@@ -411,8 +410,8 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
             }
 
             @Override
-            public MarshalledValueFactory<ByteBufferMarshaller> getMarshalledValueFactory() {
-                return marshalledValueFactory;
+            public ByteBufferMarshaller getMarshaller() {
+                return marshaller;
             }
 
             @Override

@@ -134,12 +134,11 @@ public class HotRodSessionRepository implements FindByIndexNameSessionRepository
         this.stopTasks.add(container::stop);
 
         ByteBufferMarshaller marshaller = this.configuration.getMarshallerFactory().apply(context.getClassLoader());
-        MarshalledValueFactory<ByteBufferMarshaller> marshalledValueFactory = new ByteBufferMarshalledValueFactory(marshaller);
 
         ServiceLoader<Immutability> loadedImmutability = ServiceLoader.load(Immutability.class, Immutability.class.getClassLoader());
         Immutability immutability = new CompositeImmutability(new CompositeIterable<>(EnumSet.allOf(DefaultImmutability.class), EnumSet.allOf(SessionAttributeImmutability.class), EnumSet.allOf(SpringSecurityImmutability.class), loadedImmutability));
 
-        SessionManagerFactory<ServletContext, Void, TransactionBatch> managerFactory = new HotRodSessionManagerFactory<>(new HotRodSessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, ByteBufferMarshaller, Void>() {
+        SessionManagerFactory<ServletContext, Void, TransactionBatch> managerFactory = new HotRodSessionManagerFactory<>(new HotRodSessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, Void>() {
             @Override
             public Integer getMaxActiveSessions() {
                 return maxActiveSessions;
@@ -156,8 +155,8 @@ public class HotRodSessionRepository implements FindByIndexNameSessionRepository
             }
 
             @Override
-            public MarshalledValueFactory<ByteBufferMarshaller> getMarshalledValueFactory() {
-                return marshalledValueFactory;
+            public ByteBufferMarshaller getMarshaller() {
+                return marshaller;
             }
 
             @Override
@@ -217,7 +216,7 @@ public class HotRodSessionRepository implements FindByIndexNameSessionRepository
 
                 @Override
                 public MarshalledValueFactory<ByteBufferMarshaller> getMarshalledValueFactory() {
-                    return marshalledValueFactory;
+                    return new ByteBufferMarshalledValueFactory(marshaller);
                 }
 
                 @Override
