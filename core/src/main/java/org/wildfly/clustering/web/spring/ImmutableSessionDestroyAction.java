@@ -26,10 +26,10 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionBindingListener;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionBindingEvent;
+import jakarta.servlet.http.HttpSessionBindingListener;
 
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;

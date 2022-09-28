@@ -40,7 +40,6 @@ import org.wildfly.clustering.web.spring.security.web.savedrequest.SpringSecurit
 public enum SpringSecuritySerializationContextInitializerProvider implements SerializationContextInitializerProvider {
 
     SPRING_SECURITY(new SpringSecuritySerializationContextInitializer()),
-    HTTP(new ProviderSerializationContextInitializer<>("org.springframework.http.proto", SpringHttpMarshallerProvider.class)),
     AUTHENTICATION(new ProviderSerializationContextInitializer<>("org.springframework.security.authentication.proto", SpringSecurityAuthenticationMarshallerProvider.class)),
     JAAS(new ProviderSerializationContextInitializer<>("org.springframework.security.authentication.jaas.proto", SpringSecurityJaasAuthenticationMarshallerProvider.class)),
     AUTHORITY(new ProviderSerializationContextInitializer<>("org.springframework.security.core.authority.proto", SpringSecurityAuthorityMarshallerProvider.class)),

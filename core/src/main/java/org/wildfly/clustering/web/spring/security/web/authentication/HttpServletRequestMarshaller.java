@@ -24,8 +24,8 @@ package org.wildfly.clustering.web.spring.security.web.authentication;
 
 import java.io.IOException;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;

@@ -22,7 +22,7 @@
 
 package org.wildfly.clustering.web.spring.security.web.authentication;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamBuilder;
 

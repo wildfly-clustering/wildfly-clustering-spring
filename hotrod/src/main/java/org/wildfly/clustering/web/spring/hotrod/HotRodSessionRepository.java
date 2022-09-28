@@ -37,9 +37,9 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionActivationListener;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionActivationListener;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheContainer;
@@ -63,9 +63,7 @@ import org.wildfly.clustering.ee.immutable.CompositeImmutability;
 import org.wildfly.clustering.ee.immutable.DefaultImmutability;
 import org.wildfly.clustering.infinispan.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SimpleClassLoaderMarshaller;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.hotrod.session.HotRodSessionManagerFactory;
 import org.wildfly.clustering.web.hotrod.session.HotRodSessionManagerFactoryConfiguration;
@@ -172,12 +170,6 @@ public class HotRodSessionRepository implements FindByIndexNameSessionRepository
             @Override
             public <K, V> RemoteCache<K, V> getCache() {
                 return container.getCache(this.getDeploymentName());
-/*
-                String cacheName = this.getDeploymentName();
-                try (RemoteCacheContainer.NearCacheRegistration registration = container.registerNearCacheFactory(cacheName, new SessionManagerNearCacheFactory<>(this.getMaxActiveSessions(), this.getAttributePersistenceStrategy()))) {
-                    return container.getCache(cacheName);
-                }
-*/
             }
 
             @Override
@@ -208,15 +200,15 @@ public class HotRodSessionRepository implements FindByIndexNameSessionRepository
                 }
             });
 
-            SSOManager<Void, String, String, Void, TransactionBatch> ssoManager = ssoManagerFactory.createSSOManager(new SSOManagerConfiguration<ByteBufferMarshaller, Void>() {
+            SSOManager<Void, String, String, Void, TransactionBatch> ssoManager = ssoManagerFactory.createSSOManager(new SSOManagerConfiguration<>() {
                 @Override
                 public Supplier<String> getIdentifierFactory() {
                     return identifierFactory;
                 }
 
                 @Override
-                public MarshalledValueFactory<ByteBufferMarshaller> getMarshalledValueFactory() {
-                    return new ByteBufferMarshalledValueFactory(marshaller);
+                public ByteBufferMarshaller getMarshaller() {
+                    return marshaller;
                 }
 
                 @Override

@@ -25,7 +25,6 @@ package org.wildfly.clustering.web.spring.infinispan;
 import java.io.FileNotFoundException;
 import java.lang.management.ManagementFactory;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -45,9 +44,12 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import javax.management.ObjectName;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionActivationListener;
+
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionActivationListener;
+
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 import org.infinispan.Cache;
 import org.infinispan.commons.dataconversion.MediaType;
@@ -74,6 +76,7 @@ import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.infinispan.util.concurrent.BlockingManager;
 import org.infinispan.util.concurrent.NonBlockingManager;
 import org.jgroups.JChannel;
+import org.jgroups.Message;
 import org.jgroups.jmx.JmxConfigurator;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -95,9 +98,7 @@ import org.wildfly.clustering.infinispan.affinity.impl.DefaultKeyAffinityService
 import org.wildfly.clustering.infinispan.container.DataContainerConfigurationBuilder;
 import org.wildfly.clustering.infinispan.marshall.InfinispanProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SimpleClassLoaderMarshaller;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshalledValueFactory;
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.spi.MarshalledValueFactory;
 import org.wildfly.clustering.server.NodeFactory;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.server.infinispan.dispatcher.ChannelCommandDispatcherFactory;
@@ -135,8 +136,6 @@ import org.wildfly.clustering.web.sso.SSOManagerConfiguration;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
 import org.wildfly.common.iteration.CompositeIterable;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import io.reactivex.rxjava3.schedulers.Schedulers;
 
 /**
  * @author Paul Ferraro
@@ -231,8 +230,8 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
             }
 
             @Override
-            public Predicate<ByteBuffer> getUnknownForkPredicate() {
-                return buffer -> buffer.remaining() == 0;
+            public Predicate<Message> getUnknownForkPredicate() {
+                return Predicate.not(Message::hasPayload);
             }
         }) : new LocalCommandDispatcherFactory(new LocalGroup(transport.nodeName()));
         if (channel != null) {
@@ -344,15 +343,15 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
                 }
             });
 
-            SSOManager<Void, String, String, Void, TransactionBatch> ssoManager = ssoManagerFactory.createSSOManager(new SSOManagerConfiguration<ByteBufferMarshaller, Void>() {
+            SSOManager<Void, String, String, Void, TransactionBatch> ssoManager = ssoManagerFactory.createSSOManager(new SSOManagerConfiguration<>() {
                 @Override
                 public Supplier<String> getIdentifierFactory() {
                     return identifierFactory;
                 }
 
                 @Override
-                public MarshalledValueFactory<ByteBufferMarshaller> getMarshalledValueFactory() {
-                    return new ByteBufferMarshalledValueFactory(marshaller);
+                public ByteBufferMarshaller getMarshaller() {
+                    return marshaller;
                 }
 
                 @Override

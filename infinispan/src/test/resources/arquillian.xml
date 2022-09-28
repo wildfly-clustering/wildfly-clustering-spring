@@ -9,7 +9,7 @@
 
                 <property name="jmxPort">8089</property>
                 <property name="bindHttpPort">8080</property>
-                <property name="javaVmArguments">-Dtomcat.management.port=8005 -Dtomcat.http.port=8080 -Dtomcat.https.port=8443 -Dcom.sun.management.jmxremote.port=8089 -Djava.net.preferIPv4Stack=true -Djgroups.bind.port=55200</property>
+                <property name="javaVmArguments">${modular.jdk.args} -Dtomcat.management.port=8005 -Dtomcat.http.port=8080 -Dtomcat.https.port=8443 -Dcom.sun.management.jmxremote.port=8089 -Djava.net.preferIPv4Stack=true -Djgroups.bind.port=55200</property>
 
                 <property name="user">admin</property>
                 <property name="pass">admin</property>
@@ -21,7 +21,7 @@
 
                 <property name="jmxPort">8189</property>
                 <property name="bindHttpPort">8180</property>
-                <property name="javaVmArguments">-Dtomcat.management.port=8105 -Dtomcat.http.port=8180 -Dtomcat.https.port=8543 -Dcom.sun.management.jmxremote.port=8189 -Djava.net.preferIPv4Stack=true -Djgroups.bind.port=55300</property>
+                <property name="javaVmArguments">${modular.jdk.args} -Dtomcat.management.port=8105 -Dtomcat.http.port=8180 -Dtomcat.https.port=8543 -Dcom.sun.management.jmxremote.port=8189 -Djava.net.preferIPv4Stack=true -Djgroups.bind.port=55300</property>
 
                 <property name="user">admin</property>
                 <property name="pass">admin</property>
