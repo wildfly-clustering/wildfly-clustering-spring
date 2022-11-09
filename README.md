@@ -1,3 +1,7 @@
+[![Version](https://img.shields.io/maven-central/v/org.wildfly.clustering/wildfly-clustering-spring-session?style=for-the-badge&logo=redhat&label=latest)](https://search.maven.org/artifact/org.wildfly.clustering/wildfly-clustering-spring-session)
+[![License](https://img.shields.io/github/license/wildfly-clustering/wildfly-clustering-spring-session?style=for-the-badge&logo=apache)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Project Chat](https://img.shields.io/badge/zulip-chat-white.svg?style=for-the-badge&logo=zulip)](https://wildfly.zulipchat.com/#narrow/stream/wildfly-clustering)
+
 # wildfly-clustering-spring-session
 
 wildfly-clustering-spring-session is a Spring Session module based on WildFly's distributed session management and Infinispan.
