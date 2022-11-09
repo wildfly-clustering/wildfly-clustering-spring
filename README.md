@@ -3,7 +3,7 @@
 wildfly-clustering-spring-session is a Spring Session module based on WildFly's distributed session management and Infinispan.
 This brings the same clustering features to Spring Session that one can expect from WildFly's distributed session management, including:
 
-* Servlet 4.0 specification compliance (excluding [limitations inherent to Spring Session](#notes)).
+* Servlet 5.0 specification compliance (excluding [limitations inherent to Spring Session](#notes)).
   * Including support for standard session event notifications
 * Session attribute replication via an embedded cache or persitence to a remote Infinispan cluster.
 * Configurable session replication/persistence strategies, i.e. per session vs per attribute.
@@ -19,7 +19,7 @@ This brings the same clustering features to Spring Session that one can expect f
 		$ git clone git@github.com:wildfly-clustering/wildfly-clustering-spring-session.git	
 		$ cd wildfly-clustering-spring-session
 
-1.	Build using Java 8 or higher and Apache Maven 3.2.5+.
+1.	Build using Java 17 or higher and Apache Maven 3.8.x or higher.
 
 		$ mvn clean install
 
@@ -201,10 +201,10 @@ When configuring Spring Session via XML, you must also define the ServletContext
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
 		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3.1.xsd"
-		version="3.1">
+		xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
+		version="5.0">
 	<listener>
 		<!-- We need to declare the ServletContextListener explicitly -->
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
