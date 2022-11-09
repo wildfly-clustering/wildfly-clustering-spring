@@ -53,9 +53,9 @@
     </repositories>
 
     <properties>
-        <jdk.min.version>17</jdk.min.version>
-        <jdk.release.version>17</jdk.release.version>
         <jdk.runtime.args>--add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED</jdk.runtime.args>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
 
         <version.io.spring>6.0.0-RC4</version.io.spring>
         <version.io.spring.security>6.0.0-RC2</version.io.spring.security>
@@ -86,25 +86,6 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <goals>
-                    <goal>compile</goal>
-                </goals>
-                <executions>
-                    <execution>
-                        <id>default-compile</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                        <configuration>
-                            <release>${jdk.release.version}</release>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <configuration>
                     <artifactItems>
@@ -114,13 +95,6 @@
                             <version>${project.version}</version>
                         </artifactItem>
                     </artifactItems>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <source>${jdk.release.version}</source>
                 </configuration>
             </plugin>
             <plugin>
