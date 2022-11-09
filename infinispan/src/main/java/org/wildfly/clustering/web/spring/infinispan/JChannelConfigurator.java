@@ -53,8 +53,10 @@ import org.jgroups.conf.ProtocolStackConfigurator;
 import org.jgroups.conf.XmlConfigurator;
 import org.jgroups.fork.UnknownForkHandler;
 import org.jgroups.protocols.FORK;
+import org.jgroups.protocols.TP;
 import org.jgroups.stack.Configurator;
 import org.jgroups.stack.Protocol;
+import org.jgroups.util.DefaultThreadFactory;
 import org.jgroups.util.SocketFactory;
 import org.jgroups.util.StackType;
 import org.jgroups.util.Util;
@@ -171,6 +173,8 @@ public class JChannelConfigurator implements JGroupsChannelConfigurator {
         }
         // Add implicit FORK to the top of the stack
         protocols.add(fork);
+        TP transport = (TP) protocols.get(0);
+        transport.setThreadFactory(new ClassLoaderThreadFactory(new DefaultThreadFactory("jgroups", false, true), WildFlySecurityManager.getClassLoaderPrivileged(JChannelConfigurator.class)));
 
         return new JChannel(protocols);
     }
