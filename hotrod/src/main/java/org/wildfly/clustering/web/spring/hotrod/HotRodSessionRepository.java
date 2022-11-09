@@ -57,7 +57,6 @@ import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.session.IndexResolver;
 import org.springframework.session.Session;
 import org.wildfly.clustering.ee.Immutability;
-import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.immutable.CompositeImmutability;
 import org.wildfly.clustering.ee.immutable.DefaultImmutability;
@@ -70,7 +69,6 @@ import org.wildfly.clustering.web.hotrod.session.HotRodSessionManagerFactoryConf
 import org.wildfly.clustering.web.hotrod.sso.HotRodSSOManagerFactory;
 import org.wildfly.clustering.web.hotrod.sso.HotRodSSOManagerFactoryConfiguration;
 import org.wildfly.clustering.web.session.ImmutableSession;
-import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.SessionAttributeImmutability;
 import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
@@ -250,12 +248,6 @@ public class HotRodSessionRepository implements FindByIndexNameSessionRepository
             @Override
             public SessionExpirationListener getExpirationListener() {
                 return expirationListener;
-            }
-
-            @Override
-            public Recordable<ImmutableSessionMetaData> getInactiveSessionRecorder() {
-                // Spring session has no metrics capability
-                return null;
             }
         });
         Optional<Duration> defaultTimeout = setDefaultMaxInactiveInterval(manager, Duration.ofMinutes(context.getSessionTimeout()));

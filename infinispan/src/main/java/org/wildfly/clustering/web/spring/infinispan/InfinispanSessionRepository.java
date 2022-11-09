@@ -89,7 +89,6 @@ import org.wildfly.clustering.Registrar;
 import org.wildfly.clustering.Registration;
 import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.ee.Immutability;
-import org.wildfly.clustering.ee.Recordable;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.immutable.CompositeImmutability;
 import org.wildfly.clustering.ee.immutable.DefaultImmutability;
@@ -114,7 +113,6 @@ import org.wildfly.clustering.web.infinispan.session.SessionCreationMetaDataKey;
 import org.wildfly.clustering.web.infinispan.sso.InfinispanSSOManagerFactory;
 import org.wildfly.clustering.web.infinispan.sso.InfinispanSSOManagerFactoryConfiguration;
 import org.wildfly.clustering.web.session.ImmutableSession;
-import org.wildfly.clustering.web.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.web.session.SessionAttributeImmutability;
 import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
 import org.wildfly.clustering.web.session.SessionExpirationListener;
@@ -380,9 +378,10 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
 
         NodeFactory<org.jgroups.Address> memberFactory = (channel != null) ? (ChannelCommandDispatcherFactory) dispatcherFactory : new LocalGroup(context.getVirtualServerName());
         CacheGroup group = new CacheGroup(new CacheGroupConfiguration() {
+            @SuppressWarnings("unchecked")
             @Override
-            public Cache<?, ?> getCache() {
-                return cache;
+            public <K, V> Cache<K, V> getCache() {
+                return (Cache<K, V>) cache;
             }
 
             @Override
@@ -474,12 +473,6 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
             @Override
             public SessionExpirationListener getExpirationListener() {
                 return expirationListener;
-            }
-
-            @Override
-            public Recordable<ImmutableSessionMetaData> getInactiveSessionRecorder() {
-                // Spring session has no metrics capability
-                return null;
             }
         });
         Optional<Duration> defaultTimeout = setDefaultMaxInactiveInterval(manager, Duration.ofMinutes(context.getSessionTimeout()));
