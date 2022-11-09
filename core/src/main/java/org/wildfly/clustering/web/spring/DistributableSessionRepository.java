@@ -50,8 +50,6 @@ import org.wildfly.clustering.web.sso.SSOManager;
  * @author Paul Ferraro
  */
 public class DistributableSessionRepository<B extends Batch> implements FindByIndexNameSessionRepository<SpringSession> {
-    // Workaround for https://github.com/spring-projects/spring-session/issues/1731
-    private static final ThreadLocal<SpringSession> SAVED_SESSION = new ThreadLocal<>();
     // Handle redundant calls to findById(...)
     private static final ThreadLocal<SpringSession> CURRENT_SESSION = new ThreadLocal<>();
 
@@ -103,13 +101,6 @@ public class DistributableSessionRepository<B extends Batch> implements FindByIn
         if ((current != null) && current.getId().equals(id)) {
             return current;
         }
-        // Ugly workaround for bizarre behavior in org.springframework.session.web.http.SessionRepositoryFilter.SessionRepositoryRequestWrapper.commitSession()
-        // that triggers an extraneous SessionRepository.findById(...) for a recently saved requested session.
-        current = SAVED_SESSION.get();
-        if ((current != null) && current.getId().equals(id)) {
-            SAVED_SESSION.remove();
-            return current;
-        }
         boolean close = true;
         Batcher<B> batcher = this.manager.getBatcher();
         B batch = batcher.createBatch();
@@ -140,18 +131,12 @@ public class DistributableSessionRepository<B extends Batch> implements FindByIn
             }
         } finally {
             CURRENT_SESSION.remove();
-            SAVED_SESSION.remove();
         }
     }
 
     @Override
     public void save(SpringSession session) {
         CURRENT_SESSION.remove();
-        if (!session.isNew()) {
-            // Ugly workaround for bizarre behavior in org.springframework.session.web.http.SessionRepositoryFilter.SessionRepositoryRequestWrapper.commitSession()
-            // that triggers an extraneous SessionRepository.findById(...) for a recently saved requested session.
-            SAVED_SESSION.set(session);
-        }
         session.close();
     }
 
