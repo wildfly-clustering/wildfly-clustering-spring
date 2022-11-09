@@ -31,7 +31,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.servlet.http.Cookie;
+import jakarta.servlet.http.Cookie;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -116,12 +116,10 @@ public class SpringSecurityWebSavedRequestMarshallerTestCase {
 
             Assert.assertEquals(cookie1.getName(), cookie2.getName());
             Assert.assertEquals(cookie1.getValue(), cookie2.getValue());
-            Assert.assertEquals(cookie1.getComment(), cookie2.getComment());
             Assert.assertEquals(cookie1.getDomain(), cookie2.getDomain());
             Assert.assertEquals(cookie1.getMaxAge(), cookie2.getMaxAge());
             Assert.assertEquals(cookie1.getPath(), cookie2.getPath());
             Assert.assertEquals(cookie1.getSecure(), cookie2.getSecure());
-            Assert.assertEquals(cookie1.getVersion(), cookie2.getVersion());
         }
     }
 }

@@ -34,13 +34,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import org.infinispan.commons.util.StringPropertyReplacer;
 import org.infinispan.configuration.global.TransportConfiguration;
 import org.infinispan.remoting.transport.jgroups.JGroupsChannelConfigurator;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.jgroups.ChannelListener;
+import org.jgroups.EmptyMessage;
 import org.jgroups.Global;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
@@ -52,8 +53,10 @@ import org.jgroups.conf.ProtocolStackConfigurator;
 import org.jgroups.conf.XmlConfigurator;
 import org.jgroups.fork.UnknownForkHandler;
 import org.jgroups.protocols.FORK;
+import org.jgroups.protocols.TP;
 import org.jgroups.stack.Configurator;
 import org.jgroups.stack.Protocol;
+import org.jgroups.util.DefaultThreadFactory;
 import org.jgroups.util.SocketFactory;
 import org.jgroups.util.StackType;
 import org.jgroups.util.Util;
@@ -133,16 +136,17 @@ public class JChannelConfigurator implements JGroupsChannelConfigurator {
                 Header header = (Header) message.getHeader(this.id);
                 // If this is a request expecting a response, don't leave the requester hanging - send an identifiable response on which it can filter
                 if ((header != null) && (header.type == Header.REQ) && header.rspExpected()) {
-                    Message response = message.makeReply().setFlag(message.getFlags()).clearFlag(Message.Flag.RSVP, Message.Flag.INTERNAL);
+                    Message response = new EmptyMessage(message.src()).setFlag(message.getFlags(), false).clearFlag(Message.Flag.RSVP);
+                    if (message.getDest() != null) {
+                        response.src(message.getDest());
+                    }
 
                     response.putHeader(FORK.ID, message.getHeader(FORK.ID));
                     response.putHeader(this.id, new Header(Header.RSP, header.req_id, header.corrId));
-                    response.setBuffer(UNKNOWN_FORK_RESPONSE.array());
 
                     fork.getProtocolStack().getChannel().down(response);
                 }
-                return null;
-            }
+                return null;            }
         });
         List<ProtocolConfiguration> configurations = this.getProtocolStack();
         List<Protocol> protocols = new ArrayList<>(configurations.size() + 1);
@@ -169,6 +173,8 @@ public class JChannelConfigurator implements JGroupsChannelConfigurator {
         }
         // Add implicit FORK to the top of the stack
         protocols.add(fork);
+        TP transport = (TP) protocols.get(0);
+        transport.setThreadFactory(new ClassLoaderThreadFactory(new DefaultThreadFactory("jgroups", false, true), WildFlySecurityManager.getClassLoaderPrivileged(JChannelConfigurator.class)));
 
         return new JChannel(protocols);
     }

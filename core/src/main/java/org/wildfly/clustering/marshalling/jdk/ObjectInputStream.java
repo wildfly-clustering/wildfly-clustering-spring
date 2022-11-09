@@ -25,6 +25,7 @@ package org.wildfly.clustering.marshalling.jdk;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectStreamClass;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 
 import org.wildfly.clustering.marshalling.Externalizer;
@@ -35,6 +36,7 @@ import org.wildfly.clustering.marshalling.Externalizer;
  */
 public class ObjectInputStream extends java.io.ObjectInputStream {
 
+    private static final InvocationHandler NULL_HANDLER = (proxy, method, args) -> null;
     private final Externalizer<ClassLoader> externalizer;
 
     public ObjectInputStream(InputStream input, Externalizer<ClassLoader> externalizer) throws IOException {
@@ -48,7 +50,6 @@ public class ObjectInputStream extends java.io.ObjectInputStream {
         return this.externalizer.readObject(this).loadClass(className);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     protected Class<?> resolveProxyClass(String[] interfaces) throws IOException, ClassNotFoundException {
         Class<?>[] interfaceClasses = new Class<?>[interfaces.length];
@@ -56,7 +57,7 @@ public class ObjectInputStream extends java.io.ObjectInputStream {
             interfaceClasses[i] = this.externalizer.readObject(this).loadClass(interfaces[i]);
         }
         try {
-            return Proxy.getProxyClass(this.externalizer.readObject(this), interfaceClasses);
+            return Proxy.newProxyInstance(this.externalizer.readObject(this), interfaceClasses, NULL_HANDLER).getClass();
         } catch (IllegalArgumentException e) {
             throw new ClassNotFoundException(null, e);
         }

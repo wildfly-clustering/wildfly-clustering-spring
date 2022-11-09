@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 
-import javax.servlet.http.Cookie;
+import jakarta.servlet.http.Cookie;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.springframework.http.HttpMethod;
@@ -68,7 +68,7 @@ public class SavedRequestMarshaller implements ProtoStreamMarshaller<DefaultSave
     // This is uncommon
     private static final int PATH_INFO_INDEX = 16;
 
-    private static final HttpMethod DEFAULT_METHOD = HttpMethod.GET;
+    private static final String DEFAULT_METHOD = HttpMethod.GET.name();
     private static final Scheme DEFAULT_SCHEME = Scheme.HTTPS;
     private static final String DEFAULT_SERVER_NAME = InetAddress.getLoopbackAddress().getHostName();
     private static final int DEFAULT_SERVER_PORT = Scheme.HTTP.getDefaultPort();
@@ -78,7 +78,7 @@ public class SavedRequestMarshaller implements ProtoStreamMarshaller<DefaultSave
     @Override
     public DefaultSavedRequest readFrom(ProtoStreamReader reader) throws IOException {
         DefaultSavedRequest.Builder builder = new DefaultSavedRequest.Builder();
-        builder.setMethod(DEFAULT_METHOD.name());
+        builder.setMethod(DEFAULT_METHOD);
         builder.setScheme(DEFAULT_SCHEME.getName());
         builder.setServerName(DEFAULT_SERVER_NAME);
         builder.setServerPort(DEFAULT_SERVER_PORT);
@@ -94,7 +94,7 @@ public class SavedRequestMarshaller implements ProtoStreamMarshaller<DefaultSave
             int tag = reader.readTag();
             switch (WireType.getTagFieldNumber(tag)) {
                 case METHOD_INDEX:
-                    builder.setMethod(reader.readEnum(HttpMethod.class).name());
+                    builder.setMethod(reader.readString());
                     break;
                 case SCHEME_INDEX:
                     builder.setScheme(reader.readEnum(Scheme.class).getName());
@@ -213,9 +213,9 @@ public class SavedRequestMarshaller implements ProtoStreamMarshaller<DefaultSave
     @Override
     public void writeTo(ProtoStreamWriter writer, DefaultSavedRequest request) throws IOException {
         // DefaultSavedRequest has a lot of redundant properties, so just persist the essentials
-        HttpMethod method = HttpMethod.resolve(request.getMethod());
-        if (method != DEFAULT_METHOD) {
-            writer.writeEnum(METHOD_INDEX, method);
+        String method = request.getMethod();
+        if (!method.equals(DEFAULT_METHOD)) {
+            writer.writeString(METHOD_INDEX, method);
         }
         Scheme scheme = Scheme.resolve(request.getScheme());
         if (scheme != DEFAULT_SCHEME) {
@@ -241,13 +241,13 @@ public class SavedRequestMarshaller implements ProtoStreamMarshaller<DefaultSave
         if (pathInfo != null) {
             writer.writeString(PATH_INFO_INDEX, pathInfo);
         }
-        if (method == HttpMethod.GET) {
+        if (method.equals(HttpMethod.GET.name())) {
             // Because DefaultSavedRequest.doesRequestMatch(...) relies on the query string, we need to persist this to preserve order of parameters
             String query = request.getQueryString();
             if (query != null) {
                 writer.writeString(QUERY_INDEX, query);
             }
-        } else if (method == HttpMethod.POST) {
+        } else if (method.equals(HttpMethod.POST.name())) {
             // Only persist parameters for POST - otherwise parameters are already captured by query string
             for (String parameterName : request.getParameterNames()) {
                 writer.writeString(PARAMETER_NAME_INDEX, parameterName);

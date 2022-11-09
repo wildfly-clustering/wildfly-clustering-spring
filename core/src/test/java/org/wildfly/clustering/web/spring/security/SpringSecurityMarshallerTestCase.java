@@ -25,7 +25,6 @@ package org.wildfly.clustering.web.spring.security;
 import java.io.IOException;
 
 import org.junit.Test;
-import org.springframework.http.HttpMethod;
 
 /**
  * @author Paul Ferraro
@@ -35,6 +34,5 @@ public class SpringSecurityMarshallerTestCase {
     @Test
     public void test() throws IOException {
         ProtoStreamTesterFactory.INSTANCE.createTester(Scheme.class).test();
-        ProtoStreamTesterFactory.INSTANCE.createTester(HttpMethod.class).test();
     }
 }

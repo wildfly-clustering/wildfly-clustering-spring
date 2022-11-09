@@ -1,14 +1,13 @@
 package org.springframework.security.web.savedrequest;
 
 import "java.util.proto";
-import "org.springframework.http.proto";
 import "org.wildfly.clustering.web.spring.security.proto";
 
 /**
  * @TypeId(300)
  */
 message DefaultSavedRequest {
-	optional	org.springframework.http.HttpMethod	method	= 1;
+	optional	string	method	= 1;
 	optional	org.wildfly.clustering.web.spring.security.Scheme	scheme	= 2;
 	optional	string	serverName	= 3;
 	optional	uint32	serverPort	= 4;

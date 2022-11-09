@@ -22,7 +22,7 @@
 
 package org.wildfly.clustering.web.spring.hotrod.auth;
 
-import javax.servlet.annotation.WebListener;
+import jakarta.servlet.annotation.WebListener;
 
 /**
  * Custom servlet context listener that uses annotation-based registration, using our Config.

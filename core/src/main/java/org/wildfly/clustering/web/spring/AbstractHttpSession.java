@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Objects;
 
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * Implements deprecated methods, as well as {@link #equals(Object)}, {@link #hashCode()}, and {@link #toString()}.
@@ -60,8 +60,8 @@ public abstract class AbstractHttpSession implements HttpSession {
 
     @Deprecated
     @Override
-    public javax.servlet.http.HttpSessionContext getSessionContext() {
-        return new javax.servlet.http.HttpSessionContext() {
+    public jakarta.servlet.http.HttpSessionContext getSessionContext() {
+        return new jakarta.servlet.http.HttpSessionContext() {
             @Override
             public Enumeration<String> getIds() {
                 return Collections.enumeration(Collections.<String>emptyList());

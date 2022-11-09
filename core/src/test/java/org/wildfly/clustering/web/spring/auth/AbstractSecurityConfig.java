@@ -43,7 +43,7 @@ public abstract class AbstractSecurityConfig implements Supplier<FindByIndexName
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf().disable()
             .httpBasic()
-                .and().authorizeRequests().antMatchers("/").hasRole("ADMIN").anyRequest().authenticated()
+                .and().authorizeHttpRequests().requestMatchers("/").hasRole("ADMIN").anyRequest().authenticated()
                 .and().sessionManagement().maximumSessions(1).sessionRegistry(sessionRegistry())
                 ;
         return http.build();
