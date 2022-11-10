@@ -5,9 +5,9 @@ updates:
     schedule:
       interval: "daily"
     ignore:
-      - dependency-name: org.apache.tomcat:tomcat-catalina
-        versions:
-          - ">= 10.1"
       - dependency-name: jakarta.annotation:jakarta.annotation-api
         versions:
           - ">= 2"
+      - dependency-name: org.apache.tomcat:tomcat-catalina
+        versions:
+          - ">= 10.1"
