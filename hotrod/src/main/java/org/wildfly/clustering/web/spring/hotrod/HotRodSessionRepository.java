@@ -32,7 +32,13 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.ServiceLoader;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -48,7 +54,10 @@ import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
+import org.infinispan.client.hotrod.impl.ConfigurationProperties;
 import org.infinispan.client.hotrod.impl.HotRodURI;
+import org.infinispan.commons.executors.ExecutorFactory;
+import org.infinispan.commons.executors.NonBlockingResource;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEvent;
@@ -56,6 +65,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.session.IndexResolver;
 import org.springframework.session.Session;
+import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.ee.Immutability;
 import org.wildfly.clustering.ee.cache.tx.TransactionBatch;
 import org.wildfly.clustering.ee.immutable.CompositeImmutability;
@@ -96,6 +106,12 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class HotRodSessionRepository implements FindByIndexNameSessionRepository<SpringSession>, InitializingBean, DisposableBean, LocalContextFactory<Void> {
 
+    static class NonBlockingThreadGroup extends ThreadGroup implements NonBlockingResource {
+        NonBlockingThreadGroup(String name) {
+           super(name);
+        }
+     }
+
     private final HotRodSessionRepositoryConfiguration configuration;
     private final List<Runnable> stopTasks = new LinkedList<>();
     private volatile FindByIndexNameSessionRepository<SpringSession> repository;
@@ -120,6 +136,28 @@ public class HotRodSessionRepository implements FindByIndexNameSessionRepository
                 .withProperties(this.configuration.getProperties())
                 .marshaller(new ProtoStreamMarshaller(new SimpleClassLoaderMarshaller(containerLoader), builder -> builder.load(containerLoader)))
                 .classLoader(containerLoader)
+                .asyncExecutorFactory().factory(new ExecutorFactory() {
+                    @Override
+                    public ThreadPoolExecutor getExecutor(Properties p) {
+                        ConfigurationProperties properties = new ConfigurationProperties(p);
+                        String threadNamePrefix = properties.getDefaultExecutorFactoryThreadNamePrefix();
+                        String threadNameSuffix = properties.getDefaultExecutorFactoryThreadNameSuffix();
+                        NonBlockingThreadGroup group = new NonBlockingThreadGroup(threadNamePrefix + "-group");
+                        ThreadFactory factory = new ThreadFactory() {
+                            private final AtomicInteger counter = new AtomicInteger(0);
+
+                            @Override
+                            public Thread newThread(Runnable task) {
+                                int threadIndex = this.counter.incrementAndGet();
+                                Thread thread = new Thread(group, task, threadNamePrefix + "-" + threadIndex + threadNameSuffix);
+                                thread.setDaemon(true);
+                                return thread;
+                            }
+                        };
+
+                        return new ThreadPoolExecutor(properties.getDefaultExecutorFactoryPoolSize(), properties.getDefaultExecutorFactoryPoolSize(), 0L, TimeUnit.MILLISECONDS, new SynchronousQueue<>(), new DefaultThreadFactory(factory, HotRodSessionRepository.class));
+                    }
+                })
                 .build();
 
         configuration.addRemoteCache(deploymentName, builder -> builder.forceReturnValues(false).nearCacheMode((maxActiveSessions == null) || (maxActiveSessions.intValue() <= 0) ? NearCacheMode.DISABLED : NearCacheMode.INVALIDATED).transactionMode(TransactionMode.NONE).templateName(templateName));
