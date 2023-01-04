@@ -307,10 +307,14 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
         container.start();
         this.stopTasks.add(container::stop);
 
-        ByteBufferMarshaller marshaller = marshallerFactory.apply(context.getClassLoader());
+        ClassLoader loader = context.getClassLoader();
+        ByteBufferMarshaller marshaller = marshallerFactory.apply(loader);
 
-        ServiceLoader<Immutability> loadedImmutability = ServiceLoader.load(Immutability.class, Immutability.class.getClassLoader());
-        Immutability immutability = new CompositeImmutability(new CompositeIterable<>(EnumSet.allOf(DefaultImmutability.class), EnumSet.allOf(SessionAttributeImmutability.class), EnumSet.allOf(SpringSecurityImmutability.class), loadedImmutability));
+        List<Immutability> loadedImmutabilities = new LinkedList<>();
+        for (Immutability loadedImmutability : ServiceLoader.load(Immutability.class, loader)) {
+            loadedImmutabilities.add(loadedImmutability);
+        }
+        Immutability immutability = new CompositeImmutability(new CompositeIterable<>(EnumSet.allOf(DefaultImmutability.class), EnumSet.allOf(SessionAttributeImmutability.class), EnumSet.allOf(SpringSecurityImmutability.class), loadedImmutabilities));
 
         Supplier<String> identifierFactory = this.configuration.getIdentifierFactory();
 
