@@ -167,10 +167,14 @@ public class HotRodSessionRepository implements FindByIndexNameSessionRepository
         container.start();
         this.stopTasks.add(container::stop);
 
-        ByteBufferMarshaller marshaller = this.configuration.getMarshallerFactory().apply(context.getClassLoader());
+        ClassLoader loader = context.getClassLoader();
+        ByteBufferMarshaller marshaller = this.configuration.getMarshallerFactory().apply(loader);
 
-        ServiceLoader<Immutability> loadedImmutability = ServiceLoader.load(Immutability.class, Immutability.class.getClassLoader());
-        Immutability immutability = new CompositeImmutability(new CompositeIterable<>(EnumSet.allOf(DefaultImmutability.class), EnumSet.allOf(SessionAttributeImmutability.class), EnumSet.allOf(SpringSecurityImmutability.class), loadedImmutability));
+        List<Immutability> loadedImmutabilities = new LinkedList<>();
+        for (Immutability loadedImmutability : ServiceLoader.load(Immutability.class, loader)) {
+            loadedImmutabilities.add(loadedImmutability);
+        }
+        Immutability immutability = new CompositeImmutability(new CompositeIterable<>(EnumSet.allOf(DefaultImmutability.class), EnumSet.allOf(SessionAttributeImmutability.class), EnumSet.allOf(SpringSecurityImmutability.class), loadedImmutabilities));
 
         SessionManagerFactory<ServletContext, Void, TransactionBatch> managerFactory = new HotRodSessionManagerFactory<>(new HotRodSessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, Void>() {
             @Override

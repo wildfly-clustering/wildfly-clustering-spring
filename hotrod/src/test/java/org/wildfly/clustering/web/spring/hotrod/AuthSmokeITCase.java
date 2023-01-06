@@ -32,7 +32,6 @@ import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
 import org.apache.hc.client5.http.classic.methods.HttpHead;
 import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.HttpStatus;
 import org.infinispan.protostream.SerializationContextInitializer;
@@ -102,9 +101,10 @@ public class AuthSmokeITCase extends AbstractSmokeITCase {
         URI uri1 = SessionServlet.createURI(baseURL1);
         // Verify that authentication is required
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            try (CloseableHttpResponse response = client.execute(new HttpHead(uri1))) {
+            client.execute(new HttpHead(uri1), response -> {
                 Assert.assertEquals(HttpStatus.SC_UNAUTHORIZED, response.getCode());
-            }
+                return null;
+            });
         }
         this.accept(baseURL1, baseURL2);
     }
