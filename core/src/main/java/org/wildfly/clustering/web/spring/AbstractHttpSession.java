@@ -22,8 +22,6 @@
 
 package org.wildfly.clustering.web.spring;
 
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.Objects;
 
 import jakarta.servlet.http.HttpSession;
@@ -33,46 +31,6 @@ import jakarta.servlet.http.HttpSession;
  * @author Paul Ferraro
  */
 public abstract class AbstractHttpSession implements HttpSession {
-
-    @Deprecated
-    @Override
-    public String[] getValueNames() {
-        return Collections.list(this.getAttributeNames()).toArray(new String[0]);
-    }
-
-    @Deprecated
-    @Override
-    public Object getValue(String name) {
-        return this.getAttribute(name);
-    }
-
-    @Deprecated
-    @Override
-    public void putValue(String name, Object value) {
-        this.setAttribute(name, value);
-    }
-
-    @Deprecated
-    @Override
-    public void removeValue(String name) {
-        this.removeAttribute(name);
-    }
-
-    @Deprecated
-    @Override
-    public jakarta.servlet.http.HttpSessionContext getSessionContext() {
-        return new jakarta.servlet.http.HttpSessionContext() {
-            @Override
-            public Enumeration<String> getIds() {
-                return Collections.enumeration(Collections.<String>emptyList());
-            }
-
-            @Override
-            public HttpSession getSession(String sessionId) {
-                return null;
-            }
-        };
-    }
 
     @Override
     public int hashCode() {
