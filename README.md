@@ -7,7 +7,7 @@
 wildfly-clustering-spring-session is a Spring Session module based on WildFly's distributed session management and Infinispan.
 This brings the same clustering features to Spring Session that one can expect from WildFly's distributed session management, including:
 
-* Servlet 5.0 specification compliance (excluding [limitations inherent to Spring Session](#notes)).
+* Servlet 6.0 specification compliance (excluding [limitations inherent to Spring Session](#notes)).
   * Including support for standard session event notifications
 * Session attribute replication via an embedded cache or persitence to a remote Infinispan cluster.
 * Configurable session replication/persistence strategies, i.e. per session vs per attribute.
