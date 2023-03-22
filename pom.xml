@@ -52,7 +52,7 @@
         <version.com.squareup.protoparser>4.0.3</version.com.squareup.protoparser>
         <version.io.spring>6.0.7</version.io.spring>
         <version.io.spring.security>6.0.2</version.io.spring.security>
-        <version.io.spring.session>3.0.0</version.io.spring.session>
+        <version.io.spring.session>3.0.1</version.io.spring.session>
         <version.jakarta.annotation>2.0.0</version.jakarta.annotation>
         <version.jakarta.servlet>6.0.0</version.jakarta.servlet>
         <version.net.jcip.annotations>1.0</version.net.jcip.annotations>
