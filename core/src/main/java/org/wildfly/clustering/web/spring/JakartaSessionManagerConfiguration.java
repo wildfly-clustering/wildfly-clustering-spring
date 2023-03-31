@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
+ * Copyright 2023, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,22 +22,19 @@
 
 package org.wildfly.clustering.web.spring;
 
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
+import java.time.Duration;
 
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.session.Session;
-import org.wildfly.clustering.ee.Batch;
-import org.wildfly.clustering.web.session.ImmutableSession;
-import org.wildfly.clustering.web.session.SessionManager;
+import jakarta.servlet.ServletContext;
+
+import org.wildfly.clustering.web.session.SessionManagerConfiguration;
 
 /**
  * @author Paul Ferraro
  */
-public interface DistributableSessionRepositoryConfiguration<B extends Batch> {
-    SessionManager<Void, B> getSessionManager();
-    ApplicationEventPublisher getEventPublisher();
-    BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> getSessionDestroyAction();
-    IndexingConfiguration<B> getIndexingConfiguration();
+public interface JakartaSessionManagerConfiguration extends SessionManagerConfiguration<ServletContext> {
+
+    @Override
+    default Duration getTimeout() {
+        return Duration.ofMinutes(this.getServletContext().getSessionTimeout());
+    }
 }

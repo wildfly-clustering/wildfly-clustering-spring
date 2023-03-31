@@ -93,7 +93,7 @@ public class DistributableImmutableSession implements SpringSession {
 
     @Override
     public Duration getMaxInactiveInterval() {
-        return this.session.getMetaData().getMaxInactiveInterval();
+        return this.session.getMetaData().getTimeout();
     }
 
     @Override

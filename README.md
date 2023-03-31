@@ -247,8 +247,10 @@ When configuring Spring Session via XML, you must also define the ServletContext
 
 ## Notes
 
-Because Spring Session operates entirely within user space (i.e. external to the servlet container), its session management behavior will inherently deviate from the servlet specification in several areas.
-In particular, applications using Spring Session should be aware of the following aberrant behavior:
+Because Spring Session operates entirely within user space (i.e. external to the servlet container), its session management behavior will inherently deviate from the Jakarta Servlet specification in several areas.
+In particular, applications using Spring Session should be aware of the following aberrant behavior that affects *every* SessionRepository implementation:
+
+1. `ServletContext` methods affecting session behavior, e.g. [`ServletContext.setSessionTimeout(int)`](https://jakarta.ee/specifications/platform/10/apidocs/jakarta/servlet/servletcontext#setSessionTimeout(int)), do not propagate to the `SessionRepository` implementation and thus will not affect runtime behavior.
 
 1. Spring Session lacks any facility to notify standard listeners (instances of `HttpSessionListener` declared in web.xml or annotated with @WebListener) of newly created or destroyed sessions.
    Users must instead rely on Spring's own event mechanism.

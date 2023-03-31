@@ -70,7 +70,7 @@ public enum SpringSpecificationProvider implements SpecificationProvider<HttpSes
 
             @Override
             public int getMaxInactiveInterval() {
-                return (int) session.getMetaData().getMaxInactiveInterval().getSeconds();
+                return (int) session.getMetaData().getTimeout().getSeconds();
             }
 
             @Override
