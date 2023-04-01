@@ -25,6 +25,7 @@ package org.wildfly.clustering.web.spring;
 import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 import jakarta.servlet.ServletContext;
 
@@ -34,13 +35,12 @@ import org.springframework.session.events.SessionExpiredEvent;
 import org.wildfly.clustering.context.ContextClassLoaderReference;
 import org.wildfly.clustering.context.ContextReferenceExecutor;
 import org.wildfly.clustering.web.session.ImmutableSession;
-import org.wildfly.clustering.web.session.SessionExpirationListener;
 
 /**
  * Executes a destroy action using the classloader of the servlet context.
  * @author Paul Ferraro
  */
-public class ImmutableSessionExpirationListener implements SessionExpirationListener {
+public class ImmutableSessionExpirationListener implements Consumer<ImmutableSession> {
 
     private final BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> destroyAction;
     private final Executor executor;
@@ -51,7 +51,7 @@ public class ImmutableSessionExpirationListener implements SessionExpirationList
     }
 
     @Override
-    public void sessionExpired(ImmutableSession session) {
+    public void accept(ImmutableSession session) {
         this.executor.execute(() -> this.destroyAction.accept(session, SessionExpiredEvent::new));
     }
 }

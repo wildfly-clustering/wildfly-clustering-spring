@@ -33,12 +33,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -100,6 +100,7 @@ import org.wildfly.clustering.marshalling.protostream.SimpleClassLoaderMarshalle
 import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
 import org.wildfly.clustering.server.NodeFactory;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.server.group.Group;
 import org.wildfly.clustering.server.infinispan.dispatcher.ChannelCommandDispatcherFactory;
 import org.wildfly.clustering.server.infinispan.dispatcher.ChannelCommandDispatcherFactoryConfiguration;
 import org.wildfly.clustering.server.infinispan.dispatcher.LocalCommandDispatcherFactory;
@@ -115,7 +116,6 @@ import org.wildfly.clustering.web.infinispan.sso.InfinispanSSOManagerFactoryConf
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.SessionAttributeImmutability;
 import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
-import org.wildfly.clustering.web.session.SessionExpirationListener;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionManagerConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
@@ -125,6 +125,7 @@ import org.wildfly.clustering.web.spring.DistributableSessionRepositoryConfigura
 import org.wildfly.clustering.web.spring.ImmutableSessionDestroyAction;
 import org.wildfly.clustering.web.spring.ImmutableSessionExpirationListener;
 import org.wildfly.clustering.web.spring.IndexingConfiguration;
+import org.wildfly.clustering.web.spring.JakartaSessionManagerConfiguration;
 import org.wildfly.clustering.web.spring.SessionMarshallerFactory;
 import org.wildfly.clustering.web.spring.SpringSession;
 import org.wildfly.clustering.web.spring.SpringSpecificationProvider;
@@ -206,7 +207,7 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
 
         Function<ClassLoader, ByteBufferMarshaller> marshallerFactory = this.configuration.getMarshallerFactory();
 
-        CommandDispatcherFactory dispatcherFactory = (channel != null) ? new ChannelCommandDispatcherFactory(new ChannelCommandDispatcherFactoryConfiguration() {
+        ChannelCommandDispatcherFactory channelDispatcherFactory = (channel != null) ? new ChannelCommandDispatcherFactory(new ChannelCommandDispatcherFactoryConfiguration() {
             @Override
             public JChannel getChannel() {
                 return channel;
@@ -231,10 +232,11 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
             public Predicate<Message> getUnknownForkPredicate() {
                 return Predicate.not(Message::hasPayload);
             }
-        }) : new LocalCommandDispatcherFactory(new LocalGroup(transport.nodeName()));
-        if (channel != null) {
-            ChannelCommandDispatcherFactory factory = (ChannelCommandDispatcherFactory) dispatcherFactory;
-            this.stopTasks.add(factory::close);
+        }) : null;
+        Group<Void> localGroup = new LocalGroup(transport.nodeName(), transport.clusterName());
+        CommandDispatcherFactory dispatcherFactory = (channelDispatcherFactory != null) ? channelDispatcherFactory : new LocalCommandDispatcherFactory(localGroup);
+        if (channelDispatcherFactory != null) {
+            this.stopTasks.add(channelDispatcherFactory::close);
         }
 
         holder.getGlobalConfigurationBuilder()
@@ -380,7 +382,7 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
         cache.start();
         this.stopTasks.add(cache::stop);
 
-        NodeFactory<org.jgroups.Address> memberFactory = (channel != null) ? (ChannelCommandDispatcherFactory) dispatcherFactory : new LocalGroup(context.getVirtualServerName());
+        NodeFactory<org.jgroups.Address> memberFactory = (channelDispatcherFactory != null) ? channelDispatcherFactory : address -> localGroup.createNode(null);
         CacheGroup group = new CacheGroup(new CacheGroupConfiguration() {
             @SuppressWarnings("unchecked")
             @Override
@@ -461,9 +463,9 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
         ApplicationEventPublisher publisher = this.configuration.getEventPublisher();
         BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> sessionDestroyAction = new ImmutableSessionDestroyAction<>(publisher, context, indexing);
 
-        SessionExpirationListener expirationListener = new ImmutableSessionExpirationListener(context, sessionDestroyAction);
+        Consumer<ImmutableSession> expirationListener = new ImmutableSessionExpirationListener(context, sessionDestroyAction);
 
-        SessionManager<Void, TransactionBatch> manager = managerFactory.createSessionManager(new SessionManagerConfiguration<ServletContext>() {
+        SessionManagerConfiguration<ServletContext> managerConfiguration = new JakartaSessionManagerConfiguration() {
             @Override
             public ServletContext getServletContext() {
                 return context;
@@ -475,11 +477,11 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
             }
 
             @Override
-            public SessionExpirationListener getExpirationListener() {
+            public Consumer<ImmutableSession> getExpirationListener() {
                 return expirationListener;
             }
-        });
-        Optional<Duration> defaultTimeout = setDefaultMaxInactiveInterval(manager, Duration.ofMinutes(context.getSessionTimeout()));
+        };
+        SessionManager<Void, TransactionBatch> manager = managerFactory.createSessionManager(managerConfiguration);
         manager.start();
         this.stopTasks.add(manager::stop);
 
@@ -490,18 +492,8 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
             }
 
             @Override
-            public Optional<Duration> getDefaultTimeout() {
-                return defaultTimeout;
-            }
-
-            @Override
             public ApplicationEventPublisher getEventPublisher() {
                 return publisher;
-            }
-
-            @Override
-            public ServletContext getServletContext() {
-                return context;
             }
 
             @Override
@@ -522,16 +514,6 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
         ListIterator<Runnable> tasks = this.stopTasks.listIterator(this.stopTasks.size() - 1);
         while (tasks.hasPrevious()) {
             tasks.previous().run();
-        }
-    }
-
-    private static Optional<Duration> setDefaultMaxInactiveInterval(SessionManager<Void, TransactionBatch> manager, Duration timeout) {
-        try {
-            manager.setDefaultMaxInactiveInterval(timeout);
-            return Optional.empty();
-        } catch (NoSuchMethodError error) {
-            // Servlet version < 4.0
-            return Optional.of(timeout);
         }
     }
 

@@ -23,7 +23,6 @@
 package org.wildfly.clustering.web.spring.hotrod;
 
 import java.net.URI;
-import java.time.Duration;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -31,7 +30,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.concurrent.SynchronousQueue;
@@ -41,6 +39,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import jakarta.servlet.ServletContext;
@@ -81,7 +80,6 @@ import org.wildfly.clustering.web.hotrod.sso.HotRodSSOManagerFactoryConfiguratio
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.SessionAttributeImmutability;
 import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
-import org.wildfly.clustering.web.session.SessionExpirationListener;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionManagerConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
@@ -91,6 +89,7 @@ import org.wildfly.clustering.web.spring.DistributableSessionRepositoryConfigura
 import org.wildfly.clustering.web.spring.ImmutableSessionDestroyAction;
 import org.wildfly.clustering.web.spring.ImmutableSessionExpirationListener;
 import org.wildfly.clustering.web.spring.IndexingConfiguration;
+import org.wildfly.clustering.web.spring.JakartaSessionManagerConfiguration;
 import org.wildfly.clustering.web.spring.SpringSession;
 import org.wildfly.clustering.web.spring.SpringSpecificationProvider;
 import org.wildfly.clustering.web.spring.security.SpringSecurityImmutability;
@@ -274,9 +273,9 @@ public class HotRodSessionRepository implements FindByIndexNameSessionRepository
         ApplicationEventPublisher publisher = this.configuration.getEventPublisher();
         BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> sessionDestroyAction = new ImmutableSessionDestroyAction<>(publisher, context, indexing);
 
-        SessionExpirationListener expirationListener = new ImmutableSessionExpirationListener(context, sessionDestroyAction);
+        Consumer<ImmutableSession> expirationListener = new ImmutableSessionExpirationListener(context, sessionDestroyAction);
 
-        SessionManager<Void, TransactionBatch> manager = managerFactory.createSessionManager(new SessionManagerConfiguration<ServletContext>() {
+        SessionManagerConfiguration<ServletContext> managerConfiguration = new JakartaSessionManagerConfiguration() {
             @Override
             public ServletContext getServletContext() {
                 return context;
@@ -288,11 +287,11 @@ public class HotRodSessionRepository implements FindByIndexNameSessionRepository
             }
 
             @Override
-            public SessionExpirationListener getExpirationListener() {
+            public Consumer<ImmutableSession> getExpirationListener() {
                 return expirationListener;
             }
-        });
-        Optional<Duration> defaultTimeout = setDefaultMaxInactiveInterval(manager, Duration.ofMinutes(context.getSessionTimeout()));
+        };
+        SessionManager<Void, TransactionBatch> manager = managerFactory.createSessionManager(managerConfiguration);
         manager.start();
         this.stopTasks.add(manager::stop);
 
@@ -303,18 +302,8 @@ public class HotRodSessionRepository implements FindByIndexNameSessionRepository
             }
 
             @Override
-            public Optional<Duration> getDefaultTimeout() {
-                return defaultTimeout;
-            }
-
-            @Override
             public ApplicationEventPublisher getEventPublisher() {
                 return publisher;
-            }
-
-            @Override
-            public ServletContext getServletContext() {
-                return context;
             }
 
             @Override
@@ -327,16 +316,6 @@ public class HotRodSessionRepository implements FindByIndexNameSessionRepository
                 return indexing;
             }
         });
-    }
-
-    private static Optional<Duration> setDefaultMaxInactiveInterval(SessionManager<Void, TransactionBatch> manager, Duration timeout) {
-        try {
-            manager.setDefaultMaxInactiveInterval(timeout);
-            return Optional.empty();
-        } catch (NoSuchMethodError error) {
-            // Servlet version < 4.0
-            return Optional.of(timeout);
-        }
     }
 
     @Override

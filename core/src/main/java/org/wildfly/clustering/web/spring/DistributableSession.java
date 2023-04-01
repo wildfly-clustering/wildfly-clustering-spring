@@ -70,8 +70,8 @@ public class DistributableSession<B extends Batch> implements SpringSession {
                 for (String name: oldSession.getAttributes().getAttributeNames()) {
                     newSession.getAttributes().setAttribute(name, oldSession.getAttributes().getAttribute(name));
                 }
-                newSession.getMetaData().setMaxInactiveInterval(oldSession.getMetaData().getMaxInactiveInterval());
-                newSession.getMetaData().setLastAccess(oldSession.getMetaData().getLastAccessStartTime(), oldSession.getMetaData().getLastAccessEndTime());
+                newSession.getMetaData().setMaxInactiveInterval(oldSession.getMetaData().getTimeout());
+                newSession.getMetaData().setLastAccess(oldSession.getMetaData().getLastAccessStartTime(), oldSession.getMetaData().getLastAccessTime());
                 oldSession.invalidate();
                 this.session = newSession;
             } catch (IllegalStateException e) {
@@ -163,7 +163,7 @@ public class DistributableSession<B extends Batch> implements SpringSession {
     public Duration getMaxInactiveInterval() {
         Session<Void> session = this.session;
         try (BatchContext context = this.resumeBatch()) {
-            return session.getMetaData().getMaxInactiveInterval();
+            return session.getMetaData().getTimeout();
         } catch (IllegalStateException e) {
             if (!session.isValid()) {
                 session.close();

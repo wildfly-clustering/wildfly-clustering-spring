@@ -22,11 +22,9 @@
 
 package org.wildfly.clustering.web.spring;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -55,13 +53,11 @@ public class DistributableSessionRepository<B extends Batch> implements FindByIn
 
     private final SessionManager<Void, B> manager;
     private final ApplicationEventPublisher publisher;
-    private final Optional<Duration> defaultTimeout;
     private final BiConsumer<ImmutableSession, BiFunction<Object, org.springframework.session.Session, ApplicationEvent>> destroyAction;
     private final IndexingConfiguration<B> indexing;
 
     public DistributableSessionRepository(DistributableSessionRepositoryConfiguration<B> configuration) {
         this.manager = configuration.getSessionManager();
-        this.defaultTimeout = configuration.getDefaultTimeout();
         this.publisher = configuration.getEventPublisher();
         this.destroyAction = configuration.getSessionDestroyAction();
         this.indexing = configuration.getIndexingConfiguration();
@@ -75,10 +71,6 @@ public class DistributableSessionRepository<B extends Batch> implements FindByIn
         B batch = batcher.createBatch();
         try {
             Session<Void> session = this.manager.createSession(id);
-            // This is present for servlet version < 4.0
-            if (this.defaultTimeout.isPresent()) {
-                session.getMetaData().setMaxInactiveInterval(this.defaultTimeout.get());
-            }
             B suspendedBatch = batcher.suspendBatch();
             DistributableSession<B> result = new DistributableSession<>(this.manager, session, suspendedBatch, this.indexing);
             this.publisher.publishEvent(new SessionCreatedEvent(this, result));
