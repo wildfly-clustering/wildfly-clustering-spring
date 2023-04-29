@@ -32,7 +32,7 @@
 
     <groupId>org.wildfly.clustering</groupId>
     <artifactId>wildfly-clustering-spring-session</artifactId>
-    <version>8.0.0.Final</version>
+    <version>8.0.1.Final-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Distributed session management for Spring Session</name>
@@ -41,7 +41,7 @@
         <connection>scm:git:git://github.com:wildfly-clustering/wildfly-clustering-spring-session.git</connection>
         <developerConnection>scm:git:git@github.com:wildfly-clustering/wildfly-clustering-spring-session.git</developerConnection>
         <url>https://github.com/wildfly-clustering/wildfly-clustering-spring-session</url>
-        <tag>8.0.0.Final</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <properties>
