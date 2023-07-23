@@ -78,7 +78,12 @@ public class SpringSecurityWebSavedRequestMarshallerTestCase {
 		builder.setParameters(parameters);
 		builder.setHeaders(Collections.singletonMap("Accept", Collections.singletonList("text/html")));
 		builder.setLocales(Collections.singletonList(Locale.US));
-		builder.setCookies(Arrays.asList(new SavedCookie("foo", "bar", null, null, -1, null, false, 0), new SavedCookie("name", "value", "comment", "domain", 100, "/path", true, 1)));
+		Cookie cookie = new Cookie("name", "value");
+		cookie.setDomain("domain");
+		cookie.setMaxAge(100);
+		cookie.setPath("/path");
+		cookie.setSecure(true);
+		builder.setCookies(Arrays.asList(new SavedCookie(new Cookie("foo", "bar")), new SavedCookie(cookie)));
 		builder.setRequestURI("/foo/bar/extra/path");
 		builder.setRequestURL(String.format("http://%s:8080/foo/bar/extra/path", InetAddress.getLocalHost().getHostName()));
 

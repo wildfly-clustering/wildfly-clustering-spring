@@ -25,6 +25,8 @@ package org.wildfly.clustering.web.spring.auth;
 import java.util.function.Supplier;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -41,12 +43,10 @@ public abstract class AbstractSecurityConfig implements Supplier<FindByIndexName
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		http.csrf().disable()
-			.httpBasic()
-				.and().authorizeHttpRequests().requestMatchers("/").hasRole("ADMIN").anyRequest().authenticated()
-				.and().sessionManagement().maximumSessions(1).sessionRegistry(sessionRegistry())
-				;
-		return http.build();
+		return http.httpBasic(Customizer.withDefaults())
+				.authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.GET).hasRole("ADMIN").anyRequest().authenticated())
+				.sessionManagement(sessions -> sessions.maximumSessions(1).sessionRegistry(this.sessionRegistry()))
+				.build();
 	}
 
 	@SuppressWarnings("deprecation")
