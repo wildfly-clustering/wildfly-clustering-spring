@@ -35,29 +35,29 @@ import org.wildfly.clustering.marshalling.protostream.ScalarMarshaller;
  */
 public class AnyScalarMarshaller<T> implements ScalarMarshaller<T> {
 
-    private final Class<T> targetClass;
+	private final Class<T> targetClass;
 
-    public AnyScalarMarshaller(Class<T> targetClass) {
-        this.targetClass = targetClass;
-    }
+	public AnyScalarMarshaller(Class<T> targetClass) {
+		this.targetClass = targetClass;
+	}
 
-    @Override
-    public T readFrom(ProtoStreamReader reader) throws IOException {
-        return this.targetClass.cast(Scalar.ANY.readFrom(reader));
-    }
+	@Override
+	public T readFrom(ProtoStreamReader reader) throws IOException {
+		return this.targetClass.cast(Scalar.ANY.readFrom(reader));
+	}
 
-    @Override
-    public void writeTo(ProtoStreamWriter writer, T value) throws IOException {
-        Scalar.ANY.writeTo(writer, value);
-    }
+	@Override
+	public void writeTo(ProtoStreamWriter writer, T value) throws IOException {
+		Scalar.ANY.writeTo(writer, value);
+	}
 
-    @Override
-    public Class<? extends T> getJavaClass() {
-        return this.targetClass;
-    }
+	@Override
+	public Class<? extends T> getJavaClass() {
+		return this.targetClass;
+	}
 
-    @Override
-    public WireType getWireType() {
-        return Scalar.ANY.getWireType();
-    }
+	@Override
+	public WireType getWireType() {
+		return Scalar.ANY.getWireType();
+	}
 }

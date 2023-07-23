@@ -35,43 +35,43 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * @author Paul Ferraro
  */
 public enum HttpServletRequestMarshaller implements FieldSetMarshaller<HttpServletRequest, HttpServletRequestBuilder> {
-    INSTANCE;
+	INSTANCE;
 
-    private static final int REMOTE_ADDRESS_INDEX = 0;
-    private static final int SESSION_ID_INDEX = 1;
-    private static final int FIELDS = 2;
+	private static final int REMOTE_ADDRESS_INDEX = 0;
+	private static final int SESSION_ID_INDEX = 1;
+	private static final int FIELDS = 2;
 
-    @Override
-    public HttpServletRequestBuilder getBuilder() {
-        return new HttpServletRequestBuilder();
-    }
+	@Override
+	public HttpServletRequestBuilder getBuilder() {
+		return new HttpServletRequestBuilder();
+	}
 
-    @Override
-    public int getFields() {
-        return FIELDS;
-    }
+	@Override
+	public int getFields() {
+		return FIELDS;
+	}
 
-    @Override
-    public HttpServletRequestBuilder readField(ProtoStreamReader reader, int index, HttpServletRequestBuilder builder) throws IOException {
-        switch (index) {
-            case REMOTE_ADDRESS_INDEX:
-                return builder.setRemoteAddress(reader.readString());
-            case SESSION_ID_INDEX:
-                return builder.setSessionId(reader.readString());
-            default:
-                return builder;
-        }
-    }
+	@Override
+	public HttpServletRequestBuilder readField(ProtoStreamReader reader, int index, HttpServletRequestBuilder builder) throws IOException {
+		switch (index) {
+			case REMOTE_ADDRESS_INDEX:
+				return builder.setRemoteAddress(reader.readString());
+			case SESSION_ID_INDEX:
+				return builder.setSessionId(reader.readString());
+			default:
+				return builder;
+		}
+	}
 
-    @Override
-    public void writeFields(ProtoStreamWriter writer, int startIndex, HttpServletRequest request) throws IOException {
-        String remoteAddress = request.getRemoteAddr();
-        if (remoteAddress != null) {
-            writer.writeString(startIndex + REMOTE_ADDRESS_INDEX, remoteAddress);
-        }
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            writer.writeString(startIndex + SESSION_ID_INDEX, session.getId());
-        }
-    }
+	@Override
+	public void writeFields(ProtoStreamWriter writer, int startIndex, HttpServletRequest request) throws IOException {
+		String remoteAddress = request.getRemoteAddr();
+		if (remoteAddress != null) {
+			writer.writeString(startIndex + REMOTE_ADDRESS_INDEX, remoteAddress);
+		}
+		HttpSession session = request.getSession(false);
+		if (session != null) {
+			writer.writeString(startIndex + SESSION_ID_INDEX, session.getId());
+		}
+	}
 }

@@ -31,13 +31,13 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
  */
 public class ContextLoaderListener extends org.springframework.web.context.ContextLoaderListener {
 
-    public ContextLoaderListener(Class<?>... componentClasses) {
-        super(createWebApplicationContext(componentClasses));
-    }
+	public ContextLoaderListener(Class<?>... componentClasses) {
+		super(createWebApplicationContext(componentClasses));
+	}
 
-    private static WebApplicationContext createWebApplicationContext(Class<?>... componentClasses) {
-        AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
-        context.register(componentClasses);
-        return context;
-    }
+	private static WebApplicationContext createWebApplicationContext(Class<?>... componentClasses) {
+		AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+		context.register(componentClasses);
+		return context;
+	}
 }

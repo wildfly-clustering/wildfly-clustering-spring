@@ -31,8 +31,8 @@ import org.junit.Test;
  */
 public class SpringSecurityMarshallerTestCase {
 
-    @Test
-    public void test() throws IOException {
-        ProtoStreamTesterFactory.INSTANCE.createTester(Scheme.class).test();
-    }
+	@Test
+	public void test() throws IOException {
+		ProtoStreamTesterFactory.INSTANCE.createTester(Scheme.class).test();
+	}
 }

@@ -141,418 +141,418 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class InfinispanSessionRepository implements FindByIndexNameSessionRepository<SpringSession>, InitializingBean, DisposableBean, LocalContextFactory<Void>, Registrar<String>, Registration {
 
-    private static final AtomicInteger COUNTER = new AtomicInteger(0);
-
-    private final InfinispanSessionRepositoryConfiguration configuration;
-    private final List<Runnable> stopTasks = new LinkedList<>();
-    private volatile FindByIndexNameSessionRepository<SpringSession> repository;
-
-    public InfinispanSessionRepository(InfinispanSessionRepositoryConfiguration configuration) {
-        this.configuration = configuration;
-    }
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        ServletContext context = this.configuration.getServletContext();
-        // Deployment name = host name + context path + version
-        String deploymentName = context.getVirtualServerName() + context.getContextPath();
-        String resourceName = this.configuration.getConfigurationResource();
-        String templateName = this.configuration.getTemplateName();
-        Integer maxActiveSessions = this.configuration.getMaxActiveSessions();
-        SessionAttributePersistenceStrategy strategy = this.configuration.getPersistenceStrategy();
-
-        COUNTER.incrementAndGet();
-        this.stopTasks.add(() -> {
-            // Stop RxJava schedulers when no longer in use
-            if (COUNTER.decrementAndGet() == 0) {
-                Schedulers.shutdown();
-            }
-        });
-
-        ClassLoader containerLoader = WildFlySecurityManager.getClassLoaderPrivileged(InfinispanSessionManagerFactory.class);
-        URL url = context.getResource(resourceName);
-        if (url == null) {
-            throw new FileNotFoundException(resourceName);
-        }
-        ConfigurationBuilderHolder holder = new ParserRegistry().parse(url);
-        GlobalConfigurationBuilder global = holder.getGlobalConfigurationBuilder();
-        String containerName = global.cacheContainer().name();
-        TransportConfiguration transport = global.transport().create();
-
-        JGroupsChannelConfigurator configurator = (transport.transport() != null) ? new JChannelConfigurator(context, transport) : null;
-        JChannel channel = (configurator != null) ? configurator.createChannel(null) : null;
-        if (channel != null) {
-            channel.setName(transport.nodeName());
-            channel.setDiscardOwnMessages(true);
-            channel.connect(transport.clusterName());
-            this.stopTasks.add(channel::close);
-
-            GlobalJmxConfiguration jmx = global.jmx().create();
-            if (jmx.enabled()) {
-                ObjectName prefix = new ObjectName(jmx.domain(), "manager", ObjectName.quote(containerName));
-                JmxConfigurator.registerChannel(channel, ManagementFactory.getPlatformMBeanServer(), prefix, transport.clusterName(), true);
-                this.stopTasks.add(() -> {
-                    try {
-                        JmxConfigurator.unregisterChannel(channel, ManagementFactory.getPlatformMBeanServer(), prefix, transport.clusterName());
-                    } catch (Exception e) {
-                        context.log(e.getLocalizedMessage(), e);
-                    }
-                });
-            }
-
-            Properties properties = new Properties();
-            properties.put(JGroupsTransport.CHANNEL_CONFIGURATOR, new ForkChannelConfigurator(channel, containerName));
-            global.transport().withProperties(properties);
-        }
-
-        Function<ClassLoader, ByteBufferMarshaller> marshallerFactory = this.configuration.getMarshallerFactory();
-
-        ChannelCommandDispatcherFactory channelDispatcherFactory = (channel != null) ? new ChannelCommandDispatcherFactory(new ChannelCommandDispatcherFactoryConfiguration() {
-            @Override
-            public JChannel getChannel() {
-                return channel;
-            }
-
-            @Override
-            public ByteBufferMarshaller getMarshaller() {
-                return SessionMarshallerFactory.PROTOSTREAM.apply(containerLoader);
-            }
-
-            @Override
-            public Duration getTimeout() {
-                return Duration.ofMillis(transport.initialClusterTimeout());
-            }
-
-            @Override
-            public Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory() {
-                return marshallerFactory;
-            }
-
-            @Override
-            public Predicate<Message> getUnknownForkPredicate() {
-                return Predicate.not(Message::hasPayload);
-            }
-        }) : null;
-        Group<Void> localGroup = new LocalGroup(transport.nodeName(), transport.clusterName());
-        CommandDispatcherFactory dispatcherFactory = (channelDispatcherFactory != null) ? channelDispatcherFactory : new LocalCommandDispatcherFactory(localGroup);
-        if (channelDispatcherFactory != null) {
-            this.stopTasks.add(channelDispatcherFactory::close);
-        }
-
-        holder.getGlobalConfigurationBuilder()
-                .classLoader(containerLoader)
-                .blockingThreadPool().threadFactory(new DefaultThreadFactory(BlockingManager.class))
-                .expirationThreadPool().threadFactory(new DefaultThreadFactory(ExpirationManager.class))
-                .listenerThreadPool().threadFactory(new DefaultThreadFactory(ListenerInvocation.class))
-                .nonBlockingThreadPool().threadFactory(new DefaultNonBlockingThreadFactory(NonBlockingManager.class))
-                .serialization()
-                    .marshaller(new InfinispanProtoStreamMarshaller(new SimpleClassLoaderMarshaller(containerLoader), builder -> builder.load(containerLoader)))
-                    // Register dummy serialization context initializer, to bypass service loading in org.infinispan.marshall.protostream.impl.SerializationContextRegistryImpl
-                    // Otherwise marshaller auto-detection will not work
-                    .addContextInitializer(new SerializationContextInitializer() {
-                        @Deprecated
-                        @Override
-                        public String getProtoFile() {
-                            return null;
-                        }
-
-                        @Deprecated
-                        @Override
-                        public String getProtoFileName() {
-                            return null;
-                        }
-
-                        @Override
-                        public void registerMarshallers(SerializationContext context) {
-                        }
-
-                        @Override
-                        public void registerSchema(SerializationContext context) {
-                        }
-                    })
-                .globalState().configurationStorage(ConfigurationStorage.IMMUTABLE).disable();
-
-        @SuppressWarnings("resource")
-        EmbeddedCacheManager container =new DefaultCacheManager(holder, false);
-
-        Configuration template = (templateName != null) ? container.getCacheConfiguration(templateName) : container.getDefaultCacheConfiguration();
-        if (template == null) {
-            if (templateName == null) {
-                throw new IllegalArgumentException("Infinispan configuration does not define a default cache");
-            }
-            throw new IllegalArgumentException(String.format("No such configuration template: %s", templateName));
-        }
-        ConfigurationBuilder builder = new ConfigurationBuilder().read(template).template(false);
-        builder.encoding().mediaType(MediaType.APPLICATION_OBJECT_TYPE);
-        builder.clustering().hash().groups().enabled();
-
-        // Disable expiration, if necessary
-        ExpirationConfiguration expiration = builder.expiration().create();
-        if ((expiration.lifespan() >= 0) || (expiration.maxIdle() >= 0)) {
-            builder.expiration().lifespan(-1).maxIdle(-1);
-        }
-
-        EvictionStrategy eviction = (maxActiveSessions != null) ? EvictionStrategy.REMOVE : EvictionStrategy.MANUAL;
-        builder.memory().storage(StorageType.HEAP)
-                .whenFull(eviction)
-                .maxCount((maxActiveSessions != null) ? maxActiveSessions.longValue() : -1)
-                ;
-        if (eviction.isEnabled()) {
-            // Only evict creation meta-data entries
-            // We will cascade eviction to the remaining entries for a given session
-            builder.addModule(DataContainerConfigurationBuilder.class).evictable(SessionCreationMetaDataKey.class::isInstance);
-        }
-
-        container.defineConfiguration(deploymentName, builder.build());
-        this.stopTasks.add(() -> container.undefineConfiguration(deploymentName));
-
-        container.start();
-        this.stopTasks.add(container::stop);
-
-        ClassLoader loader = context.getClassLoader();
-        ByteBufferMarshaller marshaller = marshallerFactory.apply(loader);
-
-        List<Immutability> loadedImmutabilities = new LinkedList<>();
-        for (Immutability loadedImmutability : ServiceLoader.load(Immutability.class, loader)) {
-            loadedImmutabilities.add(loadedImmutability);
-        }
-        Immutability immutability = new CompositeImmutability(new CompositeIterable<>(EnumSet.allOf(DefaultImmutability.class), EnumSet.allOf(SessionAttributeImmutability.class), EnumSet.allOf(SpringSecurityImmutability.class), loadedImmutabilities));
-
-        Supplier<String> identifierFactory = this.configuration.getIdentifierFactory();
-
-        KeyAffinityServiceFactory affinityFactory = new DefaultKeyAffinityServiceFactory();
-
-        Map<String, String> indexes = this.configuration.getIndexes();
-        Map<String, SSOManager<Void, String, String, Void, TransactionBatch>> managers = indexes.isEmpty() ? Collections.emptyMap() : new HashMap<>();
-        for (Map.Entry<String, String> entry : indexes.entrySet()) {
-            String cacheName = String.format("%s/%s", deploymentName, entry.getKey());
-            String indexName = entry.getValue();
-
-            container.defineConfiguration(cacheName, builder.build());
-            this.stopTasks.add(() -> container.undefineConfiguration(cacheName));
-
-            Cache<?, ?> cache = container.getCache(cacheName);
-            cache.start();
-            this.stopTasks.add(cache::stop);
-
-            SSOManagerFactory<Void, String, String, TransactionBatch> ssoManagerFactory = new InfinispanSSOManagerFactory<>(new InfinispanSSOManagerFactoryConfiguration() {
-                @Override
-                public <K, V> Cache<K, V> getCache() {
-                    return container.getCache(cacheName);
-                }
-
-                @Override
-                public KeyAffinityServiceFactory getKeyAffinityServiceFactory() {
-                    return affinityFactory;
-                }
-            });
-
-            SSOManager<Void, String, String, Void, TransactionBatch> ssoManager = ssoManagerFactory.createSSOManager(new SSOManagerConfiguration<>() {
-                @Override
-                public Supplier<String> getIdentifierFactory() {
-                    return identifierFactory;
-                }
-
-                @Override
-                public ByteBufferMarshaller getMarshaller() {
-                    return marshaller;
-                }
-
-                @Override
-                public LocalContextFactory<Void> getLocalContextFactory() {
-                    return InfinispanSessionRepository.this;
-                }
-            });
-            managers.put(indexName, ssoManager);
-        }
-        IndexResolver<Session> resolver = this.configuration.getIndexResolver();
-        IndexingConfiguration<TransactionBatch> indexing = new IndexingConfiguration<>() {
-            @Override
-            public Map<String, SSOManager<Void, String, String, Void, TransactionBatch>> getSSOManagers() {
-                return managers;
-            }
-
-            @Override
-            public IndexResolver<Session> getIndexResolver() {
-                return resolver;
-            }
-        };
-
-        Cache<?, ?> cache = container.getCache(deploymentName);
-        cache.start();
-        this.stopTasks.add(cache::stop);
-
-        NodeFactory<org.jgroups.Address> memberFactory = (channelDispatcherFactory != null) ? channelDispatcherFactory : address -> localGroup.createNode(null);
-        CacheGroup group = new CacheGroup(new CacheGroupConfiguration() {
-            @SuppressWarnings("unchecked")
-            @Override
-            public <K, V> Cache<K, V> getCache() {
-                return (Cache<K, V>) cache;
-            }
-
-            @Override
-            public NodeFactory<org.jgroups.Address> getMemberFactory() {
-                return memberFactory;
-            }
-        });
-        this.stopTasks.add(group::close);
-
-        SessionManagerFactory<ServletContext, Void, TransactionBatch> managerFactory = new InfinispanSessionManagerFactory<>(new InfinispanSessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, Void>() {
-            @Override
-            public Integer getMaxActiveSessions() {
-                return maxActiveSessions;
-            }
-
-            @Override
-            public SessionAttributePersistenceStrategy getAttributePersistenceStrategy() {
-                return strategy;
-            }
-
-            @Override
-            public String getDeploymentName() {
-                return deploymentName;
-            }
-
-            @Override
-            public ByteBufferMarshaller getMarshaller() {
-                return marshaller;
-            }
-
-            @Override
-            public String getServerName() {
-                return context.getVirtualServerName();
-            }
-
-            @Override
-            public LocalContextFactory<Void> getLocalContextFactory() {
-                return InfinispanSessionRepository.this;
-            }
-
-            @Override
-            public <K, V> Cache<K, V> getCache() {
-                return container.getCache(this.getDeploymentName());
-            }
-
-            @Override
-            public Immutability getImmutability() {
-                return immutability;
-            }
-
-            @Override
-            public SpecificationProvider<HttpSession, ServletContext, HttpSessionActivationListener> getSpecificationProvider() {
-                return SpringSpecificationProvider.INSTANCE;
-            }
-
-            @Override
-            public CommandDispatcherFactory getCommandDispatcherFactory() {
-                return dispatcherFactory;
-            }
-
-            @Override
-            public KeyAffinityServiceFactory getKeyAffinityServiceFactory() {
-                return affinityFactory;
-            }
-
-            @Override
-            public NodeFactory<Address> getMemberFactory() {
-                return group;
-            }
-        });
-        this.stopTasks.add(managerFactory::close);
-
-        ApplicationEventPublisher publisher = this.configuration.getEventPublisher();
-        BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> sessionDestroyAction = new ImmutableSessionDestroyAction<>(publisher, context, indexing);
-
-        Consumer<ImmutableSession> expirationListener = new ImmutableSessionExpirationListener(context, sessionDestroyAction);
-
-        SessionManagerConfiguration<ServletContext> managerConfiguration = new JakartaSessionManagerConfiguration() {
-            @Override
-            public ServletContext getServletContext() {
-                return context;
-            }
-
-            @Override
-            public Supplier<String> getIdentifierFactory() {
-                return identifierFactory;
-            }
-
-            @Override
-            public Consumer<ImmutableSession> getExpirationListener() {
-                return expirationListener;
-            }
-        };
-        SessionManager<Void, TransactionBatch> manager = managerFactory.createSessionManager(managerConfiguration);
-        manager.start();
-        this.stopTasks.add(manager::stop);
-
-        this.repository = new DistributableSessionRepository<>(new DistributableSessionRepositoryConfiguration<TransactionBatch>() {
-            @Override
-            public SessionManager<Void, TransactionBatch> getSessionManager() {
-                return manager;
-            }
-
-            @Override
-            public ApplicationEventPublisher getEventPublisher() {
-                return publisher;
-            }
-
-            @Override
-            public BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> getSessionDestroyAction() {
-                return sessionDestroyAction;
-            }
-
-            @Override
-            public IndexingConfiguration<TransactionBatch> getIndexingConfiguration() {
-                return indexing;
-            }
-        });
-    }
-
-    @Override
-    public void destroy() {
-        // Stop in reverse order
-        ListIterator<Runnable> tasks = this.stopTasks.listIterator(this.stopTasks.size() - 1);
-        while (tasks.hasPrevious()) {
-            tasks.previous().run();
-        }
-    }
-
-    @Override
-    public Registration register(String name) {
-        return this;
-    }
-
-    @Override
-    public void close() {
-    }
-
-    @Override
-    public Void createLocalContext() {
-        return null;
-    }
-
-    @Override
-    public SpringSession createSession() {
-        return this.repository.createSession();
-    }
-
-    @Override
-    public SpringSession findById(String id) {
-        return this.repository.findById(id);
-    }
-
-    @Override
-    public void deleteById(String id) {
-        this.repository.deleteById(id);
-    }
-
-    @Override
-    public void save(SpringSession session) {
-        this.repository.save(session);
-    }
-
-    @Override
-    public Map<String, SpringSession> findByIndexNameAndIndexValue(String indexName, String indexValue) {
-        return this.repository.findByIndexNameAndIndexValue(indexName, indexValue);
-    }
+	private static final AtomicInteger COUNTER = new AtomicInteger(0);
+
+	private final InfinispanSessionRepositoryConfiguration configuration;
+	private final List<Runnable> stopTasks = new LinkedList<>();
+	private volatile FindByIndexNameSessionRepository<SpringSession> repository;
+
+	public InfinispanSessionRepository(InfinispanSessionRepositoryConfiguration configuration) {
+		this.configuration = configuration;
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		ServletContext context = this.configuration.getServletContext();
+		// Deployment name = host name + context path + version
+		String deploymentName = context.getVirtualServerName() + context.getContextPath();
+		String resourceName = this.configuration.getConfigurationResource();
+		String templateName = this.configuration.getTemplateName();
+		Integer maxActiveSessions = this.configuration.getMaxActiveSessions();
+		SessionAttributePersistenceStrategy strategy = this.configuration.getPersistenceStrategy();
+
+		COUNTER.incrementAndGet();
+		this.stopTasks.add(() -> {
+			// Stop RxJava schedulers when no longer in use
+			if (COUNTER.decrementAndGet() == 0) {
+				Schedulers.shutdown();
+			}
+		});
+
+		ClassLoader containerLoader = WildFlySecurityManager.getClassLoaderPrivileged(InfinispanSessionManagerFactory.class);
+		URL url = context.getResource(resourceName);
+		if (url == null) {
+			throw new FileNotFoundException(resourceName);
+		}
+		ConfigurationBuilderHolder holder = new ParserRegistry().parse(url);
+		GlobalConfigurationBuilder global = holder.getGlobalConfigurationBuilder();
+		String containerName = global.cacheContainer().name();
+		TransportConfiguration transport = global.transport().create();
+
+		JGroupsChannelConfigurator configurator = (transport.transport() != null) ? new JChannelConfigurator(context, transport) : null;
+		JChannel channel = (configurator != null) ? configurator.createChannel(null) : null;
+		if (channel != null) {
+			channel.setName(transport.nodeName());
+			channel.setDiscardOwnMessages(true);
+			channel.connect(transport.clusterName());
+			this.stopTasks.add(channel::close);
+
+			GlobalJmxConfiguration jmx = global.jmx().create();
+			if (jmx.enabled()) {
+				ObjectName prefix = new ObjectName(jmx.domain(), "manager", ObjectName.quote(containerName));
+				JmxConfigurator.registerChannel(channel, ManagementFactory.getPlatformMBeanServer(), prefix, transport.clusterName(), true);
+				this.stopTasks.add(() -> {
+					try {
+						JmxConfigurator.unregisterChannel(channel, ManagementFactory.getPlatformMBeanServer(), prefix, transport.clusterName());
+					} catch (Exception e) {
+						context.log(e.getLocalizedMessage(), e);
+					}
+				});
+			}
+
+			Properties properties = new Properties();
+			properties.put(JGroupsTransport.CHANNEL_CONFIGURATOR, new ForkChannelConfigurator(channel, containerName));
+			global.transport().withProperties(properties);
+		}
+
+		Function<ClassLoader, ByteBufferMarshaller> marshallerFactory = this.configuration.getMarshallerFactory();
+
+		ChannelCommandDispatcherFactory channelDispatcherFactory = (channel != null) ? new ChannelCommandDispatcherFactory(new ChannelCommandDispatcherFactoryConfiguration() {
+			@Override
+			public JChannel getChannel() {
+				return channel;
+			}
+
+			@Override
+			public ByteBufferMarshaller getMarshaller() {
+				return SessionMarshallerFactory.PROTOSTREAM.apply(containerLoader);
+			}
+
+			@Override
+			public Duration getTimeout() {
+				return Duration.ofMillis(transport.initialClusterTimeout());
+			}
+
+			@Override
+			public Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory() {
+				return marshallerFactory;
+			}
+
+			@Override
+			public Predicate<Message> getUnknownForkPredicate() {
+				return Predicate.not(Message::hasPayload);
+			}
+		}) : null;
+		Group<Void> localGroup = new LocalGroup(transport.nodeName(), transport.clusterName());
+		CommandDispatcherFactory dispatcherFactory = (channelDispatcherFactory != null) ? channelDispatcherFactory : new LocalCommandDispatcherFactory(localGroup);
+		if (channelDispatcherFactory != null) {
+			this.stopTasks.add(channelDispatcherFactory::close);
+		}
+
+		holder.getGlobalConfigurationBuilder()
+				.classLoader(containerLoader)
+				.blockingThreadPool().threadFactory(new DefaultThreadFactory(BlockingManager.class))
+				.expirationThreadPool().threadFactory(new DefaultThreadFactory(ExpirationManager.class))
+				.listenerThreadPool().threadFactory(new DefaultThreadFactory(ListenerInvocation.class))
+				.nonBlockingThreadPool().threadFactory(new DefaultNonBlockingThreadFactory(NonBlockingManager.class))
+				.serialization()
+					.marshaller(new InfinispanProtoStreamMarshaller(new SimpleClassLoaderMarshaller(containerLoader), builder -> builder.load(containerLoader)))
+					// Register dummy serialization context initializer, to bypass service loading in org.infinispan.marshall.protostream.impl.SerializationContextRegistryImpl
+					// Otherwise marshaller auto-detection will not work
+					.addContextInitializer(new SerializationContextInitializer() {
+						@Deprecated
+						@Override
+						public String getProtoFile() {
+							return null;
+						}
+
+						@Deprecated
+						@Override
+						public String getProtoFileName() {
+							return null;
+						}
+
+						@Override
+						public void registerMarshallers(SerializationContext context) {
+						}
+
+						@Override
+						public void registerSchema(SerializationContext context) {
+						}
+					})
+				.globalState().configurationStorage(ConfigurationStorage.IMMUTABLE).disable();
+
+		@SuppressWarnings("resource")
+		EmbeddedCacheManager container =new DefaultCacheManager(holder, false);
+
+		Configuration template = (templateName != null) ? container.getCacheConfiguration(templateName) : container.getDefaultCacheConfiguration();
+		if (template == null) {
+			if (templateName == null) {
+				throw new IllegalArgumentException("Infinispan configuration does not define a default cache");
+			}
+			throw new IllegalArgumentException(String.format("No such configuration template: %s", templateName));
+		}
+		ConfigurationBuilder builder = new ConfigurationBuilder().read(template).template(false);
+		builder.encoding().mediaType(MediaType.APPLICATION_OBJECT_TYPE);
+		builder.clustering().hash().groups().enabled();
+
+		// Disable expiration, if necessary
+		ExpirationConfiguration expiration = builder.expiration().create();
+		if ((expiration.lifespan() >= 0) || (expiration.maxIdle() >= 0)) {
+			builder.expiration().lifespan(-1).maxIdle(-1);
+		}
+
+		EvictionStrategy eviction = (maxActiveSessions != null) ? EvictionStrategy.REMOVE : EvictionStrategy.MANUAL;
+		builder.memory().storage(StorageType.HEAP)
+				.whenFull(eviction)
+				.maxCount((maxActiveSessions != null) ? maxActiveSessions.longValue() : -1)
+				;
+		if (eviction.isEnabled()) {
+			// Only evict creation meta-data entries
+			// We will cascade eviction to the remaining entries for a given session
+			builder.addModule(DataContainerConfigurationBuilder.class).evictable(SessionCreationMetaDataKey.class::isInstance);
+		}
+
+		container.defineConfiguration(deploymentName, builder.build());
+		this.stopTasks.add(() -> container.undefineConfiguration(deploymentName));
+
+		container.start();
+		this.stopTasks.add(container::stop);
+
+		ClassLoader loader = context.getClassLoader();
+		ByteBufferMarshaller marshaller = marshallerFactory.apply(loader);
+
+		List<Immutability> loadedImmutabilities = new LinkedList<>();
+		for (Immutability loadedImmutability : ServiceLoader.load(Immutability.class, loader)) {
+			loadedImmutabilities.add(loadedImmutability);
+		}
+		Immutability immutability = new CompositeImmutability(new CompositeIterable<>(EnumSet.allOf(DefaultImmutability.class), EnumSet.allOf(SessionAttributeImmutability.class), EnumSet.allOf(SpringSecurityImmutability.class), loadedImmutabilities));
+
+		Supplier<String> identifierFactory = this.configuration.getIdentifierFactory();
+
+		KeyAffinityServiceFactory affinityFactory = new DefaultKeyAffinityServiceFactory();
+
+		Map<String, String> indexes = this.configuration.getIndexes();
+		Map<String, SSOManager<Void, String, String, Void, TransactionBatch>> managers = indexes.isEmpty() ? Collections.emptyMap() : new HashMap<>();
+		for (Map.Entry<String, String> entry : indexes.entrySet()) {
+			String cacheName = String.format("%s/%s", deploymentName, entry.getKey());
+			String indexName = entry.getValue();
+
+			container.defineConfiguration(cacheName, builder.build());
+			this.stopTasks.add(() -> container.undefineConfiguration(cacheName));
+
+			Cache<?, ?> cache = container.getCache(cacheName);
+			cache.start();
+			this.stopTasks.add(cache::stop);
+
+			SSOManagerFactory<Void, String, String, TransactionBatch> ssoManagerFactory = new InfinispanSSOManagerFactory<>(new InfinispanSSOManagerFactoryConfiguration() {
+				@Override
+				public <K, V> Cache<K, V> getCache() {
+					return container.getCache(cacheName);
+				}
+
+				@Override
+				public KeyAffinityServiceFactory getKeyAffinityServiceFactory() {
+					return affinityFactory;
+				}
+			});
+
+			SSOManager<Void, String, String, Void, TransactionBatch> ssoManager = ssoManagerFactory.createSSOManager(new SSOManagerConfiguration<>() {
+				@Override
+				public Supplier<String> getIdentifierFactory() {
+					return identifierFactory;
+				}
+
+				@Override
+				public ByteBufferMarshaller getMarshaller() {
+					return marshaller;
+				}
+
+				@Override
+				public LocalContextFactory<Void> getLocalContextFactory() {
+					return InfinispanSessionRepository.this;
+				}
+			});
+			managers.put(indexName, ssoManager);
+		}
+		IndexResolver<Session> resolver = this.configuration.getIndexResolver();
+		IndexingConfiguration<TransactionBatch> indexing = new IndexingConfiguration<>() {
+			@Override
+			public Map<String, SSOManager<Void, String, String, Void, TransactionBatch>> getSSOManagers() {
+				return managers;
+			}
+
+			@Override
+			public IndexResolver<Session> getIndexResolver() {
+				return resolver;
+			}
+		};
+
+		Cache<?, ?> cache = container.getCache(deploymentName);
+		cache.start();
+		this.stopTasks.add(cache::stop);
+
+		NodeFactory<org.jgroups.Address> memberFactory = (channelDispatcherFactory != null) ? channelDispatcherFactory : address -> localGroup.createNode(null);
+		CacheGroup group = new CacheGroup(new CacheGroupConfiguration() {
+			@SuppressWarnings("unchecked")
+			@Override
+			public <K, V> Cache<K, V> getCache() {
+				return (Cache<K, V>) cache;
+			}
+
+			@Override
+			public NodeFactory<org.jgroups.Address> getMemberFactory() {
+				return memberFactory;
+			}
+		});
+		this.stopTasks.add(group::close);
+
+		SessionManagerFactory<ServletContext, Void, TransactionBatch> managerFactory = new InfinispanSessionManagerFactory<>(new InfinispanSessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, Void>() {
+			@Override
+			public Integer getMaxActiveSessions() {
+				return maxActiveSessions;
+			}
+
+			@Override
+			public SessionAttributePersistenceStrategy getAttributePersistenceStrategy() {
+				return strategy;
+			}
+
+			@Override
+			public String getDeploymentName() {
+				return deploymentName;
+			}
+
+			@Override
+			public ByteBufferMarshaller getMarshaller() {
+				return marshaller;
+			}
+
+			@Override
+			public String getServerName() {
+				return context.getVirtualServerName();
+			}
+
+			@Override
+			public LocalContextFactory<Void> getLocalContextFactory() {
+				return InfinispanSessionRepository.this;
+			}
+
+			@Override
+			public <K, V> Cache<K, V> getCache() {
+				return container.getCache(this.getDeploymentName());
+			}
+
+			@Override
+			public Immutability getImmutability() {
+				return immutability;
+			}
+
+			@Override
+			public SpecificationProvider<HttpSession, ServletContext, HttpSessionActivationListener> getSpecificationProvider() {
+				return SpringSpecificationProvider.INSTANCE;
+			}
+
+			@Override
+			public CommandDispatcherFactory getCommandDispatcherFactory() {
+				return dispatcherFactory;
+			}
+
+			@Override
+			public KeyAffinityServiceFactory getKeyAffinityServiceFactory() {
+				return affinityFactory;
+			}
+
+			@Override
+			public NodeFactory<Address> getMemberFactory() {
+				return group;
+			}
+		});
+		this.stopTasks.add(managerFactory::close);
+
+		ApplicationEventPublisher publisher = this.configuration.getEventPublisher();
+		BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> sessionDestroyAction = new ImmutableSessionDestroyAction<>(publisher, context, indexing);
+
+		Consumer<ImmutableSession> expirationListener = new ImmutableSessionExpirationListener(context, sessionDestroyAction);
+
+		SessionManagerConfiguration<ServletContext> managerConfiguration = new JakartaSessionManagerConfiguration() {
+			@Override
+			public ServletContext getServletContext() {
+				return context;
+			}
+
+			@Override
+			public Supplier<String> getIdentifierFactory() {
+				return identifierFactory;
+			}
+
+			@Override
+			public Consumer<ImmutableSession> getExpirationListener() {
+				return expirationListener;
+			}
+		};
+		SessionManager<Void, TransactionBatch> manager = managerFactory.createSessionManager(managerConfiguration);
+		manager.start();
+		this.stopTasks.add(manager::stop);
+
+		this.repository = new DistributableSessionRepository<>(new DistributableSessionRepositoryConfiguration<TransactionBatch>() {
+			@Override
+			public SessionManager<Void, TransactionBatch> getSessionManager() {
+				return manager;
+			}
+
+			@Override
+			public ApplicationEventPublisher getEventPublisher() {
+				return publisher;
+			}
+
+			@Override
+			public BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> getSessionDestroyAction() {
+				return sessionDestroyAction;
+			}
+
+			@Override
+			public IndexingConfiguration<TransactionBatch> getIndexingConfiguration() {
+				return indexing;
+			}
+		});
+	}
+
+	@Override
+	public void destroy() {
+		// Stop in reverse order
+		ListIterator<Runnable> tasks = this.stopTasks.listIterator(this.stopTasks.size() - 1);
+		while (tasks.hasPrevious()) {
+			tasks.previous().run();
+		}
+	}
+
+	@Override
+	public Registration register(String name) {
+		return this;
+	}
+
+	@Override
+	public void close() {
+	}
+
+	@Override
+	public Void createLocalContext() {
+		return null;
+	}
+
+	@Override
+	public SpringSession createSession() {
+		return this.repository.createSession();
+	}
+
+	@Override
+	public SpringSession findById(String id) {
+		return this.repository.findById(id);
+	}
+
+	@Override
+	public void deleteById(String id) {
+		this.repository.deleteById(id);
+	}
+
+	@Override
+	public void save(SpringSession session) {
+		this.repository.save(session);
+	}
+
+	@Override
+	public Map<String, SpringSession> findByIndexNameAndIndexValue(String indexName, String indexValue) {
+		return this.repository.findByIndexNameAndIndexValue(indexName, indexValue);
+	}
 }

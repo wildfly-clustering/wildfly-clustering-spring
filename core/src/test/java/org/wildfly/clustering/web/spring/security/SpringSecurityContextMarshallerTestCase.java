@@ -33,9 +33,9 @@ import org.springframework.security.core.context.SecurityContextImpl;
  */
 public class SpringSecurityContextMarshallerTestCase {
 
-    @Test
-    public void test() throws IOException {
-        ProtoStreamTesterFactory.INSTANCE.createTester().test(new SecurityContextImpl());
-        ProtoStreamTesterFactory.INSTANCE.createTester().test(new SecurityContextImpl(new UsernamePasswordAuthenticationToken("username", "password")));
-    }
+	@Test
+	public void test() throws IOException {
+		ProtoStreamTesterFactory.INSTANCE.createTester().test(new SecurityContextImpl());
+		ProtoStreamTesterFactory.INSTANCE.createTester().test(new SecurityContextImpl(new UsernamePasswordAuthenticationToken("username", "password")));
+	}
 }

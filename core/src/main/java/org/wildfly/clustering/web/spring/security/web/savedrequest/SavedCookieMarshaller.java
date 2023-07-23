@@ -34,93 +34,93 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  * @author Paul Ferraro
  */
 public class SavedCookieMarshaller implements ProtoStreamMarshaller<SavedCookie> {
-    private static final int NAME_INDEX = 1;
-    private static final int SECURE_NAME_INDEX = 2;
-    private static final int VALUE_INDEX = 3;
-    private static final int COMMENT_INDEX = 4;
-    private static final int DOMAIN_INDEX = 5;
-    private static final int MAX_AGE_INDEX = 6;
-    private static final int PATH_INDEX = 7;
-    private static final int VERSION_INDEX = 8;
+	private static final int NAME_INDEX = 1;
+	private static final int SECURE_NAME_INDEX = 2;
+	private static final int VALUE_INDEX = 3;
+	private static final int COMMENT_INDEX = 4;
+	private static final int DOMAIN_INDEX = 5;
+	private static final int MAX_AGE_INDEX = 6;
+	private static final int PATH_INDEX = 7;
+	private static final int VERSION_INDEX = 8;
 
-    private static final int DEFAULT_MAX_AGE = -1;
-    private static final int DEFAULT_VERSION = 0;
+	private static final int DEFAULT_MAX_AGE = -1;
+	private static final int DEFAULT_VERSION = 0;
 
-    @Override
-    public SavedCookie readFrom(ProtoStreamReader reader) throws IOException {
-        String name = null;
-        String value = null;
-        String comment = null;
-        String domain = null;
-        int maxAge = DEFAULT_MAX_AGE;
-        String path = null;
-        boolean secure = false;
-        int version = DEFAULT_VERSION;
-        while (!reader.isAtEnd()) {
-            int tag = reader.readTag();
-            switch (WireType.getTagFieldNumber(tag)) {
-                case SECURE_NAME_INDEX:
-                    secure = true;
-                case NAME_INDEX:
-                    name = reader.readString();
-                    break;
-                case VALUE_INDEX:
-                    value = reader.readString();
-                    break;
-                case COMMENT_INDEX:
-                    comment = reader.readString();
-                    break;
-                case DOMAIN_INDEX:
-                    domain = reader.readString();
-                    break;
-                case MAX_AGE_INDEX:
-                    maxAge = reader.readUInt32();
-                    break;
-                case PATH_INDEX:
-                    path = reader.readString();
-                    break;
-                case VERSION_INDEX:
-                    version = reader.readUInt32();
-                    break;
-                default:
-                    reader.skipField(tag);
-            }
-        }
-        return new SavedCookie(name, value, comment, domain, maxAge, path, secure, version);
-    }
+	@Override
+	public SavedCookie readFrom(ProtoStreamReader reader) throws IOException {
+		String name = null;
+		String value = null;
+		String comment = null;
+		String domain = null;
+		int maxAge = DEFAULT_MAX_AGE;
+		String path = null;
+		boolean secure = false;
+		int version = DEFAULT_VERSION;
+		while (!reader.isAtEnd()) {
+			int tag = reader.readTag();
+			switch (WireType.getTagFieldNumber(tag)) {
+				case SECURE_NAME_INDEX:
+					secure = true;
+				case NAME_INDEX:
+					name = reader.readString();
+					break;
+				case VALUE_INDEX:
+					value = reader.readString();
+					break;
+				case COMMENT_INDEX:
+					comment = reader.readString();
+					break;
+				case DOMAIN_INDEX:
+					domain = reader.readString();
+					break;
+				case MAX_AGE_INDEX:
+					maxAge = reader.readUInt32();
+					break;
+				case PATH_INDEX:
+					path = reader.readString();
+					break;
+				case VERSION_INDEX:
+					version = reader.readUInt32();
+					break;
+				default:
+					reader.skipField(tag);
+			}
+		}
+		return new SavedCookie(name, value, comment, domain, maxAge, path, secure, version);
+	}
 
-    @Override
-    public void writeTo(ProtoStreamWriter writer, SavedCookie cookie) throws IOException {
-        String name = cookie.getName();
-        writer.writeString(cookie.isSecure() ? SECURE_NAME_INDEX : NAME_INDEX, name);
-        String value = cookie.getValue();
-        if (value != null) {
-            writer.writeString(VALUE_INDEX, value);
-        }
-        String comment = cookie.getComment();
-        if (comment != null) {
-            writer.writeString(COMMENT_INDEX, comment);
-        }
-        String domain = cookie.getDomain();
-        if (domain != null) {
-            writer.writeString(DOMAIN_INDEX, domain);
-        }
-        int maxAge = cookie.getMaxAge();
-        if (maxAge != DEFAULT_MAX_AGE) {
-            writer.writeUInt32(MAX_AGE_INDEX, maxAge);
-        }
-        String path = cookie.getPath();
-        if (path != null) {
-            writer.writeString(PATH_INDEX, path);
-        }
-        int version = cookie.getVersion();
-        if (version != DEFAULT_VERSION) {
-            writer.writeUInt32(VERSION_INDEX, version);
-        }
-    }
+	@Override
+	public void writeTo(ProtoStreamWriter writer, SavedCookie cookie) throws IOException {
+		String name = cookie.getName();
+		writer.writeString(cookie.isSecure() ? SECURE_NAME_INDEX : NAME_INDEX, name);
+		String value = cookie.getValue();
+		if (value != null) {
+			writer.writeString(VALUE_INDEX, value);
+		}
+		String comment = cookie.getComment();
+		if (comment != null) {
+			writer.writeString(COMMENT_INDEX, comment);
+		}
+		String domain = cookie.getDomain();
+		if (domain != null) {
+			writer.writeString(DOMAIN_INDEX, domain);
+		}
+		int maxAge = cookie.getMaxAge();
+		if (maxAge != DEFAULT_MAX_AGE) {
+			writer.writeUInt32(MAX_AGE_INDEX, maxAge);
+		}
+		String path = cookie.getPath();
+		if (path != null) {
+			writer.writeString(PATH_INDEX, path);
+		}
+		int version = cookie.getVersion();
+		if (version != DEFAULT_VERSION) {
+			writer.writeUInt32(VERSION_INDEX, version);
+		}
+	}
 
-    @Override
-    public Class<? extends SavedCookie> getJavaClass() {
-        return SavedCookie.class;
-    }
+	@Override
+	public Class<? extends SavedCookie> getJavaClass() {
+		return SavedCookie.class;
+	}
 }

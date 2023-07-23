@@ -33,13 +33,13 @@ import jakarta.servlet.http.HttpSessionListener;
 @WebListener
 public class LoggingSessionListener implements HttpSessionListener {
 
-    @Override
-    public void sessionCreated(HttpSessionEvent event) {
-        event.getSession().getServletContext().log("Session created: " + event.getSession().getId());
-    }
+	@Override
+	public void sessionCreated(HttpSessionEvent event) {
+		event.getSession().getServletContext().log("Session created: " + event.getSession().getId());
+	}
 
-    @Override
-    public void sessionDestroyed(HttpSessionEvent event) {
-        event.getSession().getServletContext().log("Session destroyed: " + event.getSession().getId());
-    }
+	@Override
+	public void sessionDestroyed(HttpSessionEvent event) {
+		event.getSession().getServletContext().log("Session destroyed: " + event.getSession().getId());
+	}
 }

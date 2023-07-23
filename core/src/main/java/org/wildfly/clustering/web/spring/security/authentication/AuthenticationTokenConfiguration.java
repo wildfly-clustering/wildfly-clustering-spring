@@ -32,44 +32,44 @@ import org.springframework.security.core.GrantedAuthority;
  */
 public class AuthenticationTokenConfiguration {
 
-    private Object principal = null;
-    private Object credentials = "";
-    private final List<GrantedAuthority> authorities = new LinkedList<>();
-    private Object details = null;
+	private Object principal = null;
+	private Object credentials = "";
+	private final List<GrantedAuthority> authorities = new LinkedList<>();
+	private Object details = null;
 
-    public Object getPrincipal() {
-        return this.principal;
-    }
+	public Object getPrincipal() {
+		return this.principal;
+	}
 
-    public AuthenticationTokenConfiguration setPrincipal(Object principal) {
-        this.principal = principal;
-        return this;
-    }
+	public AuthenticationTokenConfiguration setPrincipal(Object principal) {
+		this.principal = principal;
+		return this;
+	}
 
-    public Object getCredentials() {
-        return this.credentials;
-    }
+	public Object getCredentials() {
+		return this.credentials;
+	}
 
-    public AuthenticationTokenConfiguration setCredentials(Object credentials) {
-        this.credentials = credentials;
-        return this;
-    }
+	public AuthenticationTokenConfiguration setCredentials(Object credentials) {
+		this.credentials = credentials;
+		return this;
+	}
 
-    public List<GrantedAuthority> getAuthorities() {
-        return this.authorities;
-    }
+	public List<GrantedAuthority> getAuthorities() {
+		return this.authorities;
+	}
 
-    public AuthenticationTokenConfiguration addAuthority(GrantedAuthority authority) {
-        this.authorities.add(authority);
-        return this;
-    }
+	public AuthenticationTokenConfiguration addAuthority(GrantedAuthority authority) {
+		this.authorities.add(authority);
+		return this;
+	}
 
-    public Object getDetails() {
-        return this.details;
-    }
+	public Object getDetails() {
+		return this.details;
+	}
 
-    public AuthenticationTokenConfiguration setDetails(Object details) {
-        this.details = details;
-        return this;
-    }
+	public AuthenticationTokenConfiguration setDetails(Object details) {
+		this.details = details;
+		return this;
+	}
 }

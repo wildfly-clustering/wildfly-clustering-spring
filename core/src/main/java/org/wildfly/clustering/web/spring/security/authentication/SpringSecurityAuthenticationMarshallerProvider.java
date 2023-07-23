@@ -33,18 +33,18 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvi
  */
 public enum SpringSecurityAuthenticationMarshallerProvider implements ProtoStreamMarshallerProvider {
 
-    ANONYMOUS_TOKEN(new HashAuthenticationTokenMarshaller<>(AnonymousAuthenticationToken.class, AnonymousAuthenticationToken::getKeyHash)),
-    REMEMBER_ME_TOKEN(new HashAuthenticationTokenMarshaller<>(RememberMeAuthenticationToken.class, RememberMeAuthenticationToken::getKeyHash)),
-    USERNAME_PASSWORD_TOKEN(new CredentialAuthenticationTokenMarshaller<>(UsernamePasswordAuthenticationToken.class, UsernamePasswordAuthenticationToken::new, (entry, authorities) -> new UsernamePasswordAuthenticationToken(entry.getKey(), entry.getValue(), authorities))),
-    ;
-    private final ProtoStreamMarshaller<?> marshaller;
+	ANONYMOUS_TOKEN(new HashAuthenticationTokenMarshaller<>(AnonymousAuthenticationToken.class, AnonymousAuthenticationToken::getKeyHash)),
+	REMEMBER_ME_TOKEN(new HashAuthenticationTokenMarshaller<>(RememberMeAuthenticationToken.class, RememberMeAuthenticationToken::getKeyHash)),
+	USERNAME_PASSWORD_TOKEN(new CredentialAuthenticationTokenMarshaller<>(UsernamePasswordAuthenticationToken.class, UsernamePasswordAuthenticationToken::new, (entry, authorities) -> new UsernamePasswordAuthenticationToken(entry.getKey(), entry.getValue(), authorities))),
+	;
+	private final ProtoStreamMarshaller<?> marshaller;
 
-    SpringSecurityAuthenticationMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
-        this.marshaller = marshaller;
-    }
+	SpringSecurityAuthenticationMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
+		this.marshaller = marshaller;
+	}
 
-    @Override
-    public ProtoStreamMarshaller<?> getMarshaller() {
-        return this.marshaller;
-    }
+	@Override
+	public ProtoStreamMarshaller<?> getMarshaller() {
+		return this.marshaller;
+	}
 }

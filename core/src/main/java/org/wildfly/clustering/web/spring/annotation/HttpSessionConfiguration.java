@@ -55,103 +55,103 @@ import org.wildfly.clustering.web.spring.SessionPersistenceGranularity;
  */
 public class HttpSessionConfiguration extends SpringHttpSessionConfiguration implements SessionRepositoryConfiguration, ServletContextAware, ApplicationEventPublisherAware, ImportAware, Consumer<AnnotationAttributes> {
 
-    private final Class<? extends Annotation> annotationClass;
-    private Integer maxActiveSessions = null;
-    private SessionAttributePersistenceStrategy persistenceStrategy = SessionAttributePersistenceStrategy.COARSE;
-    private Function<ClassLoader, ByteBufferMarshaller> marshallerFactory = SessionMarshallerFactory.JBOSS;
-    private Supplier<String> identifierFactory = () -> UUID.randomUUID().toString();
-    private ApplicationEventPublisher publisher;
-    private ServletContext context;
+	private final Class<? extends Annotation> annotationClass;
+	private Integer maxActiveSessions = null;
+	private SessionAttributePersistenceStrategy persistenceStrategy = SessionAttributePersistenceStrategy.COARSE;
+	private Function<ClassLoader, ByteBufferMarshaller> marshallerFactory = SessionMarshallerFactory.JBOSS;
+	private Supplier<String> identifierFactory = () -> UUID.randomUUID().toString();
+	private ApplicationEventPublisher publisher;
+	private ServletContext context;
 
-    protected HttpSessionConfiguration(Class<? extends Annotation> annotationClass) {
-        this.annotationClass = annotationClass;
-    }
+	protected HttpSessionConfiguration(Class<? extends Annotation> annotationClass) {
+		this.annotationClass = annotationClass;
+	}
 
-    @Override
-    public Integer getMaxActiveSessions() {
-        return this.maxActiveSessions;
-    }
+	@Override
+	public Integer getMaxActiveSessions() {
+		return this.maxActiveSessions;
+	}
 
-    @Override
-    public SessionAttributePersistenceStrategy getPersistenceStrategy() {
-        return this.persistenceStrategy;
-    }
+	@Override
+	public SessionAttributePersistenceStrategy getPersistenceStrategy() {
+		return this.persistenceStrategy;
+	}
 
-    @Override
-    public Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory() {
-        return this.marshallerFactory;
-    }
+	@Override
+	public Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory() {
+		return this.marshallerFactory;
+	}
 
-    @Override
-    public Supplier<String> getIdentifierFactory() {
-        return this.identifierFactory;
-    }
+	@Override
+	public Supplier<String> getIdentifierFactory() {
+		return this.identifierFactory;
+	}
 
-    @Override
-    public ApplicationEventPublisher getEventPublisher() {
-        return this.publisher;
-    }
+	@Override
+	public ApplicationEventPublisher getEventPublisher() {
+		return this.publisher;
+	}
 
-    @Override
-    public ServletContext getServletContext() {
-        return this.context;
-    }
+	@Override
+	public ServletContext getServletContext() {
+		return this.context;
+	}
 
-    @Override
-    public Map<String, String> getIndexes() {
-        return Collections.emptyMap();
-    }
+	@Override
+	public Map<String, String> getIndexes() {
+		return Collections.emptyMap();
+	}
 
-    @Override
-    public IndexResolver<Session> getIndexResolver() {
-        return EmptyIndexResolver.INSTANCE;
-    }
+	@Override
+	public IndexResolver<Session> getIndexResolver() {
+		return EmptyIndexResolver.INSTANCE;
+	}
 
-    @Override
-    public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
-        this.publisher = publisher;
-    }
+	@Override
+	public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
+		this.publisher = publisher;
+	}
 
-    @Override
-    public void setServletContext(ServletContext context) {
-        super.setServletContext(context);
-        this.context = context;
-    }
+	@Override
+	public void setServletContext(ServletContext context) {
+		super.setServletContext(context);
+		this.context = context;
+	}
 
-    @Autowired(required = false)
-    public void setGranularity(SessionPersistenceGranularity granularity) {
-        this.persistenceStrategy = granularity.get();
-    }
+	@Autowired(required = false)
+	public void setGranularity(SessionPersistenceGranularity granularity) {
+		this.persistenceStrategy = granularity.get();
+	}
 
-    @Autowired(required = false)
-    public void setPersistenceStrategy(SessionAttributePersistenceStrategy persistenceStrategy) {
-        this.persistenceStrategy = persistenceStrategy;
-    }
+	@Autowired(required = false)
+	public void setPersistenceStrategy(SessionAttributePersistenceStrategy persistenceStrategy) {
+		this.persistenceStrategy = persistenceStrategy;
+	}
 
-    @Autowired(required = false)
-    public void setMarshallerFactory(Function<ClassLoader, ByteBufferMarshaller> marshallerFactory) {
-        this.marshallerFactory = marshallerFactory;
-    }
+	@Autowired(required = false)
+	public void setMarshallerFactory(Function<ClassLoader, ByteBufferMarshaller> marshallerFactory) {
+		this.marshallerFactory = marshallerFactory;
+	}
 
-    @Autowired(required = false)
-    public void setMaxActiveSessions(Integer maxActiveSessions) {
-        this.maxActiveSessions = maxActiveSessions;
-    }
+	@Autowired(required = false)
+	public void setMaxActiveSessions(Integer maxActiveSessions) {
+		this.maxActiveSessions = maxActiveSessions;
+	}
 
-    @Override
-    public void setImportMetadata(AnnotationMetadata metadata) {
-        Map<String, Object> attributeMap = metadata.getAnnotationAttributes(this.annotationClass.getName());
-        AnnotationAttributes attributes = AnnotationAttributes.fromMap(attributeMap);
-        this.accept(attributes);
-    }
+	@Override
+	public void setImportMetadata(AnnotationMetadata metadata) {
+		Map<String, Object> attributeMap = metadata.getAnnotationAttributes(this.annotationClass.getName());
+		AnnotationAttributes attributes = AnnotationAttributes.fromMap(attributeMap);
+		this.accept(attributes);
+	}
 
-    @Override
-    public void accept(AnnotationAttributes attributes) {
-        AnnotationAttributes manager = attributes.getAnnotation("manager");
-        int maxActiveSessions = manager.getNumber("maxActiveSessions").intValue();
-        this.maxActiveSessions = (maxActiveSessions >= 0) ? Integer.valueOf(maxActiveSessions) : null;
-        this.marshallerFactory = manager.getEnum("marshallerFactory");
-        SessionPersistenceGranularity strategy = manager.getEnum("granularity");
-        this.persistenceStrategy = strategy.get();
-    }
+	@Override
+	public void accept(AnnotationAttributes attributes) {
+		AnnotationAttributes manager = attributes.getAnnotation("manager");
+		int maxActiveSessions = manager.getNumber("maxActiveSessions").intValue();
+		this.maxActiveSessions = (maxActiveSessions >= 0) ? Integer.valueOf(maxActiveSessions) : null;
+		this.marshallerFactory = manager.getEnum("marshallerFactory");
+		SessionPersistenceGranularity strategy = manager.getEnum("granularity");
+		this.persistenceStrategy = strategy.get();
+	}
 }

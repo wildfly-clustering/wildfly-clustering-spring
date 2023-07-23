@@ -33,13 +33,13 @@ import org.wildfly.clustering.ee.immutable.SimpleImmutability;
  * @author Paul Ferraro
  */
 public enum SpringSecurityImmutability implements Immutability {
-    INSTANCE;
+	INSTANCE;
 
-    // SecurityContextImpl is technically mutable, but Spring treats it as immutable
-    private final Immutability immutability = new SimpleImmutability(Arrays.asList(DefaultSavedRequest.class, SecurityContextImpl.class));
+	// SecurityContextImpl is technically mutable, but Spring treats it as immutable
+	private final Immutability immutability = new SimpleImmutability(Arrays.asList(DefaultSavedRequest.class, SecurityContextImpl.class));
 
-    @Override
-    public boolean test(Object object) {
-        return this.immutability.test(object);
-    }
+	@Override
+	public boolean test(Object object) {
+		return this.immutability.test(object);
+	}
 }

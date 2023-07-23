@@ -39,16 +39,16 @@ import org.springframework.session.PrincipalNameIndexResolver;
 @Target(ElementType.TYPE)
 @Documented
 public @interface Indexing {
-    /**
-     * The indexes recognized by this session repository.  Default indexes only includes the Spring Security principal.
-     * @return an array of index names
-     */
-    Index[] indexes() default { @Index(id = "SPRING_SECURITY_CONTEXT", name = "org.springframework.session.FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME") };
+	/**
+	 * The indexes recognized by this session repository.  Default indexes only includes the Spring Security principal.
+	 * @return an array of index names
+	 */
+	Index[] indexes() default { @Index(id = "SPRING_SECURITY_CONTEXT", name = "org.springframework.session.FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME") };
 
-    /**
-     * The index resolver class name.  Default resolver only resolves the Spring Security principal.
-     * @return an index resolver class.
-     */
-    @SuppressWarnings("rawtypes")
-    Class<? extends IndexResolver> resolverClass() default PrincipalNameIndexResolver.class;
+	/**
+	 * The index resolver class name.  Default resolver only resolves the Spring Security principal.
+	 * @return an index resolver class.
+	 */
+	@SuppressWarnings("rawtypes")
+	Class<? extends IndexResolver> resolverClass() default PrincipalNameIndexResolver.class;
 }

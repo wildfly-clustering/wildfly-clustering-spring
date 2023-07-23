@@ -41,47 +41,47 @@ import org.springframework.session.Session;
  */
 public class IndexedHttpSessionConfiguration extends HttpSessionConfiguration {
 
-    private Map<String, String> indexes = Collections.singletonMap("SPRING_SECURITY_CONTEXT", FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME);
-    private IndexResolver<Session> resolver = new PrincipalNameIndexResolver<>();
+	private Map<String, String> indexes = Collections.singletonMap("SPRING_SECURITY_CONTEXT", FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME);
+	private IndexResolver<Session> resolver = new PrincipalNameIndexResolver<>();
 
-    protected IndexedHttpSessionConfiguration(Class<? extends Annotation> annotationClass) {
-        super(annotationClass);
-    }
+	protected IndexedHttpSessionConfiguration(Class<? extends Annotation> annotationClass) {
+		super(annotationClass);
+	}
 
-    @Override
-    public Map<String, String> getIndexes() {
-        return this.indexes;
-    }
+	@Override
+	public Map<String, String> getIndexes() {
+		return this.indexes;
+	}
 
-    @Override
-    public IndexResolver<Session> getIndexResolver() {
-        return this.resolver;
-    }
+	@Override
+	public IndexResolver<Session> getIndexResolver() {
+		return this.resolver;
+	}
 
-    @Autowired(required = false)
-    public void setIndexes(Map<String, String> indexes) {
-        this.indexes = indexes;
-    }
+	@Autowired(required = false)
+	public void setIndexes(Map<String, String> indexes) {
+		this.indexes = indexes;
+	}
 
-    @Autowired(required = false)
-    public void setIndexResolver(IndexResolver<Session> resolver) {
-        this.resolver = resolver;
-    }
+	@Autowired(required = false)
+	public void setIndexResolver(IndexResolver<Session> resolver) {
+		this.resolver = resolver;
+	}
 
-    @Override
-    public void accept(AnnotationAttributes attributes) {
-        super.accept(attributes);
-        AnnotationAttributes indexing = attributes.getAnnotation("indexing");
-        Map<String, String> indexes = new TreeMap<>();
-        for (AnnotationAttributes index : indexing.getAnnotationArray("indexes")) {
-            indexes.put(index.getString("id"), index.getString("name"));
-        }
-        this.indexes = indexes;
-        Class<? extends IndexResolver<Session>> resolverClass = indexing.getClass("resolverClass");
-        try {
-            this.resolver = resolverClass.getConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            throw new IllegalArgumentException(resolverClass.getCanonicalName());
-        }
-    }
+	@Override
+	public void accept(AnnotationAttributes attributes) {
+		super.accept(attributes);
+		AnnotationAttributes indexing = attributes.getAnnotation("indexing");
+		Map<String, String> indexes = new TreeMap<>();
+		for (AnnotationAttributes index : indexing.getAnnotationArray("indexes")) {
+			indexes.put(index.getString("id"), index.getString("name"));
+		}
+		this.indexes = indexes;
+		Class<? extends IndexResolver<Session>> resolverClass = indexing.getClass("resolverClass");
+		try {
+			this.resolver = resolverClass.getConstructor().newInstance();
+		} catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+			throw new IllegalArgumentException(resolverClass.getCanonicalName());
+		}
+	}
 }

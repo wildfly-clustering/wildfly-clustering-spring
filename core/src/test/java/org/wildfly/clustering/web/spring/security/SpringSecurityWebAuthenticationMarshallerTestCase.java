@@ -36,9 +36,9 @@ import org.wildfly.clustering.web.spring.security.web.authentication.MockHttpSer
  */
 public class SpringSecurityWebAuthenticationMarshallerTestCase {
 
-    @Test
-    public void test() throws IOException {
-        ProtoStreamTesterFactory.INSTANCE.createTester().test(new WebAuthenticationDetails(new MockHttpServletRequest("localhost", "ABCDEFG")));
-        ProtoStreamTesterFactory.INSTANCE.createTester().test(new PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails(new MockHttpServletRequest("localhost", "ABCDEFG"), Collections.singletonList(new SimpleGrantedAuthority("admin"))));
-    }
+	@Test
+	public void test() throws IOException {
+		ProtoStreamTesterFactory.INSTANCE.createTester().test(new WebAuthenticationDetails(new MockHttpServletRequest("localhost", "ABCDEFG")));
+		ProtoStreamTesterFactory.INSTANCE.createTester().test(new PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails(new MockHttpServletRequest("localhost", "ABCDEFG"), Collections.singletonList(new SimpleGrantedAuthority("admin"))));
+	}
 }

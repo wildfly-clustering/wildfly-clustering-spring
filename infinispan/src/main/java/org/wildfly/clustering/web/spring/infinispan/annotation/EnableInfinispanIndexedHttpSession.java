@@ -42,7 +42,7 @@ import org.wildfly.clustering.web.spring.annotation.SessionManager;
 @Import(InfinispanIndexedHttpSessionConfiguration.class)
 @Configuration(proxyBeanMethods = false)
 public @interface EnableInfinispanIndexedHttpSession {
-    Infinispan config();
-    SessionManager manager();
-    Indexing indexing();
+	Infinispan config();
+	SessionManager manager();
+	Indexing indexing();
 }

@@ -46,65 +46,65 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class HashAuthenticationTokenMarshaller<T extends AbstractAuthenticationToken> implements ProtoStreamMarshaller<T>, ParametricPrivilegedExceptionAction<T, Map.Entry<Integer, Map.Entry<Object, Collection<GrantedAuthority>>>> {
 
-    private static final int HASH_INDEX = 1;
-    private static final int TOKEN_INDEX = 2;
+	private static final int HASH_INDEX = 1;
+	private static final int TOKEN_INDEX = 2;
 
-    private static final int DEFAULT_HASH = 0;
+	private static final int DEFAULT_HASH = 0;
 
-    private final FieldSetMarshaller<T, AuthenticationTokenConfiguration> marshaller = new AuthenticationMarshaller<>();
-    private final Class<T> tokenClass;
-    private final ToIntFunction<T> hash;
+	private final FieldSetMarshaller<T, AuthenticationTokenConfiguration> marshaller = new AuthenticationMarshaller<>();
+	private final Class<T> tokenClass;
+	private final ToIntFunction<T> hash;
 
-    public HashAuthenticationTokenMarshaller(Class<T> tokenClass, ToIntFunction<T> hash) {
-        this.tokenClass = tokenClass;
-        this.hash = hash;
-    }
+	public HashAuthenticationTokenMarshaller(Class<T> tokenClass, ToIntFunction<T> hash) {
+		this.tokenClass = tokenClass;
+		this.hash = hash;
+	}
 
-    @Override
-    public T readFrom(ProtoStreamReader reader) throws IOException {
-        AuthenticationTokenConfiguration config = this.marshaller.getBuilder();
-        int hash = DEFAULT_HASH;
-        while (!reader.isAtEnd()) {
-            int tag = reader.readTag();
-            int index = WireType.getTagFieldNumber(tag);
-            if (index == HASH_INDEX) {
-                hash = reader.readSFixed32();
-            } else if (index >= TOKEN_INDEX && index < TOKEN_INDEX + this.marshaller.getFields()) {
-                config = this.marshaller.readField(reader, index - TOKEN_INDEX, config);
-            } else {
-                reader.skipField(tag);
-            }
-        }
-        Object principal = config.getPrincipal();
-        Collection<GrantedAuthority> authorities = config.getAuthorities();
-        try {
-            T token = WildFlySecurityManager.doUnchecked(new SimpleImmutableEntry<>(hash, new SimpleImmutableEntry<>(principal, authorities)), this);
-            token.setDetails(config.getDetails());
-            return token;
-        } catch (PrivilegedActionException e) {
-            throw new IOException(e.getException());
-        }
-    }
+	@Override
+	public T readFrom(ProtoStreamReader reader) throws IOException {
+		AuthenticationTokenConfiguration config = this.marshaller.getBuilder();
+		int hash = DEFAULT_HASH;
+		while (!reader.isAtEnd()) {
+			int tag = reader.readTag();
+			int index = WireType.getTagFieldNumber(tag);
+			if (index == HASH_INDEX) {
+				hash = reader.readSFixed32();
+			} else if (index >= TOKEN_INDEX && index < TOKEN_INDEX + this.marshaller.getFields()) {
+				config = this.marshaller.readField(reader, index - TOKEN_INDEX, config);
+			} else {
+				reader.skipField(tag);
+			}
+		}
+		Object principal = config.getPrincipal();
+		Collection<GrantedAuthority> authorities = config.getAuthorities();
+		try {
+			T token = WildFlySecurityManager.doUnchecked(new SimpleImmutableEntry<>(hash, new SimpleImmutableEntry<>(principal, authorities)), this);
+			token.setDetails(config.getDetails());
+			return token;
+		} catch (PrivilegedActionException e) {
+			throw new IOException(e.getException());
+		}
+	}
 
-    @Override
-    public void writeTo(ProtoStreamWriter writer, T token) throws IOException {
-        int hash = this.hash.applyAsInt(token);
-        if (hash != DEFAULT_HASH) {
-            writer.writeSFixed32(HASH_INDEX, hash);
-        }
-        this.marshaller.writeFields(writer, TOKEN_INDEX, token);
-    }
+	@Override
+	public void writeTo(ProtoStreamWriter writer, T token) throws IOException {
+		int hash = this.hash.applyAsInt(token);
+		if (hash != DEFAULT_HASH) {
+			writer.writeSFixed32(HASH_INDEX, hash);
+		}
+		this.marshaller.writeFields(writer, TOKEN_INDEX, token);
+	}
 
-    @Override
-    public T run(Map.Entry<Integer, Entry<Object, Collection<GrantedAuthority>>> parameter) throws Exception {
-        // The constructor we need is private.
-        Constructor<T> constructor = this.tokenClass.getDeclaredConstructor(Integer.class, Object.class, Collection.class);
-        constructor.setAccessible(true);
-        return constructor.newInstance(parameter.getKey(), parameter.getValue().getKey(), parameter.getValue().getValue());
-    }
+	@Override
+	public T run(Map.Entry<Integer, Entry<Object, Collection<GrantedAuthority>>> parameter) throws Exception {
+		// The constructor we need is private.
+		Constructor<T> constructor = this.tokenClass.getDeclaredConstructor(Integer.class, Object.class, Collection.class);
+		constructor.setAccessible(true);
+		return constructor.newInstance(parameter.getKey(), parameter.getValue().getKey(), parameter.getValue().getValue());
+	}
 
-    @Override
-    public Class<? extends T> getJavaClass() {
-        return this.tokenClass;
-    }
+	@Override
+	public Class<? extends T> getJavaClass() {
+		return this.tokenClass;
+	}
 }

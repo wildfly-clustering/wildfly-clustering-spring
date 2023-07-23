@@ -34,9 +34,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
  */
 public class SpringSecurityAuthorityMarshallerTestCase {
 
-    @Test
-    public void test() throws IOException {
-        ProtoStreamTesterFactory.INSTANCE.createTester().test(new SimpleGrantedAuthority("foo"));
-        ProtoStreamTesterFactory.INSTANCE.createTester().test(new JaasGrantedAuthority("role", new UsernamePasswordAuthenticationToken("username", "password")));
-    }
+	@Test
+	public void test() throws IOException {
+		ProtoStreamTesterFactory.INSTANCE.createTester().test(new SimpleGrantedAuthority("foo"));
+		ProtoStreamTesterFactory.INSTANCE.createTester().test(new JaasGrantedAuthority("role", new UsernamePasswordAuthenticationToken("username", "password")));
+	}
 }

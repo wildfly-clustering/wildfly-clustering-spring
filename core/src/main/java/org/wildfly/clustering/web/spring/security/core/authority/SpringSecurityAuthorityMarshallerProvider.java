@@ -33,16 +33,16 @@ import org.wildfly.clustering.marshalling.protostream.Scalar;
  */
 public enum SpringSecurityAuthorityMarshallerProvider implements ProtoStreamMarshallerProvider {
 
-    SIMPLE_GRANTED_AUTHORITY(new FunctionalScalarMarshaller<>(SimpleGrantedAuthority.class, Scalar.STRING.cast(String.class), SimpleGrantedAuthority::getAuthority, SimpleGrantedAuthority::new)),
-    ;
-    private final ProtoStreamMarshaller<?> marshaller;
+	SIMPLE_GRANTED_AUTHORITY(new FunctionalScalarMarshaller<>(SimpleGrantedAuthority.class, Scalar.STRING.cast(String.class), SimpleGrantedAuthority::getAuthority, SimpleGrantedAuthority::new)),
+	;
+	private final ProtoStreamMarshaller<?> marshaller;
 
-    SpringSecurityAuthorityMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
-        this.marshaller = marshaller;
-    }
+	SpringSecurityAuthorityMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
+		this.marshaller = marshaller;
+	}
 
-    @Override
-    public ProtoStreamMarshaller<?> getMarshaller() {
-        return this.marshaller;
-    }
+	@Override
+	public ProtoStreamMarshaller<?> getMarshaller() {
+		return this.marshaller;
+	}
 }

@@ -36,15 +36,15 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Documented
 public @interface Property {
-    /**
-     * The property name.
-     * @return the property name
-     */
-    String name();
+	/**
+	 * The property name.
+	 * @return the property name
+	 */
+	String name();
 
-    /**
-     * The property value.
-     * @return the property value
-     */
-    String value();
+	/**
+	 * The property value.
+	 * @return the property value
+	 */
+	String value();
 }

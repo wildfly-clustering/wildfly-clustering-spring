@@ -38,47 +38,47 @@ import jakarta.servlet.http.HttpSession;
  */
 @WebServlet(SessionServlet.SERVLET_PATH)
 public class SessionServlet extends HttpServlet {
-    private static final long serialVersionUID = 2878267318695777395L;
+	private static final long serialVersionUID = 2878267318695777395L;
 
-    private static final String SERVLET_NAME = "session";
-    static final String SERVLET_PATH = "/" + SERVLET_NAME;
-    public static final String VALUE = "value";
-    public static final String SESSION_ID = "session-id";
+	private static final String SERVLET_NAME = "session";
+	static final String SERVLET_PATH = "/" + SERVLET_NAME;
+	public static final String VALUE = "value";
+	public static final String SESSION_ID = "session-id";
 
-    public static URI createURI(URL baseURL) throws URISyntaxException {
-        return baseURL.toURI().resolve(SERVLET_NAME);
-    }
+	public static URI createURI(URL baseURL) throws URISyntaxException {
+		return baseURL.toURI().resolve(SERVLET_NAME);
+	}
 
-    @Override
-    public void doHead(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            response.setHeader(SESSION_ID, session.getId());
-        }
-    }
+	@Override
+	public void doHead(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		HttpSession session = request.getSession(false);
+		if (session != null) {
+			response.setHeader(SESSION_ID, session.getId());
+		}
+	}
 
-    @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        HttpSession session = request.getSession();
-        response.setHeader(SESSION_ID, session.getId());
+	@Override
+	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		HttpSession session = request.getSession();
+		response.setHeader(SESSION_ID, session.getId());
 
-        MutableInteger value = (MutableInteger) session.getAttribute(VALUE);
-        if (value == null) {
-            value = new MutableInteger(0);
-            session.setAttribute(VALUE, value);
-        } else {
-            value.accept(value.getAsInt() + 1);
-        }
+		MutableInteger value = (MutableInteger) session.getAttribute(VALUE);
+		if (value == null) {
+			value = new MutableInteger(0);
+			session.setAttribute(VALUE, value);
+		} else {
+			value.accept(value.getAsInt() + 1);
+		}
 
-        response.setIntHeader(VALUE, value.getAsInt());
-    }
+		response.setIntHeader(VALUE, value.getAsInt());
+	}
 
-    @Override
-    public void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            response.setHeader(SESSION_ID, session.getId());
-            session.invalidate();
-        }
-    }
+	@Override
+	public void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		HttpSession session = request.getSession(false);
+		if (session != null) {
+			response.setHeader(SESSION_ID, session.getId());
+			session.invalidate();
+		}
+	}
 }

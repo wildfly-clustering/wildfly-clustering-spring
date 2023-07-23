@@ -36,16 +36,16 @@ import org.wildfly.clustering.marshalling.jboss.SimpleClassTable;
  */
 public enum JBossMarshallingVersion implements Function<ClassLoader, MarshallingConfiguration> {
 
-    VERSION_1() {
-        @Override
-        public MarshallingConfiguration apply(ClassLoader loader) {
-            MarshallingConfiguration config = new MarshallingConfiguration();
-            config.setClassResolver(new SimpleClassResolver(loader));
-            config.setClassTable(new SimpleClassTable(Serializable.class, Externalizable.class));
-            config.setObjectTable(new DynamicExternalizerObjectTable(loader));
-            return config;
-        }
-    },
-    ;
-    static final JBossMarshallingVersion CURRENT = VERSION_1;
+	VERSION_1() {
+		@Override
+		public MarshallingConfiguration apply(ClassLoader loader) {
+			MarshallingConfiguration config = new MarshallingConfiguration();
+			config.setClassResolver(new SimpleClassResolver(loader));
+			config.setClassTable(new SimpleClassTable(Serializable.class, Externalizable.class));
+			config.setObjectTable(new DynamicExternalizerObjectTable(loader));
+			return config;
+		}
+	},
+	;
+	static final JBossMarshallingVersion CURRENT = VERSION_1;
 }

@@ -33,23 +33,23 @@ import org.infinispan.protostream.annotations.ProtoField;
  * @author Paul Ferraro
  */
 public class MutableInteger implements IntSupplier, IntConsumer, Serializable {
-    private static final long serialVersionUID = -5935940924708909645L;
+	private static final long serialVersionUID = -5935940924708909645L;
 
-    @ProtoField(value = 1, defaultValue = "0")
-    volatile int value;
+	@ProtoField(value = 1, defaultValue = "0")
+	volatile int value;
 
-    @ProtoFactory
-    public MutableInteger(int value) {
-        this.value = value;
-    }
+	@ProtoFactory
+	public MutableInteger(int value) {
+		this.value = value;
+	}
 
-    @Override
-    public void accept(int value) {
-        this.value = value;
-    }
+	@Override
+	public void accept(int value) {
+		this.value = value;
+	}
 
-    @Override
-    public int getAsInt() {
-        return this.value;
-    }
+	@Override
+	public int getAsInt() {
+		return this.value;
+	}
 }

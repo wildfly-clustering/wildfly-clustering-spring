@@ -31,7 +31,7 @@ import jakarta.servlet.annotation.WebListener;
 @WebListener
 public class ConfigContextLoaderListener extends org.wildfly.clustering.web.spring.context.ContextLoaderListener {
 
-    public ConfigContextLoaderListener() {
-        super(SecurityConfig.class, Config.class);
-    }
+	public ConfigContextLoaderListener() {
+		super(SecurityConfig.class, Config.class);
+	}
 }

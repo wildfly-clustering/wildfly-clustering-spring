@@ -39,26 +39,26 @@ import org.wildfly.clustering.web.spring.SpringSession;
  */
 public abstract class AbstractSecurityConfig implements Supplier<FindByIndexNameSessionRepository<SpringSession>> {
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf().disable()
-            .httpBasic()
-                .and().authorizeHttpRequests().requestMatchers("/").hasRole("ADMIN").anyRequest().authenticated()
-                .and().sessionManagement().maximumSessions(1).sessionRegistry(sessionRegistry())
-                ;
-        return http.build();
-    }
+	@Bean
+	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		http.csrf().disable()
+			.httpBasic()
+				.and().authorizeHttpRequests().requestMatchers("/").hasRole("ADMIN").anyRequest().authenticated()
+				.and().sessionManagement().maximumSessions(1).sessionRegistry(sessionRegistry())
+				;
+		return http.build();
+	}
 
-    @SuppressWarnings("deprecation")
-    @Bean
-    public UserDetailsService userDetailsService() {
-        InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
-        manager.createUser(User.withDefaultPasswordEncoder().username("admin").password("password").roles("ADMIN").build());
-        return manager;
-    }
+	@SuppressWarnings("deprecation")
+	@Bean
+	public UserDetailsService userDetailsService() {
+		InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
+		manager.createUser(User.withDefaultPasswordEncoder().username("admin").password("password").roles("ADMIN").build());
+		return manager;
+	}
 
-    @Bean
-    public SpringSessionBackedSessionRegistry<SpringSession> sessionRegistry() {
-        return new SpringSessionBackedSessionRegistry<>(this.get());
-    }
+	@Bean
+	public SpringSessionBackedSessionRegistry<SpringSession> sessionRegistry() {
+		return new SpringSessionBackedSessionRegistry<>(this.get());
+	}
 }

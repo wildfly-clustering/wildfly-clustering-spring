@@ -46,31 +46,31 @@ import org.wildfly.clustering.web.spring.servlet.context.HttpSessionApplicationI
 @RunWith(Arquillian.class)
 public class AnnotationSmokeITCase extends AbstractSmokeITCase {
 
-    @Deployment(name = DEPLOYMENT_1, testable = false, managed = false)
-    @TargetsContainer(CONTAINER_1)
-    public static Archive<?> deployment1() {
-        return deployment();
-    }
+	@Deployment(name = DEPLOYMENT_1, testable = false, managed = false)
+	@TargetsContainer(CONTAINER_1)
+	public static Archive<?> deployment1() {
+		return deployment();
+	}
 
-    @Deployment(name = DEPLOYMENT_2, testable = false, managed = false)
-    @TargetsContainer(CONTAINER_2)
-    public static Archive<?> deployment2() {
-        return deployment();
-    }
+	@Deployment(name = DEPLOYMENT_2, testable = false, managed = false)
+	@TargetsContainer(CONTAINER_2)
+	public static Archive<?> deployment2() {
+		return deployment();
+	}
 
-    private static Archive<?> deployment() {
-        return ShrinkWrap.create(WebArchive.class, AnnotationSmokeITCase.class.getSimpleName() + ".war")
-                .addPackage(SessionServlet.class.getPackage())
-                .addPackage(HttpSessionApplicationInitializer.class.getPackage())
-                .addPackage(ConfigContextLoaderListener.class.getPackage())
-                .addAsWebInfResource(org.wildfly.clustering.web.spring.AbstractSmokeITCase.class.getPackage(), "applicationContext.xml", "applicationContext.xml")
-                .addAsWebInfResource(AnnotationSmokeITCase.class.getPackage(), "infinispan.xml", "infinispan.xml")
-                .addAsServiceProvider(SerializationContextInitializer.class.getName(), TestSerializationContextInitializer.class.getName() + "Impl")
-                ;
-    }
+	private static Archive<?> deployment() {
+		return ShrinkWrap.create(WebArchive.class, AnnotationSmokeITCase.class.getSimpleName() + ".war")
+				.addPackage(SessionServlet.class.getPackage())
+				.addPackage(HttpSessionApplicationInitializer.class.getPackage())
+				.addPackage(ConfigContextLoaderListener.class.getPackage())
+				.addAsWebInfResource(org.wildfly.clustering.web.spring.AbstractSmokeITCase.class.getPackage(), "applicationContext.xml", "applicationContext.xml")
+				.addAsWebInfResource(AnnotationSmokeITCase.class.getPackage(), "infinispan.xml", "infinispan.xml")
+				.addAsServiceProvider(SerializationContextInitializer.class.getName(), TestSerializationContextInitializer.class.getName() + "Impl")
+				;
+	}
 
-    @Test
-    public void test(@ArquillianResource(SessionServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1, @ArquillianResource(SessionServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
-        this.accept(baseURL1, baseURL2);
-    }
+	@Test
+	public void test(@ArquillianResource(SessionServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1, @ArquillianResource(SessionServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
+		this.accept(baseURL1, baseURL2);
+	}
 }

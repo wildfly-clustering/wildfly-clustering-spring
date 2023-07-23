@@ -36,8 +36,8 @@ import org.wildfly.clustering.web.session.SessionManager;
  * @author Paul Ferraro
  */
 public interface DistributableSessionRepositoryConfiguration<B extends Batch> {
-    SessionManager<Void, B> getSessionManager();
-    ApplicationEventPublisher getEventPublisher();
-    BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> getSessionDestroyAction();
-    IndexingConfiguration<B> getIndexingConfiguration();
+	SessionManager<Void, B> getSessionManager();
+	ApplicationEventPublisher getEventPublisher();
+	BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> getSessionDestroyAction();
+	IndexingConfiguration<B> getIndexingConfiguration();
 }

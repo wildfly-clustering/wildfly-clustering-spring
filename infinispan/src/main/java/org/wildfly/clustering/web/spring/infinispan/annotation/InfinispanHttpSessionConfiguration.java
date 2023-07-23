@@ -36,44 +36,44 @@ import org.wildfly.clustering.web.spring.infinispan.InfinispanSessionRepositoryC
 @Configuration(proxyBeanMethods = false)
 public class InfinispanHttpSessionConfiguration extends HttpSessionConfiguration implements InfinispanSessionRepositoryConfiguration {
 
-    private String resource = "/WEB-INF/infinispan.xml";
-    private String templateName = null;
+	private String resource = "/WEB-INF/infinispan.xml";
+	private String templateName = null;
 
-    public InfinispanHttpSessionConfiguration() {
-        super(EnableInfinispanHttpSession.class);
-    }
+	public InfinispanHttpSessionConfiguration() {
+		super(EnableInfinispanHttpSession.class);
+	}
 
-    @Bean
-    public InfinispanSessionRepository sessionRepository() {
-        return new InfinispanSessionRepository(this);
-    }
+	@Bean
+	public InfinispanSessionRepository sessionRepository() {
+		return new InfinispanSessionRepository(this);
+	}
 
-    @Override
-    public String getConfigurationResource() {
-        return this.resource;
-    }
+	@Override
+	public String getConfigurationResource() {
+		return this.resource;
+	}
 
-    @Override
-    public String getTemplateName() {
-        return this.templateName;
-    }
+	@Override
+	public String getTemplateName() {
+		return this.templateName;
+	}
 
-    @Autowired(required = false)
-    public void setConfigurationResource(String resource) {
-        this.resource = resource;
-    }
+	@Autowired(required = false)
+	public void setConfigurationResource(String resource) {
+		this.resource = resource;
+	}
 
-    @Autowired(required = false)
-    public void setTemplateName(String templateName) {
-        this.templateName = templateName;
-    }
+	@Autowired(required = false)
+	public void setTemplateName(String templateName) {
+		this.templateName = templateName;
+	}
 
-    @Override
-    public void accept(AnnotationAttributes attributes) {
-        super.accept(attributes);
-        AnnotationAttributes config = attributes.getAnnotation("config");
-        this.resource = config.getString("resource");
-        String templateName = config.getString("template");
-        this.templateName = !templateName.isEmpty() ? templateName : null;
-    }
+	@Override
+	public void accept(AnnotationAttributes attributes) {
+		super.accept(attributes);
+		AnnotationAttributes config = attributes.getAnnotation("config");
+		this.resource = config.getString("resource");
+		String templateName = config.getString("template");
+		this.templateName = !templateName.isEmpty() ? templateName : null;
+	}
 }

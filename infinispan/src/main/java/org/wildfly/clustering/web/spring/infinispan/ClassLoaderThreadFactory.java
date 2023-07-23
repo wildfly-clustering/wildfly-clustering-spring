@@ -31,50 +31,50 @@ import org.wildfly.clustering.context.Contextualizer;
  * @author Paul Ferraro
  */
 public class ClassLoaderThreadFactory implements org.jgroups.util.ThreadFactory {
-    private final ThreadFactory factory;
-    private final ClassLoader targetLoader;
-    private final Contextualizer contextualizer;
+	private final ThreadFactory factory;
+	private final ClassLoader targetLoader;
+	private final Contextualizer contextualizer;
 
-    public ClassLoaderThreadFactory(ThreadFactory factory, ClassLoader targetLoader) {
-        this.factory = factory;
-        this.targetLoader = targetLoader;
-        this.contextualizer = new ContextReferenceExecutor<>(targetLoader, ContextClassLoaderReference.INSTANCE);
-    }
+	public ClassLoaderThreadFactory(ThreadFactory factory, ClassLoader targetLoader) {
+		this.factory = factory;
+		this.targetLoader = targetLoader;
+		this.contextualizer = new ContextReferenceExecutor<>(targetLoader, ContextClassLoaderReference.INSTANCE);
+	}
 
-    @Override
-    public Thread newThread(Runnable runner) {
-        return this.newThread(runner, null);
-    }
+	@Override
+	public Thread newThread(Runnable runner) {
+		return this.newThread(runner, null);
+	}
 
-    @Override
-    public Thread newThread(final Runnable runner, String name) {
-        Thread thread = this.factory.newThread(this.contextualizer.contextualize(runner), name);
-        ContextClassLoaderReference.INSTANCE.accept(thread, this.targetLoader);
-        return thread;
-    }
+	@Override
+	public Thread newThread(final Runnable runner, String name) {
+		Thread thread = this.factory.newThread(this.contextualizer.contextualize(runner), name);
+		ContextClassLoaderReference.INSTANCE.accept(thread, this.targetLoader);
+		return thread;
+	}
 
-    @Override
-    public void setPattern(String pattern) {
-        this.factory.setPattern(pattern);
-    }
+	@Override
+	public void setPattern(String pattern) {
+		this.factory.setPattern(pattern);
+	}
 
-    @Override
-    public void setIncludeClusterName(boolean includeClusterName) {
-        this.factory.setIncludeClusterName(includeClusterName);
-    }
+	@Override
+	public void setIncludeClusterName(boolean includeClusterName) {
+		this.factory.setIncludeClusterName(includeClusterName);
+	}
 
-    @Override
-    public void setClusterName(String channelName) {
-        this.factory.setClusterName(channelName);
-    }
+	@Override
+	public void setClusterName(String channelName) {
+		this.factory.setClusterName(channelName);
+	}
 
-    @Override
-    public void setAddress(String address) {
-        this.factory.setAddress(address);
-    }
+	@Override
+	public void setAddress(String address) {
+		this.factory.setAddress(address);
+	}
 
-    @Override
-    public void renameThread(String base_name, Thread thread) {
-        this.factory.renameThread(base_name, thread);
-    }
+	@Override
+	public void renameThread(String base_name, Thread thread) {
+		this.factory.renameThread(base_name, thread);
+	}
 }

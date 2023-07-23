@@ -36,43 +36,43 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  */
 public class JaasGrantedAuthorityMarshaller implements ProtoStreamMarshaller<JaasGrantedAuthority> {
 
-    private static final int ROLE_INDEX = 1;
-    private static final int PRINCIPAL_INDEX = 2;
+	private static final int ROLE_INDEX = 1;
+	private static final int PRINCIPAL_INDEX = 2;
 
-    @Override
-    public JaasGrantedAuthority readFrom(ProtoStreamReader reader) throws IOException {
-        Principal principal = null;
-        String role = null;
-        while (!reader.isAtEnd()) {
-            int tag = reader.readTag();
-            switch (WireType.getTagFieldNumber(tag)) {
-                case ROLE_INDEX:
-                    role = reader.readString();
-                    break;
-                case PRINCIPAL_INDEX:
-                    principal = reader.readAny(Principal.class);
-                    break;
-                default:
-                    reader.skipField(tag);
-            }
-        }
-        return new JaasGrantedAuthority(role, principal);
-    }
+	@Override
+	public JaasGrantedAuthority readFrom(ProtoStreamReader reader) throws IOException {
+		Principal principal = null;
+		String role = null;
+		while (!reader.isAtEnd()) {
+			int tag = reader.readTag();
+			switch (WireType.getTagFieldNumber(tag)) {
+				case ROLE_INDEX:
+					role = reader.readString();
+					break;
+				case PRINCIPAL_INDEX:
+					principal = reader.readAny(Principal.class);
+					break;
+				default:
+					reader.skipField(tag);
+			}
+		}
+		return new JaasGrantedAuthority(role, principal);
+	}
 
-    @Override
-    public void writeTo(ProtoStreamWriter writer, JaasGrantedAuthority authority) throws IOException {
-        String role = authority.getAuthority();
-        if (role != null) {
-            writer.writeString(ROLE_INDEX, role);
-        }
-        Principal principal = authority.getPrincipal();
-        if (principal != null) {
-            writer.writeAny(PRINCIPAL_INDEX, principal);
-        }
-    }
+	@Override
+	public void writeTo(ProtoStreamWriter writer, JaasGrantedAuthority authority) throws IOException {
+		String role = authority.getAuthority();
+		if (role != null) {
+			writer.writeString(ROLE_INDEX, role);
+		}
+		Principal principal = authority.getPrincipal();
+		if (principal != null) {
+			writer.writeAny(PRINCIPAL_INDEX, principal);
+		}
+	}
 
-    @Override
-    public Class<? extends JaasGrantedAuthority> getJavaClass() {
-        return JaasGrantedAuthority.class;
-    }
+	@Override
+	public Class<? extends JaasGrantedAuthority> getJavaClass() {
+		return JaasGrantedAuthority.class;
+	}
 }
