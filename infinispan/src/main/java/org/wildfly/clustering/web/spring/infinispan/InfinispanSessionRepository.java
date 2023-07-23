@@ -233,7 +233,7 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
 				return Predicate.not(Message::hasPayload);
 			}
 		}) : null;
-		Group<Void> localGroup = new LocalGroup(transport.nodeName(), transport.clusterName());
+		Group<?> localGroup = new LocalGroup(transport.nodeName(), transport.clusterName());
 		CommandDispatcherFactory dispatcherFactory = (channelDispatcherFactory != null) ? channelDispatcherFactory : new LocalCommandDispatcherFactory(localGroup);
 		if (channelDispatcherFactory != null) {
 			this.stopTasks.add(channelDispatcherFactory::close);

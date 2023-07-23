@@ -57,15 +57,15 @@
 		<version.jakarta.servlet>6.0.0</version.jakarta.servlet>
 		<version.net.jcip.annotations>1.0</version.net.jcip.annotations>
 		<version.org.apache.httpcomponents>5.2.1</version.org.apache.httpcomponents>
-		<version.org.apache.tomcat>10.1.8</version.org.apache.tomcat>
-		<version.org.infinispan>14.0.12.Final</version.org.infinispan>
+		<version.org.apache.tomcat>10.1.11</version.org.apache.tomcat>
+		<version.org.infinispan>14.0.13.Final</version.org.infinispan>
 		<version.org.infinispan.protostream>4.6.2.Final</version.org.infinispan.protostream>
 		<version.org.infinispan.server>${version.org.infinispan}</version.org.infinispan.server>
 		<version.org.jboss.arquillian>1.7.0.Final</version.org.jboss.arquillian>
 		<version.org.jboss.arquillian.container.tomcat>1.1.0.Final</version.org.jboss.arquillian.container.tomcat>
 		<version.org.jboss.marshalling>2.1.1.Final</version.org.jboss.marshalling>
 		<version.org.kohsuke.metainf-services>1.9</version.org.kohsuke.metainf-services>
-		<version.org.wildfly>28.0.1.Final</version.org.wildfly>
+		<version.org.wildfly>29.0.0.Final</version.org.wildfly>
 		<version.junit>4.13.2</version.junit>
 	</properties>
 
