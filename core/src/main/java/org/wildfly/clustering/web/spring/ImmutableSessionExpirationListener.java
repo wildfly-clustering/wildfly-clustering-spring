@@ -42,16 +42,16 @@ import org.wildfly.clustering.web.session.ImmutableSession;
  */
 public class ImmutableSessionExpirationListener implements Consumer<ImmutableSession> {
 
-    private final BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> destroyAction;
-    private final Executor executor;
+	private final BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> destroyAction;
+	private final Executor executor;
 
-    public ImmutableSessionExpirationListener(ServletContext context, BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> destroyAction) {
-        this.destroyAction = destroyAction;
-        this.executor = new ContextReferenceExecutor<>(context.getClassLoader(), ContextClassLoaderReference.INSTANCE);
-    }
+	public ImmutableSessionExpirationListener(ServletContext context, BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> destroyAction) {
+		this.destroyAction = destroyAction;
+		this.executor = new ContextReferenceExecutor<>(context.getClassLoader(), ContextClassLoaderReference.INSTANCE);
+	}
 
-    @Override
-    public void accept(ImmutableSession session) {
-        this.executor.execute(() -> this.destroyAction.accept(session, SessionExpiredEvent::new));
-    }
+	@Override
+	public void accept(ImmutableSession session) {
+		this.executor.execute(() -> this.destroyAction.accept(session, SessionExpiredEvent::new));
+	}
 }

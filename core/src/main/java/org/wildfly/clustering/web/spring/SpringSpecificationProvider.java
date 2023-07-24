@@ -38,110 +38,110 @@ import org.wildfly.clustering.web.session.SpecificationProvider;
  * @author Paul Ferraro
  */
 public enum SpringSpecificationProvider implements SpecificationProvider<HttpSession, ServletContext, HttpSessionActivationListener> {
-    INSTANCE;
+	INSTANCE;
 
-    @Override
-    public HttpSession createHttpSession(ImmutableSession session, ServletContext context) {
-        return new AbstractHttpSession() {
-            @Override
-            public String getId() {
-                return session.getId();
-            }
+	@Override
+	public HttpSession createHttpSession(ImmutableSession session, ServletContext context) {
+		return new AbstractHttpSession() {
+			@Override
+			public String getId() {
+				return session.getId();
+			}
 
-            @Override
-            public ServletContext getServletContext() {
-                return context;
-            }
+			@Override
+			public ServletContext getServletContext() {
+				return context;
+			}
 
-            @Override
-            public boolean isNew() {
-                return session.getMetaData().isNew();
-            }
+			@Override
+			public boolean isNew() {
+				return session.getMetaData().isNew();
+			}
 
-            @Override
-            public long getCreationTime() {
-                return session.getMetaData().getCreationTime().toEpochMilli();
-            }
+			@Override
+			public long getCreationTime() {
+				return session.getMetaData().getCreationTime().toEpochMilli();
+			}
 
-            @Override
-            public long getLastAccessedTime() {
-                return session.getMetaData().getLastAccessStartTime().toEpochMilli();
-            }
+			@Override
+			public long getLastAccessedTime() {
+				return session.getMetaData().getLastAccessStartTime().toEpochMilli();
+			}
 
-            @Override
-            public int getMaxInactiveInterval() {
-                return (int) session.getMetaData().getTimeout().getSeconds();
-            }
+			@Override
+			public int getMaxInactiveInterval() {
+				return (int) session.getMetaData().getTimeout().getSeconds();
+			}
 
-            @Override
-            public Enumeration<String> getAttributeNames() {
-                return Collections.enumeration(session.getAttributes().getAttributeNames());
-            }
+			@Override
+			public Enumeration<String> getAttributeNames() {
+				return Collections.enumeration(session.getAttributes().getAttributeNames());
+			}
 
-            @Override
-            public Object getAttribute(String name) {
-                return session.getAttributes().getAttribute(name);
-            }
+			@Override
+			public Object getAttribute(String name) {
+				return session.getAttributes().getAttribute(name);
+			}
 
-            @Override
-            public void setAttribute(String name, Object value) {
-                // Ignore
-            }
+			@Override
+			public void setAttribute(String name, Object value) {
+				// Ignore
+			}
 
-            @Override
-            public void removeAttribute(String name) {
-                // Ignore
-            }
+			@Override
+			public void removeAttribute(String name) {
+				// Ignore
+			}
 
-            @Override
-            public void invalidate() {
-                // Ignore
-            }
+			@Override
+			public void invalidate() {
+				// Ignore
+			}
 
-            @Override
-            public void setMaxInactiveInterval(int interval) {
-                // Ignore
-            }
-        };
-    }
+			@Override
+			public void setMaxInactiveInterval(int interval) {
+				// Ignore
+			}
+		};
+	}
 
-    @Override
-    public Class<HttpSessionActivationListener> getHttpSessionActivationListenerClass() {
-        return HttpSessionActivationListener.class;
-    }
+	@Override
+	public Class<HttpSessionActivationListener> getHttpSessionActivationListenerClass() {
+		return HttpSessionActivationListener.class;
+	}
 
-    @Override
-    public Consumer<HttpSession> prePassivateNotifier(HttpSessionActivationListener listener) {
-        return new Consumer<>() {
-            @Override
-            public void accept(HttpSession session) {
-                listener.sessionWillPassivate(new HttpSessionEvent(session));
-            }
-        };
-    }
+	@Override
+	public Consumer<HttpSession> prePassivateNotifier(HttpSessionActivationListener listener) {
+		return new Consumer<>() {
+			@Override
+			public void accept(HttpSession session) {
+				listener.sessionWillPassivate(new HttpSessionEvent(session));
+			}
+		};
+	}
 
-    @Override
-    public Consumer<HttpSession> postActivateNotifier(HttpSessionActivationListener listener) {
-        return new Consumer<>() {
-            @Override
-            public void accept(HttpSession session) {
-                listener.sessionDidActivate(new HttpSessionEvent(session));
-            }
-        };
-    }
+	@Override
+	public Consumer<HttpSession> postActivateNotifier(HttpSessionActivationListener listener) {
+		return new Consumer<>() {
+			@Override
+			public void accept(HttpSession session) {
+				listener.sessionDidActivate(new HttpSessionEvent(session));
+			}
+		};
+	}
 
-    @Override
-    public HttpSessionActivationListener createListener(Consumer<HttpSession> prePassivate, Consumer<HttpSession> postActivate) {
-        return new HttpSessionActivationListener() {
-            @Override
-            public void sessionWillPassivate(HttpSessionEvent event) {
-                prePassivate.accept(event.getSession());
-            }
+	@Override
+	public HttpSessionActivationListener createListener(Consumer<HttpSession> prePassivate, Consumer<HttpSession> postActivate) {
+		return new HttpSessionActivationListener() {
+			@Override
+			public void sessionWillPassivate(HttpSessionEvent event) {
+				prePassivate.accept(event.getSession());
+			}
 
-            @Override
-            public void sessionDidActivate(HttpSessionEvent event) {
-                postActivate.accept(event.getSession());
-            }
-        };
-    }
+			@Override
+			public void sessionDidActivate(HttpSessionEvent event) {
+				postActivate.accept(event.getSession());
+			}
+		};
+	}
 }

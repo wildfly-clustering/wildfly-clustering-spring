@@ -33,16 +33,16 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvi
  */
 public enum SpringSecurityWebAuthenticationMarshallerProvider implements ProtoStreamMarshallerProvider {
 
-    AUTHENTICATION_DETAILS(new FunctionalMarshaller<>(WebAuthenticationDetails.class, new ProtoStreamBuilderFieldSetMarshaller<>(HttpServletRequestMarshaller.INSTANCE), MockHttpServletRequest::new, WebAuthenticationDetails::new)),
-    ;
-    private final ProtoStreamMarshaller<?> marshaller;
+	AUTHENTICATION_DETAILS(new FunctionalMarshaller<>(WebAuthenticationDetails.class, new ProtoStreamBuilderFieldSetMarshaller<>(HttpServletRequestMarshaller.INSTANCE), MockHttpServletRequest::new, WebAuthenticationDetails::new)),
+	;
+	private final ProtoStreamMarshaller<?> marshaller;
 
-    SpringSecurityWebAuthenticationMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
-        this.marshaller = marshaller;
-    }
+	SpringSecurityWebAuthenticationMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
+		this.marshaller = marshaller;
+	}
 
-    @Override
-    public ProtoStreamMarshaller<?> getMarshaller() {
-        return this.marshaller;
-    }
+	@Override
+	public ProtoStreamMarshaller<?> getMarshaller() {
+		return this.marshaller;
+	}
 }

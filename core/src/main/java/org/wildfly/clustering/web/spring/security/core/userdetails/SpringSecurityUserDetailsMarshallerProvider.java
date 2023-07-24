@@ -30,16 +30,16 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvi
  */
 public enum SpringSecurityUserDetailsMarshallerProvider implements ProtoStreamMarshallerProvider {
 
-    USER(new UserDetailsMarshaller()),
-    ;
-    private final ProtoStreamMarshaller<?> marshaller;
+	USER(new UserDetailsMarshaller()),
+	;
+	private final ProtoStreamMarshaller<?> marshaller;
 
-    SpringSecurityUserDetailsMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
-        this.marshaller = marshaller;
-    }
+	SpringSecurityUserDetailsMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
+		this.marshaller = marshaller;
+	}
 
-    @Override
-    public ProtoStreamMarshaller<?> getMarshaller() {
-        return this.marshaller;
-    }
+	@Override
+	public ProtoStreamMarshaller<?> getMarshaller() {
+		return this.marshaller;
+	}
 }

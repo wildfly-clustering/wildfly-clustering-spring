@@ -41,37 +41,37 @@ import org.wildfly.clustering.web.spring.security.web.authentication.MockHttpSer
  */
 public class PreAuthenticatedWebAuthenticationDetailsMarshaller implements ProtoStreamMarshaller<PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails> {
 
-    private static final int HTTP_SERVLET_REQUEST_INDEX = 1;
-    private static final int AUTHORITIY_INDEX = HTTP_SERVLET_REQUEST_INDEX + HttpServletRequestMarshaller.INSTANCE.getFields();
+	private static final int HTTP_SERVLET_REQUEST_INDEX = 1;
+	private static final int AUTHORITIY_INDEX = HTTP_SERVLET_REQUEST_INDEX + HttpServletRequestMarshaller.INSTANCE.getFields();
 
-    @Override
-    public PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails readFrom(ProtoStreamReader reader) throws IOException {
-        HttpServletRequestBuilder builder = HttpServletRequestMarshaller.INSTANCE.getBuilder();
-        List<GrantedAuthority> authorities = new LinkedList<>();
-        while (!reader.isAtEnd()) {
-            int tag = reader.readTag();
-            int index = WireType.getTagFieldNumber(tag);
-            if (index >= HTTP_SERVLET_REQUEST_INDEX && index < AUTHORITIY_INDEX) {
-                builder = HttpServletRequestMarshaller.INSTANCE.readField(reader, index - HTTP_SERVLET_REQUEST_INDEX, builder);
-            } else if (index == AUTHORITIY_INDEX) {
-                authorities.add(reader.readAny(GrantedAuthority.class));
-            } else {
-                reader.skipField(tag);
-            }
-        }
-        return new PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails(builder.build(), authorities);
-    }
+	@Override
+	public PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails readFrom(ProtoStreamReader reader) throws IOException {
+		HttpServletRequestBuilder builder = HttpServletRequestMarshaller.INSTANCE.getBuilder();
+		List<GrantedAuthority> authorities = new LinkedList<>();
+		while (!reader.isAtEnd()) {
+			int tag = reader.readTag();
+			int index = WireType.getTagFieldNumber(tag);
+			if (index >= HTTP_SERVLET_REQUEST_INDEX && index < AUTHORITIY_INDEX) {
+				builder = HttpServletRequestMarshaller.INSTANCE.readField(reader, index - HTTP_SERVLET_REQUEST_INDEX, builder);
+			} else if (index == AUTHORITIY_INDEX) {
+				authorities.add(reader.readAny(GrantedAuthority.class));
+			} else {
+				reader.skipField(tag);
+			}
+		}
+		return new PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails(builder.build(), authorities);
+	}
 
-    @Override
-    public void writeTo(ProtoStreamWriter writer, PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails details) throws IOException {
-        HttpServletRequestMarshaller.INSTANCE.writeFields(writer, HTTP_SERVLET_REQUEST_INDEX, new MockHttpServletRequest(details));
-        for (GrantedAuthority authority : details.getGrantedAuthorities()) {
-            writer.writeAny(AUTHORITIY_INDEX, authority);
-        }
-    }
+	@Override
+	public void writeTo(ProtoStreamWriter writer, PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails details) throws IOException {
+		HttpServletRequestMarshaller.INSTANCE.writeFields(writer, HTTP_SERVLET_REQUEST_INDEX, new MockHttpServletRequest(details));
+		for (GrantedAuthority authority : details.getGrantedAuthorities()) {
+			writer.writeAny(AUTHORITIY_INDEX, authority);
+		}
+	}
 
-    @Override
-    public Class<? extends PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails> getJavaClass() {
-        return PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails.class;
-    }
+	@Override
+	public Class<? extends PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails> getJavaClass() {
+		return PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails.class;
+	}
 }

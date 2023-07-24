@@ -41,57 +41,57 @@ import org.wildfly.clustering.web.spring.hotrod.HotRodSessionRepositoryConfigura
 @Configuration(proxyBeanMethods = false)
 public class HotRodIndexedHttpSessionConfiguration extends IndexedHttpSessionConfiguration implements HotRodSessionRepositoryConfiguration {
 
-    private URI uri;
-    private Properties properties = new Properties();
-    private String templateName = DefaultTemplate.DIST_SYNC.getTemplateName();
+	private URI uri;
+	private Properties properties = new Properties();
+	private String templateName = DefaultTemplate.DIST_SYNC.getTemplateName();
 
-    public HotRodIndexedHttpSessionConfiguration() {
-        super(EnableHotRodIndexedHttpSession.class);
-    }
+	public HotRodIndexedHttpSessionConfiguration() {
+		super(EnableHotRodIndexedHttpSession.class);
+	}
 
-    @Bean
-    public HotRodSessionRepository sessionRepository() {
-        return new HotRodSessionRepository(this);
-    }
+	@Bean
+	public HotRodSessionRepository sessionRepository() {
+		return new HotRodSessionRepository(this);
+	}
 
-    @Override
-    public URI getUri() {
-        return this.uri;
-    }
+	@Override
+	public URI getUri() {
+		return this.uri;
+	}
 
-    @Override
-    public Properties getProperties() {
-        return this.properties;
-    }
+	@Override
+	public Properties getProperties() {
+		return this.properties;
+	}
 
-    @Override
-    public String getTemplateName() {
-        return this.templateName;
-    }
+	@Override
+	public String getTemplateName() {
+		return this.templateName;
+	}
 
-    @Autowired(required = false)
-    public void setUri(URI uri) {
-        this.uri = uri;
-    }
+	@Autowired(required = false)
+	public void setUri(URI uri) {
+		this.uri = uri;
+	}
 
-    @Autowired(required = false)
-    public void setProperties(Properties properties) {
-        this.properties = properties;
-    }
+	@Autowired(required = false)
+	public void setProperties(Properties properties) {
+		this.properties = properties;
+	}
 
-    @Autowired(required = false)
-    public void setTemplateName(String templateName) {
-        this.templateName = templateName;
-    }
+	@Autowired(required = false)
+	public void setTemplateName(String templateName) {
+		this.templateName = templateName;
+	}
 
-    @Override
-    public void accept(AnnotationAttributes attributes) {
-        super.accept(attributes);
-        AnnotationAttributes config = attributes.getAnnotation("config");
-        this.uri = URI.create(config.getString("uri"));
-        this.templateName = config.getString("template");
-        for (AnnotationAttributes property : config.getAnnotationArray("properties")) {
-            this.properties.setProperty(property.getString("name"), property.getString("value"));
-        }
-    }
+	@Override
+	public void accept(AnnotationAttributes attributes) {
+		super.accept(attributes);
+		AnnotationAttributes config = attributes.getAnnotation("config");
+		this.uri = URI.create(config.getString("uri"));
+		this.templateName = config.getString("template");
+		for (AnnotationAttributes property : config.getAnnotationArray("properties")) {
+			this.properties.setProperty(property.getString("name"), property.getString("value"));
+		}
+	}
 }

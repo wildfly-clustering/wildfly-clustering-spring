@@ -39,24 +39,24 @@ import org.wildfly.clustering.web.spring.security.web.savedrequest.SpringSecurit
  */
 public enum SpringSecuritySerializationContextInitializerProvider implements SerializationContextInitializerProvider {
 
-    SPRING_SECURITY(new SpringSecuritySerializationContextInitializer()),
-    AUTHENTICATION(new ProviderSerializationContextInitializer<>("org.springframework.security.authentication.proto", SpringSecurityAuthenticationMarshallerProvider.class)),
-    JAAS(new ProviderSerializationContextInitializer<>("org.springframework.security.authentication.jaas.proto", SpringSecurityJaasAuthenticationMarshallerProvider.class)),
-    AUTHORITY(new ProviderSerializationContextInitializer<>("org.springframework.security.core.authority.proto", SpringSecurityAuthorityMarshallerProvider.class)),
-    CONTEXT(new ProviderSerializationContextInitializer<>("org.springframework.security.core.context.proto", SpringSecurityContextMarshallerProvider.class)),
-    USER_DETAILS(new ProviderSerializationContextInitializer<>("org.springframework.security.core.userdetails.proto", SpringSecurityUserDetailsMarshallerProvider.class)),
-    WEB_AUTHENTICATION(new ProviderSerializationContextInitializer<>("org.springframework.security.web.authentication.proto", SpringSecurityWebAuthenticationMarshallerProvider.class)),
-    PRE_AUTH_WEB_AUTHENTICATION(new ProviderSerializationContextInitializer<>("org.springframework.security.web.authentication.preauth.proto", SpringSecurityWebPreAuthMarshallerProvider.class)),
-    SAVED_REQUEST(new ProviderSerializationContextInitializer<>("org.springframework.security.web.savedrequest.proto", SpringSecurityWebSavedRequestMarshallerProvider.class)),
-    ;
-    private final SerializationContextInitializer initializer;
+	SPRING_SECURITY(new SpringSecuritySerializationContextInitializer()),
+	AUTHENTICATION(new ProviderSerializationContextInitializer<>("org.springframework.security.authentication.proto", SpringSecurityAuthenticationMarshallerProvider.class)),
+	JAAS(new ProviderSerializationContextInitializer<>("org.springframework.security.authentication.jaas.proto", SpringSecurityJaasAuthenticationMarshallerProvider.class)),
+	AUTHORITY(new ProviderSerializationContextInitializer<>("org.springframework.security.core.authority.proto", SpringSecurityAuthorityMarshallerProvider.class)),
+	CONTEXT(new ProviderSerializationContextInitializer<>("org.springframework.security.core.context.proto", SpringSecurityContextMarshallerProvider.class)),
+	USER_DETAILS(new ProviderSerializationContextInitializer<>("org.springframework.security.core.userdetails.proto", SpringSecurityUserDetailsMarshallerProvider.class)),
+	WEB_AUTHENTICATION(new ProviderSerializationContextInitializer<>("org.springframework.security.web.authentication.proto", SpringSecurityWebAuthenticationMarshallerProvider.class)),
+	PRE_AUTH_WEB_AUTHENTICATION(new ProviderSerializationContextInitializer<>("org.springframework.security.web.authentication.preauth.proto", SpringSecurityWebPreAuthMarshallerProvider.class)),
+	SAVED_REQUEST(new ProviderSerializationContextInitializer<>("org.springframework.security.web.savedrequest.proto", SpringSecurityWebSavedRequestMarshallerProvider.class)),
+	;
+	private final SerializationContextInitializer initializer;
 
-    SpringSecuritySerializationContextInitializerProvider(SerializationContextInitializer initializer) {
-        this.initializer = initializer;
-    }
+	SpringSecuritySerializationContextInitializerProvider(SerializationContextInitializer initializer) {
+		this.initializer = initializer;
+	}
 
-    @Override
-    public SerializationContextInitializer getInitializer() {
-        return this.initializer;
-    }
+	@Override
+	public SerializationContextInitializer getInitializer() {
+		return this.initializer;
+	}
 }

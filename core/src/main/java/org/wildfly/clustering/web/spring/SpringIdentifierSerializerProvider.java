@@ -35,8 +35,8 @@ import org.wildfly.clustering.web.IdentifierMarshallerProvider;
 @MetaInfServices(IdentifierMarshallerProvider.class)
 public class SpringIdentifierSerializerProvider implements IdentifierMarshallerProvider {
 
-    @Override
-    public Marshaller<String, ByteBuffer> getMarshaller() {
-        return IdentifierMarshaller.ISO_LATIN_1;
-    }
+	@Override
+	public Marshaller<String, ByteBuffer> getMarshaller() {
+		return IdentifierMarshaller.ISO_LATIN_1;
+	}
 }

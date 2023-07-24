@@ -34,9 +34,9 @@ import org.springframework.security.core.userdetails.User;
  */
 public class SpringSecurityUserDetailsMarshallerTestCase {
 
-    @Test
-    public void test() throws IOException {
-        ProtoStreamTesterFactory.INSTANCE.createTester().test(new User("username", "password", Collections.singleton(new SimpleGrantedAuthority("admin"))));
-        ProtoStreamTesterFactory.INSTANCE.createTester().test(new User("username", "password", false, false, false, false, Collections.singleton(new SimpleGrantedAuthority("admin"))));
-    }
+	@Test
+	public void test() throws IOException {
+		ProtoStreamTesterFactory.INSTANCE.createTester().test(new User("username", "password", Collections.singleton(new SimpleGrantedAuthority("admin"))));
+		ProtoStreamTesterFactory.INSTANCE.createTester().test(new User("username", "password", false, false, false, false, Collections.singleton(new SimpleGrantedAuthority("admin"))));
+	}
 }

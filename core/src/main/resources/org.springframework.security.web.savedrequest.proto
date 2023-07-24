@@ -32,9 +32,8 @@ message SavedCookie {
 	optional	string	name	= 1;
 	optional	string	secureName	= 2;
 	optional	string	value	= 3;
-	optional	string	comment	= 4;
+	optional	string	httpOnlyValue	= 4;
 	optional	string	domain	= 5;
 	optional	uint32	maxAge	= 6;
 	optional	string	path	= 7;
-	optional	uint32	version	= 8;
 }

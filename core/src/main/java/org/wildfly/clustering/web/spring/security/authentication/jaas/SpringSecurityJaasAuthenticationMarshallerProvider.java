@@ -31,17 +31,17 @@ import org.wildfly.clustering.web.spring.security.authentication.CredentialAuthe
  * @author Paul Ferraro
  */
 public enum SpringSecurityJaasAuthenticationMarshallerProvider implements ProtoStreamMarshallerProvider {
-    JAAS_AUTHORITY(new JaasGrantedAuthorityMarshaller()),
-    JAAS_TOKEN(new CredentialAuthenticationTokenMarshaller<>(JaasAuthenticationToken.class, (principal, credentials) -> new JaasAuthenticationToken(principal, credentials, null), (entry, authorities) -> new JaasAuthenticationToken(entry.getKey(), entry.getValue(), authorities, null))),
-    ;
-    private final ProtoStreamMarshaller<?> marshaller;
+	JAAS_AUTHORITY(new JaasGrantedAuthorityMarshaller()),
+	JAAS_TOKEN(new CredentialAuthenticationTokenMarshaller<>(JaasAuthenticationToken.class, (principal, credentials) -> new JaasAuthenticationToken(principal, credentials, null), (entry, authorities) -> new JaasAuthenticationToken(entry.getKey(), entry.getValue(), authorities, null))),
+	;
+	private final ProtoStreamMarshaller<?> marshaller;
 
-    SpringSecurityJaasAuthenticationMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
-        this.marshaller = marshaller;
-    }
+	SpringSecurityJaasAuthenticationMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
+		this.marshaller = marshaller;
+	}
 
-    @Override
-    public ProtoStreamMarshaller<?> getMarshaller() {
-        return this.marshaller;
-    }
+	@Override
+	public ProtoStreamMarshaller<?> getMarshaller() {
+		return this.marshaller;
+	}
 }

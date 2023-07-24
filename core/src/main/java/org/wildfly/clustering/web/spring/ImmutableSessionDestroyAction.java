@@ -46,43 +46,43 @@ import org.wildfly.clustering.web.sso.SSOManager;
  */
 public class ImmutableSessionDestroyAction<B extends Batch> implements BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> {
 
-    private final ApplicationEventPublisher publisher;
-    private final ServletContext context;
-    private final IndexingConfiguration<B> indexing;
+	private final ApplicationEventPublisher publisher;
+	private final ServletContext context;
+	private final IndexingConfiguration<B> indexing;
 
-    public ImmutableSessionDestroyAction(ApplicationEventPublisher publisher, ServletContext context, IndexingConfiguration<B> indexing) {
-        this.publisher = publisher;
-        this.context = context;
-        this.indexing = indexing;
-    }
+	public ImmutableSessionDestroyAction(ApplicationEventPublisher publisher, ServletContext context, IndexingConfiguration<B> indexing) {
+		this.publisher = publisher;
+		this.context = context;
+		this.indexing = indexing;
+	}
 
-    @Override
-    public void accept(ImmutableSession session, BiFunction<Object, Session, ApplicationEvent> eventFactory) {
-        ApplicationEvent event = eventFactory.apply(this, new DistributableImmutableSession(session));
-        this.publisher.publishEvent(event);
-        SessionAttributesFilter filter = new ImmutableSessionAttributesFilter(session);
-        HttpSession httpSession = SpringSpecificationProvider.INSTANCE.createHttpSession(session, this.context);
-        for (Map.Entry<String, HttpSessionBindingListener> entry : filter.getAttributes(HttpSessionBindingListener.class).entrySet()) {
-            HttpSessionBindingListener listener = entry.getValue();
-            try {
-                listener.valueUnbound(new HttpSessionBindingEvent(httpSession, entry.getKey(), listener));
-            } catch (Throwable e) {
-                this.context.log(e.getMessage(), e);
-            }
-        }
+	@Override
+	public void accept(ImmutableSession session, BiFunction<Object, Session, ApplicationEvent> eventFactory) {
+		ApplicationEvent event = eventFactory.apply(this, new DistributableImmutableSession(session));
+		this.publisher.publishEvent(event);
+		SessionAttributesFilter filter = new ImmutableSessionAttributesFilter(session);
+		HttpSession httpSession = SpringSpecificationProvider.INSTANCE.createHttpSession(session, this.context);
+		for (Map.Entry<String, HttpSessionBindingListener> entry : filter.getAttributes(HttpSessionBindingListener.class).entrySet()) {
+			HttpSessionBindingListener listener = entry.getValue();
+			try {
+				listener.valueUnbound(new HttpSessionBindingEvent(httpSession, entry.getKey(), listener));
+			} catch (Throwable e) {
+				this.context.log(e.getMessage(), e);
+			}
+		}
 
-        // Remove any associated indexes
-        Map<String, String> indexes = this.indexing.getIndexResolver().resolveIndexesFor(new DistributableImmutableSession(session));
-        for (Map.Entry<String, String> entry : indexes.entrySet()) {
-            SSOManager<Void, String, String, Void, B> manager = this.indexing.getSSOManagers().get(entry.getKey());
-            if (manager != null) {
-                try (B batch = manager.getBatcher().createBatch()) {
-                    SSO<Void, String, String, Void> sso = manager.findSSO(entry.getValue());
-                    if (sso != null) {
-                        sso.invalidate();
-                    }
-                }
-            }
-        }
-    }
+		// Remove any associated indexes
+		Map<String, String> indexes = this.indexing.getIndexResolver().resolveIndexesFor(new DistributableImmutableSession(session));
+		for (Map.Entry<String, String> entry : indexes.entrySet()) {
+			SSOManager<Void, String, String, Void, B> manager = this.indexing.getSSOManagers().get(entry.getKey());
+			if (manager != null) {
+				try (B batch = manager.getBatcher().createBatch()) {
+					SSO<Void, String, String, Void> sso = manager.findSSO(entry.getValue());
+					if (sso != null) {
+						sso.invalidate();
+					}
+				}
+			}
+		}
+	}
 }

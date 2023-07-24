@@ -58,53 +58,53 @@ import org.wildfly.clustering.web.spring.servlet.context.HttpSessionApplicationI
 @RunWith(Arquillian.class)
 public class AuthSmokeITCase extends AbstractSmokeITCase {
 
-    @Deployment(name = DEPLOYMENT_1, testable = false, managed = false)
-    @TargetsContainer(CONTAINER_1)
-    public static Archive<?> deployment1() {
-        return deployment();
-    }
+	@Deployment(name = DEPLOYMENT_1, testable = false, managed = false)
+	@TargetsContainer(CONTAINER_1)
+	public static Archive<?> deployment1() {
+		return deployment();
+	}
 
-    @Deployment(name = DEPLOYMENT_2, testable = false, managed = false)
-    @TargetsContainer(CONTAINER_2)
-    public static Archive<?> deployment2() {
-        return deployment();
-    }
+	@Deployment(name = DEPLOYMENT_2, testable = false, managed = false)
+	@TargetsContainer(CONTAINER_2)
+	public static Archive<?> deployment2() {
+		return deployment();
+	}
 
-    private static Archive<?> deployment() {
-        return ShrinkWrap.create(WebArchive.class, AuthSmokeITCase.class.getSimpleName() + ".war")
-                .addPackage(SessionServlet.class.getPackage())
-                .addPackage(HttpSessionApplicationInitializer.class.getPackage())
-                .addPackage(ConfigContextLoaderListener.class.getPackage())
-                .addPackage(SecurityInitializer.class.getPackage())
-                .addClass(HttpSessionApplicationInitializer.class)
-                .addAsWebInfResource(org.wildfly.clustering.web.spring.AbstractSmokeITCase.class.getPackage(), "applicationContext.xml", "applicationContext.xml")
-                .addAsWebInfResource(AuthSmokeITCase.class.getPackage(), "infinispan.xml", "infinispan.xml")
-                .addAsServiceProvider(SerializationContextInitializer.class.getName(), TestSerializationContextInitializer.class.getName() + "Impl")
-                ;
-    }
+	private static Archive<?> deployment() {
+		return ShrinkWrap.create(WebArchive.class, AuthSmokeITCase.class.getSimpleName() + ".war")
+				.addPackage(SessionServlet.class.getPackage())
+				.addPackage(HttpSessionApplicationInitializer.class.getPackage())
+				.addPackage(ConfigContextLoaderListener.class.getPackage())
+				.addPackage(SecurityInitializer.class.getPackage())
+				.addClass(HttpSessionApplicationInitializer.class)
+				.addAsWebInfResource(org.wildfly.clustering.web.spring.AbstractSmokeITCase.class.getPackage(), "applicationContext.xml", "applicationContext.xml")
+				.addAsWebInfResource(AuthSmokeITCase.class.getPackage(), "infinispan.xml", "infinispan.xml")
+				.addAsServiceProvider(SerializationContextInitializer.class.getName(), TestSerializationContextInitializer.class.getName() + "Impl")
+				;
+	}
 
-    public AuthSmokeITCase() {
-        super(AuthSmokeITCase::createClient);
-    }
+	public AuthSmokeITCase() {
+		super(AuthSmokeITCase::createClient);
+	}
 
-    private static CloseableHttpClient createClient(URL url1, URL url2) {
-        CredentialsStore provider = new BasicCredentialsProvider();
-        Credentials credentials = new UsernamePasswordCredentials("admin", "password".toCharArray());
-        provider.setCredentials(new AuthScope(url1.getHost(), url1.getPort()), credentials);
-        provider.setCredentials(new AuthScope(url2.getHost(), url2.getPort()), credentials);
-        return HttpClients.custom().setDefaultCredentialsProvider(provider).build();
-    }
+	private static CloseableHttpClient createClient(URL url1, URL url2) {
+		CredentialsStore provider = new BasicCredentialsProvider();
+		Credentials credentials = new UsernamePasswordCredentials("admin", "password".toCharArray());
+		provider.setCredentials(new AuthScope(url1.getHost(), url1.getPort()), credentials);
+		provider.setCredentials(new AuthScope(url2.getHost(), url2.getPort()), credentials);
+		return HttpClients.custom().setDefaultCredentialsProvider(provider).build();
+	}
 
-    @Test
-    public void test(@ArquillianResource(SessionServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1, @ArquillianResource(SessionServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
-        URI uri1 = SessionServlet.createURI(baseURL1);
-        // Verify that authentication is required
-        try (CloseableHttpClient client = HttpClients.createDefault()) {
-            client.execute(new HttpHead(uri1), response -> {
-                Assert.assertEquals(HttpStatus.SC_UNAUTHORIZED, response.getCode());
-                return null;
-            });
-        }
-        this.accept(baseURL1, baseURL2);
-    }
+	@Test
+	public void test(@ArquillianResource(SessionServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1, @ArquillianResource(SessionServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
+		URI uri1 = SessionServlet.createURI(baseURL1);
+		// Verify that authentication is required
+		try (CloseableHttpClient client = HttpClients.createDefault()) {
+			client.execute(new HttpHead(uri1), response -> {
+				Assert.assertEquals(HttpStatus.SC_UNAUTHORIZED, response.getCode());
+				return null;
+			});
+		}
+		this.accept(baseURL1, baseURL2);
+	}
 }

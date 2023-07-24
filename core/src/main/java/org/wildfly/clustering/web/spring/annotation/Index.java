@@ -36,15 +36,15 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Documented
 public @interface Index {
-    /**
-     * An arbitrary, but unique identifier of the index, intended as a shorter version of the index name.
-     * @return the unique identifier for the index
-     */
-    String id();
+	/**
+	 * An arbitrary, but unique identifier of the index, intended as a shorter version of the index name.
+	 * @return the unique identifier for the index
+	 */
+	String id();
 
-    /**
-     * The name of the index
-     * @return the index name
-     */
-    String name();
+	/**
+	 * The name of the index
+	 * @return the index name
+	 */
+	String name();
 }

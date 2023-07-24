@@ -41,6 +41,6 @@ import org.wildfly.clustering.web.spring.annotation.SessionManager;
 @Import(InfinispanHttpSessionConfiguration.class)
 @Configuration(proxyBeanMethods = false)
 public @interface EnableInfinispanHttpSession {
-    Infinispan config();
-    SessionManager manager();
+	Infinispan config();
+	SessionManager manager();
 }

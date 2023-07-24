@@ -33,8 +33,8 @@ import org.wildfly.clustering.web.session.SessionManagerConfiguration;
  */
 public interface JakartaSessionManagerConfiguration extends SessionManagerConfiguration<ServletContext> {
 
-    @Override
-    default Duration getTimeout() {
-        return Duration.ofMinutes(this.getServletContext().getSessionTimeout());
-    }
+	@Override
+	default Duration getTimeout() {
+		return Duration.ofMinutes(this.getServletContext().getSessionTimeout());
+	}
 }

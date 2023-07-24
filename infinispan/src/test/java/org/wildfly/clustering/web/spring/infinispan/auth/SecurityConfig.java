@@ -34,11 +34,11 @@ import org.wildfly.clustering.web.spring.infinispan.InfinispanSessionRepository;
  */
 @EnableWebSecurity
 public class SecurityConfig extends AbstractSecurityConfig {
-    @Autowired
-    InfinispanSessionRepository repository;
+	@Autowired
+	InfinispanSessionRepository repository;
 
-    @Override
-    public FindByIndexNameSessionRepository<SpringSession> get() {
-        return this.repository;
-    }
+	@Override
+	public FindByIndexNameSessionRepository<SpringSession> get() {
+		return this.repository;
+	}
 }

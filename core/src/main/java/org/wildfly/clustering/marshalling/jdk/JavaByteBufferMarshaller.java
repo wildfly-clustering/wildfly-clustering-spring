@@ -39,32 +39,32 @@ import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
  * @author Paul Ferraro
  */
 public class JavaByteBufferMarshaller implements ByteBufferMarshaller {
-    private final Externalizer<ClassLoader> externalizer;
+	private final Externalizer<ClassLoader> externalizer;
 
-    public JavaByteBufferMarshaller(Externalizer<ClassLoader> externalizer) {
-        this.externalizer = externalizer;
-    }
+	public JavaByteBufferMarshaller(Externalizer<ClassLoader> externalizer) {
+		this.externalizer = externalizer;
+	}
 
-    @Override
-    public boolean isMarshallable(Object object) {
-        return (object == null) || object instanceof Serializable;
-    }
+	@Override
+	public boolean isMarshallable(Object object) {
+		return (object == null) || object instanceof Serializable;
+	}
 
-    @Override
-    public Object readFrom(InputStream in) throws IOException {
-        try (ObjectInput input = new ObjectInputStream(in, this.externalizer)) {
-            return input.readObject();
-        } catch (ClassNotFoundException e) {
-            InvalidClassException exception = new InvalidClassException(e.getMessage());
-            exception.initCause(e);
-            throw exception;
-        }
-    }
+	@Override
+	public Object readFrom(InputStream in) throws IOException {
+		try (ObjectInput input = new ObjectInputStream(in, this.externalizer)) {
+			return input.readObject();
+		} catch (ClassNotFoundException e) {
+			InvalidClassException exception = new InvalidClassException(e.getMessage());
+			exception.initCause(e);
+			throw exception;
+		}
+	}
 
-    @Override
-    public void writeTo(OutputStream out, Object object) throws IOException {
-        try (ObjectOutput output = new ObjectOutputStream(out, this.externalizer)) {
-            output.writeObject(object);
-        }
-    }
+	@Override
+	public void writeTo(OutputStream out, Object object) throws IOException {
+		try (ObjectOutput output = new ObjectOutputStream(out, this.externalizer)) {
+			output.writeObject(object);
+		}
+	}
 }

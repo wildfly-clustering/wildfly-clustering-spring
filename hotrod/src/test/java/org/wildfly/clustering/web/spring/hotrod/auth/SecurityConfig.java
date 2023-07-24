@@ -34,11 +34,11 @@ import org.wildfly.clustering.web.spring.hotrod.HotRodSessionRepository;
  */
 @EnableWebSecurity
 public class SecurityConfig extends AbstractSecurityConfig {
-    @Autowired
-    HotRodSessionRepository repository;
+	@Autowired
+	HotRodSessionRepository repository;
 
-    @Override
-    public FindByIndexNameSessionRepository<SpringSession> get() {
-        return this.repository;
-    }
+	@Override
+	public FindByIndexNameSessionRepository<SpringSession> get() {
+		return this.repository;
+	}
 }

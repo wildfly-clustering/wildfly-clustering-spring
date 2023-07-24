@@ -42,6 +42,6 @@ import org.wildfly.clustering.web.spring.annotation.SessionManager;
 @Import(HotRodHttpSessionConfiguration.class)
 @Configuration(proxyBeanMethods = false)
 public @interface EnableHotRodHttpSession {
-    HotRod config();
-    SessionManager manager();
+	HotRod config();
+	SessionManager manager();
 }

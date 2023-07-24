@@ -37,32 +37,32 @@ import org.junit.Before;
  */
 public class AbstractSmokeITCase extends org.wildfly.clustering.web.spring.AbstractSmokeITCase {
 
-    @ArquillianResource
-    private Deployer deployer;
-    @ArquillianResource
-    private ContainerController controller;
+	@ArquillianResource
+	private Deployer deployer;
+	@ArquillianResource
+	private ContainerController controller;
 
-    protected AbstractSmokeITCase() {
-        super();
-    }
+	protected AbstractSmokeITCase() {
+		super();
+	}
 
-    protected AbstractSmokeITCase(BiFunction<URL, URL, CloseableHttpClient> provider) {
-        super(provider);
-    }
+	protected AbstractSmokeITCase(BiFunction<URL, URL, CloseableHttpClient> provider) {
+		super(provider);
+	}
 
-    @Before
-    public void init() {
-        this.controller.start(CONTAINER_1);
-        this.deployer.deploy(DEPLOYMENT_1);
-        this.controller.start(CONTAINER_2);
-        this.deployer.deploy(DEPLOYMENT_2);
-    }
+	@Before
+	public void init() {
+		this.controller.start(CONTAINER_1);
+		this.deployer.deploy(DEPLOYMENT_1);
+		this.controller.start(CONTAINER_2);
+		this.deployer.deploy(DEPLOYMENT_2);
+	}
 
-    @After
-    public void destroy() {
-        this.deployer.undeploy(DEPLOYMENT_2);
-        this.controller.stop(CONTAINER_2);
-        this.deployer.undeploy(DEPLOYMENT_1);
-        this.controller.stop(CONTAINER_1);
-    }
+	@After
+	public void destroy() {
+		this.deployer.undeploy(DEPLOYMENT_2);
+		this.controller.stop(CONTAINER_2);
+		this.deployer.undeploy(DEPLOYMENT_1);
+		this.controller.stop(CONTAINER_1);
+	}
 }

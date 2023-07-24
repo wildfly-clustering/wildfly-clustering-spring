@@ -31,10 +31,10 @@ import org.wildfly.clustering.web.spring.SessionMarshallerFactory;
  * @author Paul Ferraro
  */
 public enum ProtoStreamTesterFactory implements MarshallingTesterFactory {
-    INSTANCE;
+	INSTANCE;
 
-    @Override
-    public <T> MarshallingTester<T> createTester() {
-        return new MarshallingTester<>(new ByteBufferTestMarshaller<>(SessionMarshallerFactory.PROTOSTREAM.apply(Thread.currentThread().getContextClassLoader())));
-    }
+	@Override
+	public <T> MarshallingTester<T> createTester() {
+		return new MarshallingTester<>(new ByteBufferTestMarshaller<>(SessionMarshallerFactory.PROTOSTREAM.apply(Thread.currentThread().getContextClassLoader())));
+	}
 }

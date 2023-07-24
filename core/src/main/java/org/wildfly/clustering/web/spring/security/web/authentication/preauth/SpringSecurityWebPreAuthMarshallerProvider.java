@@ -32,17 +32,17 @@ import org.wildfly.clustering.web.spring.security.authentication.CredentialAuthe
  */
 public enum SpringSecurityWebPreAuthMarshallerProvider implements ProtoStreamMarshallerProvider {
 
-    TOKEN(new CredentialAuthenticationTokenMarshaller<>(PreAuthenticatedAuthenticationToken.class, PreAuthenticatedAuthenticationToken::new, (entry, authorities) -> new PreAuthenticatedAuthenticationToken(entry.getKey(), entry.getValue(), authorities))),
-    DETAILS(new PreAuthenticatedWebAuthenticationDetailsMarshaller()),
-    ;
-    private final ProtoStreamMarshaller<?> marshaller;
+	TOKEN(new CredentialAuthenticationTokenMarshaller<>(PreAuthenticatedAuthenticationToken.class, PreAuthenticatedAuthenticationToken::new, (entry, authorities) -> new PreAuthenticatedAuthenticationToken(entry.getKey(), entry.getValue(), authorities))),
+	DETAILS(new PreAuthenticatedWebAuthenticationDetailsMarshaller()),
+	;
+	private final ProtoStreamMarshaller<?> marshaller;
 
-    SpringSecurityWebPreAuthMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
-        this.marshaller = marshaller;
-    }
+	SpringSecurityWebPreAuthMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
+		this.marshaller = marshaller;
+	}
 
-    @Override
-    public ProtoStreamMarshaller<?> getMarshaller() {
-        return this.marshaller;
-    }
+	@Override
+	public ProtoStreamMarshaller<?> getMarshaller() {
+		return this.marshaller;
+	}
 }

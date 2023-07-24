@@ -33,18 +33,18 @@ import org.wildfly.clustering.marshalling.Externalizer;
  */
 public class MutableIntegerExternalizer implements Externalizer<MutableInteger> {
 
-    @Override
-    public Class<MutableInteger> getTargetClass() {
-        return MutableInteger.class;
-    }
+	@Override
+	public Class<MutableInteger> getTargetClass() {
+		return MutableInteger.class;
+	}
 
-    @Override
-    public MutableInteger readObject(ObjectInput input) throws IOException {
-        return new MutableInteger(input.readInt());
-    }
+	@Override
+	public MutableInteger readObject(ObjectInput input) throws IOException {
+		return new MutableInteger(input.readInt());
+	}
 
-    @Override
-    public void writeObject(ObjectOutput output, MutableInteger value) throws IOException {
-        output.writeInt(value.getAsInt());
-    }
+	@Override
+	public void writeObject(ObjectOutput output, MutableInteger value) throws IOException {
+		output.writeInt(value.getAsInt());
+	}
 }

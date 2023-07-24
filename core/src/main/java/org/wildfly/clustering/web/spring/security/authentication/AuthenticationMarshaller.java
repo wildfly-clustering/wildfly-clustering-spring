@@ -35,54 +35,54 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
  */
 public class AuthenticationMarshaller<A extends Authentication> implements FieldSetMarshaller<A, AuthenticationTokenConfiguration> {
 
-    private static final int PRINCIPAL_INDEX = 0;
-    private static final int CREDENTIALS_INDEX = 1;
-    private static final int GRANTED_AUTHORITY_INDEX = 2;
-    private static final int DETAILS_INDEX = 3;
-    private static final int FIELDS = 4;
+	private static final int PRINCIPAL_INDEX = 0;
+	private static final int CREDENTIALS_INDEX = 1;
+	private static final int GRANTED_AUTHORITY_INDEX = 2;
+	private static final int DETAILS_INDEX = 3;
+	private static final int FIELDS = 4;
 
-    @Override
-    public AuthenticationTokenConfiguration getBuilder() {
-        return new AuthenticationTokenConfiguration();
-    }
+	@Override
+	public AuthenticationTokenConfiguration getBuilder() {
+		return new AuthenticationTokenConfiguration();
+	}
 
-    @Override
-    public int getFields() {
-        return FIELDS;
-    }
+	@Override
+	public int getFields() {
+		return FIELDS;
+	}
 
-    @Override
-    public AuthenticationTokenConfiguration readField(ProtoStreamReader reader, int index, AuthenticationTokenConfiguration config) throws IOException {
-        switch (index) {
-            case PRINCIPAL_INDEX:
-                return config.setPrincipal(reader.readAny());
-            case CREDENTIALS_INDEX:
-                return config.setCredentials(reader.readAny());
-            case GRANTED_AUTHORITY_INDEX:
-                return config.addAuthority(reader.readAny(GrantedAuthority.class));
-            case DETAILS_INDEX:
-                return config.setDetails(reader.readAny());
-            default:
-                return config;
-        }
-    }
+	@Override
+	public AuthenticationTokenConfiguration readField(ProtoStreamReader reader, int index, AuthenticationTokenConfiguration config) throws IOException {
+		switch (index) {
+			case PRINCIPAL_INDEX:
+				return config.setPrincipal(reader.readAny());
+			case CREDENTIALS_INDEX:
+				return config.setCredentials(reader.readAny());
+			case GRANTED_AUTHORITY_INDEX:
+				return config.addAuthority(reader.readAny(GrantedAuthority.class));
+			case DETAILS_INDEX:
+				return config.setDetails(reader.readAny());
+			default:
+				return config;
+		}
+	}
 
-    @Override
-    public void writeFields(ProtoStreamWriter writer, int startIndex, A token) throws IOException {
-        Object principal = token.getPrincipal();
-        if (principal != null) {
-            writer.writeAny(startIndex + PRINCIPAL_INDEX, token.getPrincipal());
-        }
-        Object credentials = token.getCredentials();
-        if (!this.getBuilder().getCredentials().equals(credentials)) {
-            writer.writeAny(startIndex + CREDENTIALS_INDEX, credentials);
-        }
-        for (GrantedAuthority authority : token.getAuthorities()) {
-            writer.writeAny(startIndex + GRANTED_AUTHORITY_INDEX, authority);
-        }
-        Object details = token.getDetails();
-        if (details != null) {
-            writer.writeAny(startIndex + DETAILS_INDEX, details);
-        }
-    }
+	@Override
+	public void writeFields(ProtoStreamWriter writer, int startIndex, A token) throws IOException {
+		Object principal = token.getPrincipal();
+		if (principal != null) {
+			writer.writeAny(startIndex + PRINCIPAL_INDEX, token.getPrincipal());
+		}
+		Object credentials = token.getCredentials();
+		if (!this.getBuilder().getCredentials().equals(credentials)) {
+			writer.writeAny(startIndex + CREDENTIALS_INDEX, credentials);
+		}
+		for (GrantedAuthority authority : token.getAuthorities()) {
+			writer.writeAny(startIndex + GRANTED_AUTHORITY_INDEX, authority);
+		}
+		Object details = token.getDetails();
+		if (details != null) {
+			writer.writeAny(startIndex + DETAILS_INDEX, details);
+		}
+	}
 }

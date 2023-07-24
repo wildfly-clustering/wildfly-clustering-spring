@@ -28,6 +28,6 @@ import org.wildfly.clustering.web.spring.SessionRepositoryConfiguration;
  * @author Paul Ferraro
  */
 public interface InfinispanSessionRepositoryConfiguration extends SessionRepositoryConfiguration {
-    String getConfigurationResource();
-    String getTemplateName();
+	String getConfigurationResource();
+	String getTemplateName();
 }

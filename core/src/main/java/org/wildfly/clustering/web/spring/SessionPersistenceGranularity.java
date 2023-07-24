@@ -30,17 +30,17 @@ import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
  * @author Paul Ferraro
  */
 public enum SessionPersistenceGranularity implements Supplier<SessionAttributePersistenceStrategy> {
-    SESSION(SessionAttributePersistenceStrategy.COARSE),
-    ATTRIBUTE(SessionAttributePersistenceStrategy.FINE),
-    ;
-    private final SessionAttributePersistenceStrategy strategy;
+	SESSION(SessionAttributePersistenceStrategy.COARSE),
+	ATTRIBUTE(SessionAttributePersistenceStrategy.FINE),
+	;
+	private final SessionAttributePersistenceStrategy strategy;
 
-    SessionPersistenceGranularity(SessionAttributePersistenceStrategy strategy) {
-        this.strategy = strategy;
-    }
+	SessionPersistenceGranularity(SessionAttributePersistenceStrategy strategy) {
+		this.strategy = strategy;
+	}
 
-    @Override
-    public SessionAttributePersistenceStrategy get() {
-        return this.strategy;
-    }
+	@Override
+	public SessionAttributePersistenceStrategy get() {
+		return this.strategy;
+	}
 }

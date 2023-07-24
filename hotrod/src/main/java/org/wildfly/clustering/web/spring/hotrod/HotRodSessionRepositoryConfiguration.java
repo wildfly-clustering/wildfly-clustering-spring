@@ -32,7 +32,7 @@ import org.wildfly.clustering.web.spring.SessionRepositoryConfiguration;
  * @author Paul Ferraro
  */
 public interface HotRodSessionRepositoryConfiguration extends SessionRepositoryConfiguration {
-    URI getUri();
-    Properties getProperties();
-    String getTemplateName();
+	URI getUri();
+	Properties getProperties();
+	String getTemplateName();
 }

@@ -33,18 +33,18 @@ import jakarta.servlet.http.HttpSessionBindingEvent;
 @WebListener
 public class LoggingSessionAttributeListener implements HttpSessionAttributeListener {
 
-    @Override
-    public void attributeAdded(HttpSessionBindingEvent event) {
-        event.getSession().getServletContext().log("Session attribute added: " + event.getName());
-    }
+	@Override
+	public void attributeAdded(HttpSessionBindingEvent event) {
+		event.getSession().getServletContext().log("Session attribute added: " + event.getName());
+	}
 
-    @Override
-    public void attributeRemoved(HttpSessionBindingEvent event) {
-        event.getSession().getServletContext().log("Session attribute removed: " + event.getName());
-    }
+	@Override
+	public void attributeRemoved(HttpSessionBindingEvent event) {
+		event.getSession().getServletContext().log("Session attribute removed: " + event.getName());
+	}
 
-    @Override
-    public void attributeReplaced(HttpSessionBindingEvent event) {
-        event.getSession().getServletContext().log("Session attribute replaced: " + event.getName());
-    }
+	@Override
+	public void attributeReplaced(HttpSessionBindingEvent event) {
+		event.getSession().getServletContext().log("Session attribute replaced: " + event.getName());
+	}
 }

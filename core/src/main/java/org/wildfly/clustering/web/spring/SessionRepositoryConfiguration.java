@@ -40,12 +40,12 @@ import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
  */
 public interface SessionRepositoryConfiguration {
 
-    Integer getMaxActiveSessions();
-    SessionAttributePersistenceStrategy getPersistenceStrategy();
-    Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory();
-    Supplier<String> getIdentifierFactory();
-    ApplicationEventPublisher getEventPublisher();
-    ServletContext getServletContext();
-    Map<String, String> getIndexes();
-    IndexResolver<Session> getIndexResolver();
+	Integer getMaxActiveSessions();
+	SessionAttributePersistenceStrategy getPersistenceStrategy();
+	Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory();
+	Supplier<String> getIdentifierFactory();
+	ApplicationEventPublisher getEventPublisher();
+	ServletContext getServletContext();
+	Map<String, String> getIndexes();
+	IndexResolver<Session> getIndexResolver();
 }

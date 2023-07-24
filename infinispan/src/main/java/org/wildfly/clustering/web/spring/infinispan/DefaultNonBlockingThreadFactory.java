@@ -33,15 +33,15 @@ import org.wildfly.clustering.context.DefaultThreadFactory;
  */
 public class DefaultNonBlockingThreadFactory extends DefaultThreadFactory implements NonBlockingResource {
 
-    public DefaultNonBlockingThreadFactory(Class<?> targetClass) {
-        super(targetClass);
-    }
+	public DefaultNonBlockingThreadFactory(Class<?> targetClass) {
+		super(targetClass);
+	}
 
-    public DefaultNonBlockingThreadFactory(ThreadFactory factory) {
-        super(factory);
-    }
+	public DefaultNonBlockingThreadFactory(ThreadFactory factory) {
+		super(factory);
+	}
 
-    public DefaultNonBlockingThreadFactory(ThreadFactory factory, Class<?> targetClass) {
-        super(factory, targetClass);
-    }
+	public DefaultNonBlockingThreadFactory(ThreadFactory factory, Class<?> targetClass) {
+		super(factory, targetClass);
+	}
 }

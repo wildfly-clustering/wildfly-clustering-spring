@@ -35,6 +35,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Documented
 public @interface Infinispan {
-    String resource() default "/WEB-INF/infinispan.xml";
-    String template() default "";
+	String resource() default "/WEB-INF/infinispan.xml";
+	String template() default "";
 }

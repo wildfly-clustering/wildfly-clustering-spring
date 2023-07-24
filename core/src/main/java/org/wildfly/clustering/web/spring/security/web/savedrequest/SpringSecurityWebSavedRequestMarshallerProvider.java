@@ -30,17 +30,17 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvi
  */
 public enum SpringSecurityWebSavedRequestMarshallerProvider implements ProtoStreamMarshallerProvider {
 
-    SAVED_REQUEST(new SavedRequestMarshaller()),
-    SAVED_COOKIE(new SavedCookieMarshaller()),
-    ;
-    private final ProtoStreamMarshaller<?> marshaller;
+	SAVED_REQUEST(new SavedRequestMarshaller()),
+	SAVED_COOKIE(new SavedCookieMarshaller()),
+	;
+	private final ProtoStreamMarshaller<?> marshaller;
 
-    SpringSecurityWebSavedRequestMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
-        this.marshaller = marshaller;
-    }
+	SpringSecurityWebSavedRequestMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
+		this.marshaller = marshaller;
+	}
 
-    @Override
-    public ProtoStreamMarshaller<?> getMarshaller() {
-        return this.marshaller;
-    }
+	@Override
+	public ProtoStreamMarshaller<?> getMarshaller() {
+		return this.marshaller;
+	}
 }

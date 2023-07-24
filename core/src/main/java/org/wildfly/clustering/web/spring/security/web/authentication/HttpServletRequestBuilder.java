@@ -31,21 +31,21 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamBuilder;
  */
 public class HttpServletRequestBuilder implements ProtoStreamBuilder<HttpServletRequest> {
 
-    private String remoteAddress = null;
-    private String sessionId = null;
+	private String remoteAddress = null;
+	private String sessionId = null;
 
-    public HttpServletRequestBuilder setRemoteAddress(String remoteAddress) {
-        this.remoteAddress = remoteAddress;
-        return this;
-    }
+	public HttpServletRequestBuilder setRemoteAddress(String remoteAddress) {
+		this.remoteAddress = remoteAddress;
+		return this;
+	}
 
-    public HttpServletRequestBuilder setSessionId(String sessionId) {
-        this.sessionId = sessionId;
-        return this;
-    }
+	public HttpServletRequestBuilder setSessionId(String sessionId) {
+		this.sessionId = sessionId;
+		return this;
+	}
 
-    @Override
-    public HttpServletRequest build() {
-        return new MockHttpServletRequest(this.remoteAddress, this.sessionId);
-    }
+	@Override
+	public HttpServletRequest build() {
+		return new MockHttpServletRequest(this.remoteAddress, this.sessionId);
+	}
 }

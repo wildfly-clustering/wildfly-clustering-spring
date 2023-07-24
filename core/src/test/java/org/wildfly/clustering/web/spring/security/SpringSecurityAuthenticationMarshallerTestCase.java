@@ -43,22 +43,22 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
  */
 public class SpringSecurityAuthenticationMarshallerTestCase {
 
-    @Test
-    public void test() throws IOException {
-        UnaryOperator<AbstractAuthenticationToken> withDetails = token -> {
-            token.setDetails("details");
-            return token;
-        };
-        ProtoStreamTesterFactory.INSTANCE.createTester().test(withDetails.apply(new AnonymousAuthenticationToken("foo", "bar", Collections.singletonList(new SimpleGrantedAuthority("admin")))));
+	@Test
+	public void test() throws IOException {
+		UnaryOperator<AbstractAuthenticationToken> withDetails = token -> {
+			token.setDetails("details");
+			return token;
+		};
+		ProtoStreamTesterFactory.INSTANCE.createTester().test(withDetails.apply(new AnonymousAuthenticationToken("foo", "bar", Collections.singletonList(new SimpleGrantedAuthority("admin")))));
 
-        ProtoStreamTesterFactory.INSTANCE.createTester().test(withDetails.apply(new RememberMeAuthenticationToken("foo", "bar", Collections.emptySet())));
-        ProtoStreamTesterFactory.INSTANCE.createTester().test(withDetails.apply(new RememberMeAuthenticationToken("foo", "bar", Collections.singletonList(new SimpleGrantedAuthority("admin")))));
+		ProtoStreamTesterFactory.INSTANCE.createTester().test(withDetails.apply(new RememberMeAuthenticationToken("foo", "bar", Collections.emptySet())));
+		ProtoStreamTesterFactory.INSTANCE.createTester().test(withDetails.apply(new RememberMeAuthenticationToken("foo", "bar", Collections.singletonList(new SimpleGrantedAuthority("admin")))));
 
-        ProtoStreamTesterFactory.INSTANCE.createTester().test(withDetails.apply(new UsernamePasswordAuthenticationToken("username", "password")));
-        ProtoStreamTesterFactory.INSTANCE.createTester().test(withDetails.apply(new UsernamePasswordAuthenticationToken("foo", "bar", Collections.singletonList(new SimpleGrantedAuthority("admin")))));
+		ProtoStreamTesterFactory.INSTANCE.createTester().test(withDetails.apply(new UsernamePasswordAuthenticationToken("username", "password")));
+		ProtoStreamTesterFactory.INSTANCE.createTester().test(withDetails.apply(new UsernamePasswordAuthenticationToken("foo", "bar", Collections.singletonList(new SimpleGrantedAuthority("admin")))));
 
-        LoginContext context = mock(LoginContext.class);
-        ProtoStreamTesterFactory.INSTANCE.createTester().test(withDetails.apply(new JaasAuthenticationToken("username", "password", context)));
-        ProtoStreamTesterFactory.INSTANCE.createTester().test(withDetails.apply(new JaasAuthenticationToken("foo", "bar", Collections.singletonList(new SimpleGrantedAuthority("admin")), context)));
-    }
+		LoginContext context = mock(LoginContext.class);
+		ProtoStreamTesterFactory.INSTANCE.createTester().test(withDetails.apply(new JaasAuthenticationToken("username", "password", context)));
+		ProtoStreamTesterFactory.INSTANCE.createTester().test(withDetails.apply(new JaasAuthenticationToken("foo", "bar", Collections.singletonList(new SimpleGrantedAuthority("admin")), context)));
+	}
 }

@@ -33,6 +33,6 @@ import org.wildfly.clustering.web.sso.SSOManager;
  * @author Paul Ferraro
  */
 public interface IndexingConfiguration<B extends Batch> {
-    Map<String, SSOManager<Void, String, String, Void, B>> getSSOManagers();
-    IndexResolver<Session> getIndexResolver();
+	Map<String, SSOManager<Void, String, String, Void, B>> getSSOManagers();
+	IndexResolver<Session> getIndexResolver();
 }

@@ -34,16 +34,16 @@ import org.wildfly.clustering.web.spring.security.AnyScalarMarshaller;
  */
 public enum SpringSecurityContextMarshallerProvider implements ProtoStreamMarshallerProvider {
 
-    SECURITY_CONTEXT(new FunctionalScalarMarshaller<>(SecurityContextImpl.class, new AnyScalarMarshaller<>(Authentication.class), SecurityContextImpl::getAuthentication, SecurityContextImpl::new)),
-    ;
-    private final ProtoStreamMarshaller<?> marshaller;
+	SECURITY_CONTEXT(new FunctionalScalarMarshaller<>(SecurityContextImpl.class, new AnyScalarMarshaller<>(Authentication.class), SecurityContextImpl::getAuthentication, SecurityContextImpl::new)),
+	;
+	private final ProtoStreamMarshaller<?> marshaller;
 
-    SpringSecurityContextMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
-        this.marshaller = marshaller;
-    }
+	SpringSecurityContextMarshallerProvider(ProtoStreamMarshaller<?> marshaller) {
+		this.marshaller = marshaller;
+	}
 
-    @Override
-    public ProtoStreamMarshaller<?> getMarshaller() {
-        return this.marshaller;
-    }
+	@Override
+	public ProtoStreamMarshaller<?> getMarshaller() {
+		return this.marshaller;
+	}
 }

@@ -47,30 +47,30 @@ import org.wildfly.clustering.web.spring.servlet.context.HttpSessionApplicationI
 @RunAsClient
 public class BeanSmokeITCase extends AbstractSmokeITCase {
 
-    @Deployment(name = DEPLOYMENT_1, testable = false)
-    @TargetsContainer(CONTAINER_1)
-    public static Archive<?> deployment1() {
-        return deployment();
-    }
+	@Deployment(name = DEPLOYMENT_1, testable = false)
+	@TargetsContainer(CONTAINER_1)
+	public static Archive<?> deployment1() {
+		return deployment();
+	}
 
-    @Deployment(name = DEPLOYMENT_2, testable = false)
-    @TargetsContainer(CONTAINER_2)
-    public static Archive<?> deployment2() {
-        return deployment();
-    }
+	@Deployment(name = DEPLOYMENT_2, testable = false)
+	@TargetsContainer(CONTAINER_2)
+	public static Archive<?> deployment2() {
+		return deployment();
+	}
 
-    private static Archive<?> deployment() {
-        return ShrinkWrap.create(WebArchive.class, BeanSmokeITCase.class.getSimpleName() + ".war")
-                .addPackage(SessionServlet.class.getPackage())
-                .addPackage(HttpSessionApplicationInitializer.class.getPackage())
-                .addAsWebInfResource(BeanSmokeITCase.class.getPackage(), "applicationContext.xml", "applicationContext.xml")
-                .addAsServiceProvider(Externalizer.class, MutableIntegerExternalizer.class)
-                .setWebXML(org.wildfly.clustering.web.spring.AbstractSmokeITCase.class.getPackage(), "web.xml")
-                ;
-    }
+	private static Archive<?> deployment() {
+		return ShrinkWrap.create(WebArchive.class, BeanSmokeITCase.class.getSimpleName() + ".war")
+				.addPackage(SessionServlet.class.getPackage())
+				.addPackage(HttpSessionApplicationInitializer.class.getPackage())
+				.addAsWebInfResource(BeanSmokeITCase.class.getPackage(), "applicationContext.xml", "applicationContext.xml")
+				.addAsServiceProvider(Externalizer.class, MutableIntegerExternalizer.class)
+				.setWebXML(org.wildfly.clustering.web.spring.AbstractSmokeITCase.class.getPackage(), "web.xml")
+				;
+	}
 
-    @Test
-    public void test(@ArquillianResource(SessionServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1, @ArquillianResource(SessionServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
-        this.accept(baseURL1, baseURL2);
-    }
+	@Test
+	public void test(@ArquillianResource(SessionServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1, @ArquillianResource(SessionServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {
+		this.accept(baseURL1, baseURL2);
+	}
 }

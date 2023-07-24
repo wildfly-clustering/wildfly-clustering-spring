@@ -36,40 +36,40 @@ import org.jgroups.util.SocketFactory;
  */
 public class ForkChannelConfigurator implements JGroupsChannelConfigurator {
 
-    private final JChannel channel;
-    private final String forkName;
+	private final JChannel channel;
+	private final String forkName;
 
-    public ForkChannelConfigurator(JChannel channel, String forkName) {
-        this.channel = channel;
-        this.forkName = forkName;
-    }
+	public ForkChannelConfigurator(JChannel channel, String forkName) {
+		this.channel = channel;
+		this.forkName = forkName;
+	}
 
-    @Override
-    public String getProtocolStackString() {
-        return null;
-    }
+	@Override
+	public String getProtocolStackString() {
+		return null;
+	}
 
-    @Override
-    public List<ProtocolConfiguration> getProtocolStack() {
-        return null;
-    }
+	@Override
+	public List<ProtocolConfiguration> getProtocolStack() {
+		return null;
+	}
 
-    @Override
-    public String getName() {
-        return null;
-    }
+	@Override
+	public String getName() {
+		return null;
+	}
 
-    @Override
-    public JChannel createChannel(String name) throws Exception {
-        return new ForkChannel(this.channel, this.channel.getClusterName(), this.forkName);
-    }
+	@Override
+	public JChannel createChannel(String name) throws Exception {
+		return new ForkChannel(this.channel, this.channel.getClusterName(), this.forkName);
+	}
 
-    @Override
-    public void setSocketFactory(SocketFactory socketFactory) {
-    }
+	@Override
+	public void setSocketFactory(SocketFactory socketFactory) {
+	}
 
-    @Override
-    public void addChannelListener(ChannelListener listener) {
-        this.channel.addChannelListener(listener);
-    }
+	@Override
+	public void addChannelListener(ChannelListener listener) {
+		this.channel.addChannelListener(listener);
+	}
 }

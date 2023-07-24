@@ -33,8 +33,8 @@ import jakarta.servlet.http.HttpSessionIdListener;
 @WebListener
 public class LoggingSessionIdentifierListener implements HttpSessionIdListener {
 
-    @Override
-    public void sessionIdChanged(HttpSessionEvent event, String oldSessionId) {
-        event.getSession().getServletContext().log("Session identifier changed, old = " + oldSessionId + ", new = " + event.getSession().getId());
-    }
+	@Override
+	public void sessionIdChanged(HttpSessionEvent event, String oldSessionId) {
+		event.getSession().getServletContext().log("Session identifier changed, old = " + oldSessionId + ", new = " + event.getSession().getId());
+	}
 }

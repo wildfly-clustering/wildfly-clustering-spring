@@ -31,8 +31,8 @@ import org.wildfly.clustering.marshalling.protostream.EnumMarshaller;
  */
 public class SpringSecuritySerializationContextInitializer extends AbstractSerializationContextInitializer {
 
-    @Override
-    public void registerMarshallers(SerializationContext context) {
-        context.registerMarshaller(new EnumMarshaller<>(Scheme.class));
-    }
+	@Override
+	public void registerMarshallers(SerializationContext context) {
+		context.registerMarshaller(new EnumMarshaller<>(Scheme.class));
+	}
 }

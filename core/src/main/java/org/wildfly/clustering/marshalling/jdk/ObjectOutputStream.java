@@ -33,23 +33,23 @@ import org.wildfly.clustering.marshalling.Externalizer;
  */
 public class ObjectOutputStream extends java.io.ObjectOutputStream {
 
-    private final Externalizer<ClassLoader> externalizer;
+	private final Externalizer<ClassLoader> externalizer;
 
-    public ObjectOutputStream(OutputStream output, Externalizer<ClassLoader> externalizer) throws IOException {
-        super(output);
-        this.externalizer = externalizer;
-    }
+	public ObjectOutputStream(OutputStream output, Externalizer<ClassLoader> externalizer) throws IOException {
+		super(output);
+		this.externalizer = externalizer;
+	}
 
-    @Override
-    protected void annotateClass(Class<?> targetClass) throws IOException {
-        this.externalizer.writeObject(this, targetClass.getClassLoader());
-    }
+	@Override
+	protected void annotateClass(Class<?> targetClass) throws IOException {
+		this.externalizer.writeObject(this, targetClass.getClassLoader());
+	}
 
-    @Override
-    protected void annotateProxyClass(Class<?> proxyClass) throws IOException {
-        for (Class<?> interfaceClass : proxyClass.getInterfaces()) {
-            this.externalizer.writeObject(this, interfaceClass.getClassLoader());
-        }
-        this.externalizer.writeObject(this, proxyClass.getClassLoader());
-    }
+	@Override
+	protected void annotateProxyClass(Class<?> proxyClass) throws IOException {
+		for (Class<?> interfaceClass : proxyClass.getInterfaces()) {
+			this.externalizer.writeObject(this, interfaceClass.getClassLoader());
+		}
+		this.externalizer.writeObject(this, proxyClass.getClassLoader());
+	}
 }

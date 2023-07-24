@@ -33,10 +33,10 @@ import org.springframework.session.Session;
  * @author Paul Ferraro
  */
 public enum EmptyIndexResolver implements IndexResolver<Session> {
-    INSTANCE;
+	INSTANCE;
 
-    @Override
-    public Map<String, String> resolveIndexesFor(Session session) {
-        return Collections.emptyMap();
-    }
+	@Override
+	public Map<String, String> resolveIndexesFor(Session session) {
+		return Collections.emptyMap();
+	}
 }
