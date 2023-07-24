@@ -25,13 +25,14 @@ package org.wildfly.clustering.web.spring.auth;
 import java.util.function.Supplier;
 
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.session.security.SpringSessionBackedSessionRegistry;
 import org.wildfly.clustering.web.spring.SpringSession;
@@ -44,8 +45,10 @@ public abstract class AbstractSecurityConfig implements Supplier<FindByIndexName
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		return http.httpBasic(Customizer.withDefaults())
-				.authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.GET).hasRole("ADMIN").anyRequest().authenticated())
-				.sessionManagement(sessions -> sessions.maximumSessions(1).sessionRegistry(this.sessionRegistry()))
+				.authorizeHttpRequests(auth -> auth.requestMatchers("/").hasRole("ADMIN").anyRequest().authenticated())
+				.securityContext(context -> context.requireExplicitSave(false).securityContextRepository(new HttpSessionSecurityContextRepository()))
+				.sessionManagement(sessions -> sessions.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED).maximumSessions(1).sessionRegistry(this.sessionRegistry()))
+				.csrf(configurator -> configurator.disable())
 				.build();
 	}
 
