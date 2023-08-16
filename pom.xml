@@ -58,7 +58,7 @@
 		<version.net.jcip.annotations>1.0</version.net.jcip.annotations>
 		<version.org.apache.httpcomponents>5.2.1</version.org.apache.httpcomponents>
 		<version.org.apache.tomcat>10.1.11</version.org.apache.tomcat>
-		<version.org.infinispan>14.0.13.Final</version.org.infinispan>
+		<version.org.infinispan>14.0.14.Final</version.org.infinispan>
 		<version.org.infinispan.protostream>4.6.2.Final</version.org.infinispan.protostream>
 		<version.org.infinispan.server>${version.org.infinispan}</version.org.infinispan.server>
 		<version.org.jboss.arquillian>1.7.0.Final</version.org.jboss.arquillian>
