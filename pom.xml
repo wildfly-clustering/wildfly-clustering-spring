@@ -63,7 +63,7 @@
 		<version.org.infinispan.server>${version.org.infinispan}</version.org.infinispan.server>
 		<version.org.jboss.arquillian>1.7.0.Final</version.org.jboss.arquillian>
 		<version.org.jboss.arquillian.container.tomcat>1.1.0.Final</version.org.jboss.arquillian.container.tomcat>
-		<version.org.jboss.marshalling>2.1.1.Final</version.org.jboss.marshalling>
+		<version.org.jboss.marshalling>2.1.2.Final</version.org.jboss.marshalling>
 		<version.org.kohsuke.metainf-services>1.9</version.org.kohsuke.metainf-services>
 		<version.org.wildfly>29.0.0.Final</version.org.wildfly>
 		<version.junit>4.13.2</version.junit>
