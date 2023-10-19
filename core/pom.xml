@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>org.wildfly.clustering</groupId>
 		<artifactId>wildfly-clustering-spring-session</artifactId>
-		<version>10.0.0.Beta1-SNAPSHOT</version>
+		<version>10.0.0.Final</version>
 	</parent>
 
 	<artifactId>wildfly-clustering-spring-session-core</artifactId>
