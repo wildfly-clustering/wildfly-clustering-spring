@@ -22,14 +22,14 @@
 
 package org.wildfly.clustering.web.spring.security.web.authentication;
 
-import jakarta.servlet.http.HttpServletRequest;
+import java.util.function.Supplier;
 
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamBuilder;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * @author Paul Ferraro
  */
-public class HttpServletRequestBuilder implements ProtoStreamBuilder<HttpServletRequest> {
+public class HttpServletRequestBuilder implements Supplier<HttpServletRequest> {
 
 	private String remoteAddress = null;
 	private String sessionId = null;
@@ -45,7 +45,7 @@ public class HttpServletRequestBuilder implements ProtoStreamBuilder<HttpServlet
 	}
 
 	@Override
-	public HttpServletRequest build() {
+	public HttpServletRequest get() {
 		return new MockHttpServletRequest(this.remoteAddress, this.sessionId);
 	}
 }

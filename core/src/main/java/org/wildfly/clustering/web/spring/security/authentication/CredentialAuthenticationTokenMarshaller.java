@@ -29,21 +29,21 @@ import java.util.function.BiFunction;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
-import org.wildfly.clustering.marshalling.protostream.FunctionalFieldSetMarshaller;
+import org.wildfly.clustering.marshalling.protostream.FieldSetProtoStreamMarshaller;
 
 /**
  * @author Paul Ferraro
  */
-public class CredentialAuthenticationTokenMarshaller<T extends AbstractAuthenticationToken> extends FunctionalFieldSetMarshaller<T, AuthenticationTokenConfiguration> {
+public class CredentialAuthenticationTokenMarshaller<T extends AbstractAuthenticationToken> extends FieldSetProtoStreamMarshaller<T, AuthenticationTokenConfiguration> {
 
-	public CredentialAuthenticationTokenMarshaller(Class<? extends T> tokenClass, BiFunction<Object, Object, T> unauthenticatedFactory, BiFunction<Map.Entry<Object, Object>, List<GrantedAuthority>, T> authenticatedFactory) {
-		super(tokenClass, new AuthenticationMarshaller<>(), config -> {
+	public CredentialAuthenticationTokenMarshaller(Class<T> tokenClass, BiFunction<Object, Object, T> unauthenticatedFactory, BiFunction<Map.Entry<Object, Object>, List<GrantedAuthority>, T> authenticatedFactory) {
+		super(tokenClass, new AuthenticationMarshaller<>(config -> {
 			Object principal = config.getPrincipal();
 			Object credentials = config.getCredentials();
 			List<GrantedAuthority> authorities = config.getAuthorities();
 			T token = authorities.isEmpty() ? unauthenticatedFactory.apply(principal, credentials) : authenticatedFactory.apply(new SimpleImmutableEntry<>(principal, credentials), authorities);
 			token.setDetails(config.getDetails());
 			return token;
-		});
+		}));
 	}
 }

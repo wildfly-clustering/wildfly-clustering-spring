@@ -44,6 +44,7 @@ public class HotRodIndexedHttpSessionConfiguration extends IndexedHttpSessionCon
 	private URI uri;
 	private Properties properties = new Properties();
 	private String templateName = DefaultTemplate.DIST_SYNC.getTemplateName();
+	private int expirationThreadPoolSize = 16;
 
 	public HotRodIndexedHttpSessionConfiguration() {
 		super(EnableHotRodIndexedHttpSession.class);
@@ -69,6 +70,11 @@ public class HotRodIndexedHttpSessionConfiguration extends IndexedHttpSessionCon
 		return this.templateName;
 	}
 
+	@Override
+	public int getExpirationThreadPoolSize() {
+		return this.expirationThreadPoolSize;
+	}
+
 	@Autowired(required = false)
 	public void setUri(URI uri) {
 		this.uri = uri;
@@ -82,6 +88,11 @@ public class HotRodIndexedHttpSessionConfiguration extends IndexedHttpSessionCon
 	@Autowired(required = false)
 	public void setTemplateName(String templateName) {
 		this.templateName = templateName;
+	}
+
+	@Autowired(required = false)
+	public void setExpirationThreadPoolSize(int size) {
+		this.expirationThreadPoolSize = size;
 	}
 
 	@Override

@@ -23,8 +23,8 @@
 package org.wildfly.clustering.web.spring.security.web.authentication;
 
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
+import org.wildfly.clustering.marshalling.protostream.FieldSetProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.FunctionalMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamBuilderFieldSetMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvider;
 
@@ -33,7 +33,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshallerProvi
  */
 public enum SpringSecurityWebAuthenticationMarshallerProvider implements ProtoStreamMarshallerProvider {
 
-	AUTHENTICATION_DETAILS(new FunctionalMarshaller<>(WebAuthenticationDetails.class, new ProtoStreamBuilderFieldSetMarshaller<>(HttpServletRequestMarshaller.INSTANCE), MockHttpServletRequest::new, WebAuthenticationDetails::new)),
+	AUTHENTICATION_DETAILS(new FunctionalMarshaller<>(WebAuthenticationDetails.class, new FieldSetProtoStreamMarshaller<>(HttpServletRequestMarshaller.INSTANCE), MockHttpServletRequest::new, WebAuthenticationDetails::new)),
 	;
 	private final ProtoStreamMarshaller<?> marshaller;
 
