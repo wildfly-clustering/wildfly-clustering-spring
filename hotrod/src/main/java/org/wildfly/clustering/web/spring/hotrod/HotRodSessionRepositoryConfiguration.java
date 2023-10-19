@@ -35,4 +35,5 @@ public interface HotRodSessionRepositoryConfiguration extends SessionRepositoryC
 	URI getUri();
 	Properties getProperties();
 	String getTemplateName();
+	int getExpirationThreadPoolSize();
 }

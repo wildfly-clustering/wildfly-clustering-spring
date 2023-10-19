@@ -29,6 +29,7 @@ import java.util.List;
 import org.infinispan.protostream.descriptors.WireType;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails;
+import org.wildfly.clustering.marshalling.protostream.FieldSetReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -46,25 +47,26 @@ public class PreAuthenticatedWebAuthenticationDetailsMarshaller implements Proto
 
 	@Override
 	public PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails readFrom(ProtoStreamReader reader) throws IOException {
-		HttpServletRequestBuilder builder = HttpServletRequestMarshaller.INSTANCE.getBuilder();
+		FieldSetReader<HttpServletRequestBuilder> requestReader = reader.createFieldSetReader(HttpServletRequestMarshaller.INSTANCE, HTTP_SERVLET_REQUEST_INDEX);
+		HttpServletRequestBuilder builder = HttpServletRequestMarshaller.INSTANCE.createInitialValue();
 		List<GrantedAuthority> authorities = new LinkedList<>();
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			int index = WireType.getTagFieldNumber(tag);
-			if (index >= HTTP_SERVLET_REQUEST_INDEX && index < AUTHORITIY_INDEX) {
-				builder = HttpServletRequestMarshaller.INSTANCE.readField(reader, index - HTTP_SERVLET_REQUEST_INDEX, builder);
+			if (requestReader.contains(index)) {
+				builder = requestReader.readField(builder);
 			} else if (index == AUTHORITIY_INDEX) {
 				authorities.add(reader.readAny(GrantedAuthority.class));
 			} else {
 				reader.skipField(tag);
 			}
 		}
-		return new PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails(builder.build(), authorities);
+		return new PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails(builder.get(), authorities);
 	}
 
 	@Override
 	public void writeTo(ProtoStreamWriter writer, PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails details) throws IOException {
-		HttpServletRequestMarshaller.INSTANCE.writeFields(writer, HTTP_SERVLET_REQUEST_INDEX, new MockHttpServletRequest(details));
+		writer.createFieldSetWriter(HttpServletRequestMarshaller.INSTANCE, HTTP_SERVLET_REQUEST_INDEX).writeFields(new MockHttpServletRequest(details));
 		for (GrantedAuthority authority : details.getGrantedAuthorities()) {
 			writer.writeAny(AUTHORITIY_INDEX, authority);
 		}

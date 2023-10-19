@@ -40,8 +40,4 @@ public class DefaultNonBlockingThreadFactory extends DefaultThreadFactory implem
 	public DefaultNonBlockingThreadFactory(ThreadFactory factory) {
 		super(factory);
 	}
-
-	public DefaultNonBlockingThreadFactory(ThreadFactory factory, Class<?> targetClass) {
-		super(factory, targetClass);
-	}
 }

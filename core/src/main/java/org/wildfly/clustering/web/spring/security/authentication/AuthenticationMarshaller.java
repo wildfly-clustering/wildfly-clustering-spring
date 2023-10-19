@@ -23,7 +23,9 @@
 package org.wildfly.clustering.web.spring.security.authentication;
 
 import java.io.IOException;
+import java.util.function.Function;
 
+import org.infinispan.protostream.descriptors.WireType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
@@ -41,18 +43,24 @@ public class AuthenticationMarshaller<A extends Authentication> implements Field
 	private static final int DETAILS_INDEX = 3;
 	private static final int FIELDS = 4;
 
+	private final Function<AuthenticationTokenConfiguration, A> factory;
+
+	AuthenticationMarshaller(Function<AuthenticationTokenConfiguration, A> factory) {
+		this.factory = factory;
+	}
+
 	@Override
-	public AuthenticationTokenConfiguration getBuilder() {
+	public AuthenticationTokenConfiguration createInitialValue() {
 		return new AuthenticationTokenConfiguration();
 	}
 
 	@Override
-	public int getFields() {
-		return FIELDS;
+	public A build(AuthenticationTokenConfiguration config) {
+		return this.factory.apply(config);
 	}
 
 	@Override
-	public AuthenticationTokenConfiguration readField(ProtoStreamReader reader, int index, AuthenticationTokenConfiguration config) throws IOException {
+	public AuthenticationTokenConfiguration readFrom(ProtoStreamReader reader, int index, WireType type, AuthenticationTokenConfiguration config) throws IOException {
 		switch (index) {
 			case PRINCIPAL_INDEX:
 				return config.setPrincipal(reader.readAny());
@@ -63,26 +71,32 @@ public class AuthenticationMarshaller<A extends Authentication> implements Field
 			case DETAILS_INDEX:
 				return config.setDetails(reader.readAny());
 			default:
+				reader.skipField(type);
 				return config;
 		}
 	}
 
 	@Override
-	public void writeFields(ProtoStreamWriter writer, int startIndex, A token) throws IOException {
+	public void writeTo(ProtoStreamWriter writer, A token) throws IOException {
 		Object principal = token.getPrincipal();
 		if (principal != null) {
-			writer.writeAny(startIndex + PRINCIPAL_INDEX, token.getPrincipal());
+			writer.writeAny(PRINCIPAL_INDEX, token.getPrincipal());
 		}
 		Object credentials = token.getCredentials();
-		if (!this.getBuilder().getCredentials().equals(credentials)) {
-			writer.writeAny(startIndex + CREDENTIALS_INDEX, credentials);
+		if (!this.createInitialValue().getCredentials().equals(credentials)) {
+			writer.writeAny(CREDENTIALS_INDEX, credentials);
 		}
 		for (GrantedAuthority authority : token.getAuthorities()) {
-			writer.writeAny(startIndex + GRANTED_AUTHORITY_INDEX, authority);
+			writer.writeAny(GRANTED_AUTHORITY_INDEX, authority);
 		}
 		Object details = token.getDetails();
 		if (details != null) {
-			writer.writeAny(startIndex + DETAILS_INDEX, details);
+			writer.writeAny(DETAILS_INDEX, details);
 		}
+	}
+
+	@Override
+	public int getFields() {
+		return FIELDS;
 	}
 }

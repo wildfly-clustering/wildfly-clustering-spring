@@ -23,18 +23,21 @@
 package org.wildfly.clustering.web.spring.security.authentication;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Constructor;
 import java.security.PrivilegedActionException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.function.ToIntFunction;
 
 import org.infinispan.protostream.descriptors.WireType;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.wildfly.clustering.marshalling.protostream.FieldSetMarshaller;
+import org.wildfly.clustering.marshalling.protostream.FieldSetReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
@@ -51,7 +54,6 @@ public class HashAuthenticationTokenMarshaller<T extends AbstractAuthenticationT
 
 	private static final int DEFAULT_HASH = 0;
 
-	private final FieldSetMarshaller<T, AuthenticationTokenConfiguration> marshaller = new AuthenticationMarshaller<>();
 	private final Class<T> tokenClass;
 	private final ToIntFunction<T> hash;
 
@@ -62,28 +64,22 @@ public class HashAuthenticationTokenMarshaller<T extends AbstractAuthenticationT
 
 	@Override
 	public T readFrom(ProtoStreamReader reader) throws IOException {
-		AuthenticationTokenConfiguration config = this.marshaller.getBuilder();
-		int hash = DEFAULT_HASH;
+		AtomicInteger hash = new AtomicInteger(DEFAULT_HASH);
+		FieldSetMarshaller<T, AuthenticationTokenConfiguration> marshaller = this.createMarshaller(hash);
+		FieldSetReader<AuthenticationTokenConfiguration> tokenReader = reader.createFieldSetReader(marshaller, TOKEN_INDEX);
+		AuthenticationTokenConfiguration config = marshaller.createInitialValue();
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			int index = WireType.getTagFieldNumber(tag);
 			if (index == HASH_INDEX) {
-				hash = reader.readSFixed32();
-			} else if (index >= TOKEN_INDEX && index < TOKEN_INDEX + this.marshaller.getFields()) {
-				config = this.marshaller.readField(reader, index - TOKEN_INDEX, config);
+				hash.setPlain(reader.readSFixed32());
+			} else if (tokenReader.contains(index)) {
+				config = tokenReader.readField(config);
 			} else {
 				reader.skipField(tag);
 			}
 		}
-		Object principal = config.getPrincipal();
-		Collection<GrantedAuthority> authorities = config.getAuthorities();
-		try {
-			T token = WildFlySecurityManager.doUnchecked(new SimpleImmutableEntry<>(hash, new SimpleImmutableEntry<>(principal, authorities)), this);
-			token.setDetails(config.getDetails());
-			return token;
-		} catch (PrivilegedActionException e) {
-			throw new IOException(e.getException());
-		}
+		return marshaller.build(config);
 	}
 
 	@Override
@@ -92,11 +88,11 @@ public class HashAuthenticationTokenMarshaller<T extends AbstractAuthenticationT
 		if (hash != DEFAULT_HASH) {
 			writer.writeSFixed32(HASH_INDEX, hash);
 		}
-		this.marshaller.writeFields(writer, TOKEN_INDEX, token);
+		writer.createFieldSetWriter(this.createMarshaller(new AtomicInteger(hash)), TOKEN_INDEX).writeFields(token);
 	}
 
 	@Override
-	public T run(Map.Entry<Integer, Entry<Object, Collection<GrantedAuthority>>> parameter) throws Exception {
+	public T run(Map.Entry<Integer, Map.Entry<Object, Collection<GrantedAuthority>>> parameter) throws Exception {
 		// The constructor we need is private.
 		Constructor<T> constructor = this.tokenClass.getDeclaredConstructor(Integer.class, Object.class, Collection.class);
 		constructor.setAccessible(true);
@@ -106,5 +102,22 @@ public class HashAuthenticationTokenMarshaller<T extends AbstractAuthenticationT
 	@Override
 	public Class<? extends T> getJavaClass() {
 		return this.tokenClass;
+	}
+
+	private FieldSetMarshaller<T, AuthenticationTokenConfiguration> createMarshaller(AtomicInteger hash) {
+		return new AuthenticationMarshaller<>(new Function<>() {
+			@Override
+			public T apply(AuthenticationTokenConfiguration config) {
+				Object principal = config.getPrincipal();
+				Collection<GrantedAuthority> authorities = config.getAuthorities();
+				try {
+					T token = WildFlySecurityManager.doUnchecked(new SimpleImmutableEntry<>(hash.getPlain(), new SimpleImmutableEntry<>(principal, authorities)), HashAuthenticationTokenMarshaller.this);
+					token.setDetails(config.getDetails());
+					return token;
+				} catch (PrivilegedActionException e) {
+					throw new UncheckedIOException(new IOException(e.getException()));
+				}
+			}
+		});
 	}
 }

@@ -107,10 +107,9 @@ import org.wildfly.clustering.server.infinispan.dispatcher.LocalCommandDispatche
 import org.wildfly.clustering.server.infinispan.group.CacheGroup;
 import org.wildfly.clustering.server.infinispan.group.CacheGroupConfiguration;
 import org.wildfly.clustering.server.infinispan.group.LocalGroup;
-import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagerFactory;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSessionManagerFactoryConfiguration;
-import org.wildfly.clustering.web.infinispan.session.SessionCreationMetaDataKey;
+import org.wildfly.clustering.web.infinispan.session.metadata.SessionMetaDataKey;
 import org.wildfly.clustering.web.infinispan.sso.InfinispanSSOManagerFactory;
 import org.wildfly.clustering.web.infinispan.sso.InfinispanSSOManagerFactoryConfiguration;
 import org.wildfly.clustering.web.session.ImmutableSession;
@@ -133,13 +132,14 @@ import org.wildfly.clustering.web.spring.security.SpringSecurityImmutability;
 import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.SSOManagerConfiguration;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
+import org.wildfly.common.function.Functions;
 import org.wildfly.common.iteration.CompositeIterable;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author Paul Ferraro
  */
-public class InfinispanSessionRepository implements FindByIndexNameSessionRepository<SpringSession>, InitializingBean, DisposableBean, LocalContextFactory<Void>, Registrar<String>, Registration {
+public class InfinispanSessionRepository implements FindByIndexNameSessionRepository<SpringSession>, InitializingBean, DisposableBean, Registrar<String>, Registration {
 
 	private static final AtomicInteger COUNTER = new AtomicInteger(0);
 
@@ -298,9 +298,9 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
 				.maxCount((maxActiveSessions != null) ? maxActiveSessions.longValue() : -1)
 				;
 		if (eviction.isEnabled()) {
-			// Only evict creation meta-data entries
+			// Only evict meta-data entries
 			// We will cascade eviction to the remaining entries for a given session
-			builder.addModule(DataContainerConfigurationBuilder.class).evictable(SessionCreationMetaDataKey.class::isInstance);
+			builder.addModule(DataContainerConfigurationBuilder.class).evictable(SessionMetaDataKey.class::isInstance);
 		}
 
 		container.defineConfiguration(deploymentName, builder.build());
@@ -359,8 +359,8 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
 				}
 
 				@Override
-				public LocalContextFactory<Void> getLocalContextFactory() {
-					return InfinispanSessionRepository.this;
+				public Supplier<Void> getLocalContextFactory() {
+					return Functions.constantSupplier(null);
 				}
 			});
 			managers.put(indexName, ssoManager);
@@ -424,8 +424,8 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
 			}
 
 			@Override
-			public LocalContextFactory<Void> getLocalContextFactory() {
-				return InfinispanSessionRepository.this;
+			public Supplier<Void> getLocalContextFactory() {
+				return Functions.constantSupplier(null);
 			}
 
 			@Override
@@ -524,11 +524,6 @@ public class InfinispanSessionRepository implements FindByIndexNameSessionReposi
 
 	@Override
 	public void close() {
-	}
-
-	@Override
-	public Void createLocalContext() {
-		return null;
 	}
 
 	@Override
