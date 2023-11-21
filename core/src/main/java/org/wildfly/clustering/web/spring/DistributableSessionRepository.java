@@ -135,7 +135,7 @@ public class DistributableSessionRepository<B extends Batch> implements FindByIn
 	@Override
 	public Map<String, SpringSession> findByIndexNameAndIndexValue(String indexName, String indexValue) {
 		Set<String> sessions = Collections.emptySet();
-		SSOManager<Void, String, String, Void, B> manager = this.indexing.getSSOManagers().get(indexValue);
+		SSOManager<Void, String, String, Void, B> manager = this.indexing.getSSOManagers().get(indexName);
 		if (manager != null) {
 			try (Batch batch = manager.getBatcher().createBatch()) {
 				SSO<Void, String, String, Void> sso = manager.findSSO(indexValue);
