@@ -56,7 +56,7 @@
 		<version.jakarta.annotation>2.1.1</version.jakarta.annotation>
 		<version.jakarta.servlet>6.0.0</version.jakarta.servlet>
 		<version.net.jcip.annotations>1.0</version.net.jcip.annotations>
-		<version.org.apache.httpcomponents>5.2.1</version.org.apache.httpcomponents>
+		<version.org.apache.httpcomponents>5.2.2</version.org.apache.httpcomponents>
 		<version.org.apache.tomcat>10.1.15</version.org.apache.tomcat>
 		<version.org.infinispan>14.0.17.Final</version.org.infinispan>
 		<version.org.infinispan.protostream>4.6.5.Final</version.org.infinispan.protostream>
