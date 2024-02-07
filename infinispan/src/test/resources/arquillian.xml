@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<arquillian xmlns="http://jboss.org/schema/arquillian"
-		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:schemaLocation="http://jboss.org/schema/arquillian http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
+<arquillian xmlns="http://jboss.org/schema/arquillian" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jboss.org/schema/arquillian http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
 	<group qualifier="tomcat" default="true">
-		<container qualifier="tomcat-1" mode="manual">
+		<container qualifier="tomcat-1" mode="class">
 			<configuration>
 				<property name="catalinaHome">${project.build.directory}/tomcat-1</property>
 
@@ -15,7 +13,7 @@
 				<property name="pass">admin</property>
 			</configuration>
 		</container>
-		<container qualifier="tomcat-2" mode="manual">
+		<container qualifier="tomcat-2" mode="class">
 			<configuration>
 				<property name="catalinaHome">${project.build.directory}/tomcat-2</property>
 

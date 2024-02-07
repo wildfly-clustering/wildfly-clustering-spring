@@ -34,7 +34,9 @@ import org.wildfly.clustering.web.spring.SessionPersistenceGranularity;
 /**
  * Configures the session management characteristics of a session repository.
  * @author Paul Ferraro
+ * @deprecated Use {@link org.wildfly.clustering.spring.session.annotation.SessionManager} instead.
  */
+@Deprecated(forRemoval = true)
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented

@@ -30,7 +30,9 @@ import java.lang.annotation.Target;
 
 /**
  * @author Paul Ferraro
+ * @deprecated Use {@link org.wildfly.clustering.spring.session.infinispan.embedded.annotation.Infinispan} instead
  */
+@Deprecated(forRemoval = true)
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented

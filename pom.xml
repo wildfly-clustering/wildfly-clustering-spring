@@ -49,24 +49,31 @@
 		<maven.compiler.target>17</maven.compiler.target>
 		<maven.compiler.source>17</maven.compiler.source>
 
-		<version.com.squareup.protoparser>4.0.3</version.com.squareup.protoparser>
-		<version.io.spring>6.1.2</version.io.spring>
-		<version.io.spring.security>6.2.0</version.io.spring.security>
-		<version.io.spring.session>3.2.0</version.io.spring.session>
+		<!-- Provided dependency versions -->
 		<version.jakarta.annotation>2.1.1</version.jakarta.annotation>
 		<version.jakarta.servlet>6.0.0</version.jakarta.servlet>
 		<version.net.jcip.annotations>1.0</version.net.jcip.annotations>
-		<version.org.apache.httpcomponents>5.3</version.org.apache.httpcomponents>
-		<version.org.apache.tomcat>10.1.15</version.org.apache.tomcat>
-		<version.org.infinispan>14.0.17.Final</version.org.infinispan>
-		<version.org.infinispan.protostream>4.6.5.Final</version.org.infinispan.protostream>
-		<version.org.infinispan.server>${version.org.infinispan}</version.org.infinispan.server>
+
+		<!-- Compile dependency versions -->
+		<version.io.projectreactor.core>3.6.2</version.io.projectreactor.core>
+		<version.org.springframework>6.1.2</version.org.springframework>
+		<version.org.springframework.security>6.2.1</version.org.springframework.security>
+		<version.org.springframework.session>3.2.1</version.org.springframework.session>
+		<version.org.infinispan>14.0.24.Final</version.org.infinispan>
+		<version.org.jboss.marshalling>2.1.3.Final</version.org.jboss.marshalling>
+		<version.org.junit>5.10.0</version.org.junit>
+		<version.org.kohsuke.metainf-services>1.11</version.org.kohsuke.metainf-services>
+		<version.org.wildfly.clustering>1.0.0.Final</version.org.wildfly.clustering>
+
+		<!-- Test dependency versions -->
+		<version.io.undertow>2.3.10.Final</version.io.undertow>
+		<version.org.apache.httpcomponents>5.2.1</version.org.apache.httpcomponents>
+		<version.org.apache.tomcat>10.1.18</version.org.apache.tomcat>
 		<version.org.jboss.arquillian>1.8.0.Final</version.org.jboss.arquillian>
 		<version.org.jboss.arquillian.container.tomcat>1.1.0.Final</version.org.jboss.arquillian.container.tomcat>
-		<version.org.jboss.marshalling>2.1.3.Final</version.org.jboss.marshalling>
-		<version.org.kohsuke.metainf-services>1.11</version.org.kohsuke.metainf-services>
-		<version.org.wildfly>30.0.0.Final</version.org.wildfly>
-		<version.junit>4.13.2</version.junit>
+		<version.org.junit>5.10.1</version.org.junit>
+		<version.org.mockito>5.10.0</version.org.mockito>
+		<version.org.testcontainers>1.19.4</version.org.testcontainers>
 	</properties>
 
 	<modules>
@@ -92,6 +99,17 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
 				<configuration>
 					<tagNameFormat>@{project.version}</tagNameFormat>
@@ -105,19 +123,18 @@
 				</configuration>
 			</plugin>
 		</plugins>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>com.googlecode.maven-download-plugin</groupId>
-					<artifactId>download-maven-plugin</artifactId>
-					<version>1.7.1</version>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 	</build>
 
 	<dependencyManagement>
 		<dependencies>
+			<!-- Intra project dependencies -->
+			<dependency>
+				<groupId>org.wildfly.clustering</groupId>
+				<artifactId>wildfly-clustering-spring-session-core</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<!-- Provided dependencies -->
 			<dependency>
 				<groupId>jakarta.annotation</groupId>
 				<artifactId>jakarta.annotation-api</artifactId>
@@ -128,16 +145,115 @@
 				<artifactId>jakarta.servlet-api</artifactId>
 				<version>${version.jakarta.servlet}</version>
 			</dependency>
+
+			<!-- BOM dependencies -->
 			<dependency>
-				<groupId>com.squareup</groupId>
-				<artifactId>protoparser</artifactId>
-				<version>${version.com.squareup.protoparser}</version>
+				<groupId>org.infinispan</groupId>
+				<artifactId>infinispan-bom</artifactId>
+				<version>${version.org.infinispan}</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
 			<dependency>
-				<groupId>net.jcip</groupId>
-				<artifactId>jcip-annotations</artifactId>
-				<version>${version.net.jcip.annotations}</version>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-framework-bom</artifactId>
+				<version>${version.org.springframework}</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
+			<dependency>
+				<groupId>org.springframework.security</groupId>
+				<artifactId>spring-security-bom</artifactId>
+				<version>${version.org.springframework.security}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.session</groupId>
+				<artifactId>spring-session-bom</artifactId>
+				<version>${version.org.springframework.session}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<!-- External compile dependencies -->
+			<dependency>
+				<groupId>io.projectreactor</groupId>
+				<artifactId>reactor-core</artifactId>
+				<version>${version.io.projectreactor.core}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kohsuke.metainf-services</groupId>
+				<artifactId>metainf-services</artifactId>
+				<version>${version.org.kohsuke.metainf-services}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.wildfly.clustering</groupId>
+				<artifactId>wildfly-clustering-context</artifactId>
+				<version>${version.org.wildfly.clustering}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.wildfly.clustering</groupId>
+				<artifactId>wildfly-clustering-marshalling-java</artifactId>
+				<version>${version.org.wildfly.clustering}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.wildfly.clustering</groupId>
+				<artifactId>wildfly-clustering-marshalling-jboss</artifactId>
+				<version>${version.org.wildfly.clustering}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.wildfly.clustering</groupId>
+				<artifactId>wildfly-clustering-session-cache</artifactId>
+				<version>${version.org.wildfly.clustering}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.wildfly.clustering</groupId>
+				<artifactId>wildfly-clustering-session-infinispan-embedded</artifactId>
+				<version>${version.org.wildfly.clustering}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.wildfly.clustering</groupId>
+				<artifactId>wildfly-clustering-session-infinispan-remote</artifactId>
+				<version>${version.org.wildfly.clustering}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.wildfly.clustering</groupId>
+				<artifactId>wildfly-clustering-session-spi</artifactId>
+				<version>${version.org.wildfly.clustering}</version>
+			</dependency>
+
+			<!-- Test BOM dependencies -->
+			<dependency>
+				<groupId>org.jboss.arquillian</groupId>
+				<artifactId>arquillian-bom</artifactId>
+				<version>${version.org.jboss.arquillian}</version>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency>
+			<dependency>
+				<groupId>org.junit</groupId>
+				<artifactId>junit-bom</artifactId>
+				<version>${version.org.junit}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.mockito</groupId>
+				<artifactId>mockito-bom</artifactId>
+				<version>${version.org.mockito}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.testcontainers</groupId>
+				<artifactId>testcontainers-bom</artifactId>
+				<version>${version.org.testcontainers}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<!-- Test dependencies -->
 			<dependency>
 				<groupId>org.apache.httpcomponents.client5</groupId>
 				<artifactId>httpclient5</artifactId>
@@ -149,54 +265,6 @@
 				<version>${version.org.apache.tomcat}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.infinispan</groupId>
-				<artifactId>infinispan-client-hotrod-jakarta</artifactId>
-				<version>${version.org.infinispan}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.infinispan</groupId>
-				<artifactId>infinispan-component-annotations-jakarta</artifactId>
-				<version>${version.org.infinispan}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.infinispan</groupId>
-				<artifactId>infinispan-commons-jakarta</artifactId>
-				<version>${version.org.infinispan}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.infinispan</groupId>
-				<artifactId>infinispan-core-jakarta</artifactId>
-				<version>${version.org.infinispan}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.infinispan</groupId>
-				<artifactId>infinispan-server-testdriver-junit4</artifactId>
-				<version>${version.org.infinispan.server}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>org.infinispan</groupId>
-						<artifactId>infinispan-cli-client</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-			<dependency>
-				<groupId>org.infinispan.protostream</groupId>
-				<artifactId>protostream</artifactId>
-				<version>${version.org.infinispan.protostream}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.infinispan.protostream</groupId>
-				<artifactId>protostream-processor</artifactId>
-				<version>${version.org.infinispan.protostream}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.arquillian</groupId>
-				<artifactId>arquillian-bom</artifactId>
-				<version>${version.org.jboss.arquillian}</version>
-				<scope>import</scope>
-				<type>pom</type>
-			</dependency>
-			<dependency>
 				<groupId>org.jboss.arquillian.container</groupId>
 				<artifactId>arquillian-tomcat-managed-8</artifactId>
 				<version>${version.org.jboss.arquillian.container.tomcat}</version>
@@ -206,124 +274,73 @@
 				<artifactId>jboss-marshalling-river</artifactId>
 				<version>${version.org.jboss.marshalling}</version>
 			</dependency>
+
+			<!-- Test jar dependencies -->
 			<dependency>
-				<groupId>org.kohsuke.metainf-services</groupId>
-				<artifactId>metainf-services</artifactId>
-				<version>${version.org.kohsuke.metainf-services}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-context</artifactId>
-				<version>${version.io.spring}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-core</artifactId>
-				<version>${version.io.spring}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-web</artifactId>
-				<version>${version.io.spring}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.security</groupId>
-				<artifactId>spring-security-config</artifactId>
-				<version>${version.io.spring.security}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.security</groupId>
-				<artifactId>spring-security-web</artifactId>
-				<version>${version.io.spring.security}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.session</groupId>
-				<artifactId>spring-session-core</artifactId>
-				<version>${version.io.spring.session}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly</groupId>
-				<artifactId>wildfly-clustering-context</artifactId>
-				<version>${version.org.wildfly}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly</groupId>
-				<artifactId>wildfly-clustering-infinispan-client-spi</artifactId>
-				<version>${version.org.wildfly}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly</groupId>
-				<artifactId>wildfly-clustering-infinispan-marshalling</artifactId>
-				<version>${version.org.wildfly}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly</groupId>
-				<artifactId>wildfly-clustering-infinispan-embedded-spi</artifactId>
-				<version>${version.org.wildfly}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly</groupId>
-				<artifactId>wildfly-clustering-marshalling-api</artifactId>
-				<version>${version.org.wildfly}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly</groupId>
-				<artifactId>wildfly-clustering-marshalling-spi</artifactId>
-				<version>${version.org.wildfly}</version>
+				<groupId>org.wildfly.clustering</groupId>
+				<artifactId>wildfly-clustering-cache-infinispan-remote</artifactId>
+				<version>${version.org.wildfly.clustering}</version>
 				<classifier>tests</classifier>
 			</dependency>
 			<dependency>
-				<groupId>org.wildfly</groupId>
+				<groupId>org.wildfly.clustering</groupId>
+				<artifactId>wildfly-clustering-cache-spi</artifactId>
+				<version>${version.org.wildfly.clustering}</version>
+				<classifier>tests</classifier>
+			</dependency>
+			<dependency>
+				<groupId>org.wildfly.clustering</groupId>
+				<artifactId>wildfly-clustering-marshalling-java</artifactId>
+				<version>${version.org.wildfly.clustering}</version>
+				<classifier>tests</classifier>
+			</dependency>
+			<dependency>
+				<groupId>org.wildfly.clustering</groupId>
 				<artifactId>wildfly-clustering-marshalling-jboss</artifactId>
-				<version>${version.org.wildfly}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>org.jboss.modules</groupId>
-						<artifactId>jboss-modules</artifactId>
-					</exclusion>
-				</exclusions>
+				<version>${version.org.wildfly.clustering}</version>
+				<classifier>tests</classifier>
 			</dependency>
 			<dependency>
-				<groupId>org.wildfly</groupId>
+				<groupId>org.wildfly.clustering</groupId>
 				<artifactId>wildfly-clustering-marshalling-protostream</artifactId>
-				<version>${version.org.wildfly}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>org.jboss.modules</groupId>
-						<artifactId>jboss-modules</artifactId>
-					</exclusion>
-				</exclusions>
+				<version>${version.org.wildfly.clustering}</version>
+				<classifier>tests</classifier>
 			</dependency>
 			<dependency>
-				<groupId>org.wildfly</groupId>
-				<artifactId>wildfly-clustering-server-infinispan</artifactId>
-				<version>${version.org.wildfly}</version>
+				<groupId>org.wildfly.clustering</groupId>
+				<artifactId>wildfly-clustering-marshalling-spi</artifactId>
+				<version>${version.org.wildfly.clustering}</version>
+				<classifier>tests</classifier>
 			</dependency>
 			<dependency>
-				<groupId>org.wildfly</groupId>
-				<artifactId>wildfly-clustering-web-api</artifactId>
-				<version>${version.org.wildfly}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly</groupId>
-				<artifactId>wildfly-clustering-web-cache</artifactId>
-				<version>${version.org.wildfly}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly</groupId>
-				<artifactId>wildfly-clustering-web-hotrod</artifactId>
-				<version>${version.org.wildfly}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly</groupId>
-				<artifactId>wildfly-clustering-web-infinispan</artifactId>
-				<version>${version.org.wildfly}</version>
-			</dependency>
-			<dependency>
-				<groupId>junit</groupId>
-				<artifactId>junit</artifactId>
-				<version>${version.junit}</version>
+				<groupId>org.wildfly.clustering</groupId>
+				<artifactId>wildfly-clustering-spring-session-core</artifactId>
+				<version>${project.version}</version>
+				<classifier>tests</classifier>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-params</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 </project>

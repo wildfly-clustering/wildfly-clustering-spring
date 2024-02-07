@@ -53,8 +53,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.squareup</groupId>
-			<artifactId>protoparser</artifactId>
+			<groupId>io.projectreactor</groupId>
+			<artifactId>reactor-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -77,69 +77,50 @@
 			<artifactId>spring-session-core</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.wildfly</groupId>
+			<groupId>org.wildfly.clustering</groupId>
 			<artifactId>wildfly-clustering-context</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.wildfly</groupId>
-			<artifactId>wildfly-clustering-marshalling-api</artifactId>
+			<groupId>org.wildfly.clustering</groupId>
+			<artifactId>wildfly-clustering-marshalling-java</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.wildfly</groupId>
+			<groupId>org.wildfly.clustering</groupId>
 			<artifactId>wildfly-clustering-marshalling-jboss</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.wildfly</groupId>
-			<artifactId>wildfly-clustering-marshalling-protostream</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.wildfly</groupId>
-			<artifactId>wildfly-clustering-web-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.wildfly</groupId>
-			<artifactId>wildfly-clustering-web-cache</artifactId>
+			<groupId>org.wildfly.clustering</groupId>
+			<artifactId>wildfly-clustering-session-spi</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>net.jcip</groupId>
-			<artifactId>jcip-annotations</artifactId>
+			<groupId>org.jboss.marshalling</groupId>
+			<artifactId>jboss-marshalling-river</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
-			<groupId>org.wildfly</groupId>
-			<artifactId>wildfly-clustering-marshalling-api</artifactId>
-			<version>${version.org.wildfly}</version>
+			<groupId>org.wildfly.clustering</groupId>
+			<artifactId>wildfly-clustering-marshalling-java</artifactId>
 			<classifier>tests</classifier>
-			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.wildfly</groupId>
+			<groupId>org.wildfly.clustering</groupId>
 			<artifactId>wildfly-clustering-marshalling-protostream</artifactId>
-			<version>${version.org.wildfly}</version>
 			<classifier>tests</classifier>
-			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.wildfly</groupId>
+			<groupId>org.wildfly.clustering</groupId>
 			<artifactId>wildfly-clustering-marshalling-spi</artifactId>
-			<version>${version.org.wildfly}</version>
 			<classifier>tests</classifier>
-			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.httpcomponents.client5</groupId>
 			<artifactId>httpclient5</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.infinispan</groupId>
-			<artifactId>infinispan-server-testdriver-junit4</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -153,18 +134,8 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-config</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -178,18 +149,5 @@
 				</includes>
 			</testResource>
 		</testResources>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>test-jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
 	</build>
 </project>

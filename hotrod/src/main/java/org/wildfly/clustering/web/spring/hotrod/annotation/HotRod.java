@@ -31,7 +31,9 @@ import java.lang.annotation.Target;
 /**
  * Configures the HotRod client used by a session repository. 
  * @author Paul Ferraro
+ * @deprecated Use {@link org.wildfly.clustering.spring.session.infinispan.remote.annotation.HotRod} instead.
  */
+@Deprecated(forRemoval = true)
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented

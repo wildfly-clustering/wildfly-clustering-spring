@@ -31,7 +31,9 @@ import java.lang.annotation.Target;
 /**
  * Configures a session attribute index.
  * @author Paul Ferraro
+ * @deprecated Use {@link org.wildfly.clustering.spring.session.annotation.Index} instead.
  */
+@Deprecated(forRemoval = true)
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented

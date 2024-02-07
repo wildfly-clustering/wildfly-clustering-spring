@@ -51,45 +51,35 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-spring-session-core</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
-			<groupId>org.infinispan</groupId>
-			<artifactId>infinispan-client-hotrod-jakarta</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.wildfly</groupId>
-			<artifactId>wildfly-clustering-infinispan-marshalling</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.wildfly</groupId>
-			<artifactId>wildfly-clustering-web-hotrod</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.jboss.marshalling</groupId>
-			<artifactId>jboss-marshalling-river</artifactId>
-			<scope>runtime</scope>
+			<groupId>org.wildfly.clustering</groupId>
+			<artifactId>wildfly-clustering-session-infinispan-remote</artifactId>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-spring-session-core</artifactId>
-			<version>${project.version}</version>
 			<classifier>tests</classifier>
-			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
-			<groupId>org.apache.httpcomponents.client5</groupId>
-			<artifactId>httpclient5</artifactId>
+			<groupId>org.wildfly.clustering</groupId>
+			<artifactId>wildfly-clustering-cache-infinispan-remote</artifactId>
+			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.infinispan</groupId>
-			<artifactId>infinispan-server-testdriver-junit4</artifactId>
+			<groupId>org.wildfly.clustering</groupId>
+			<artifactId>wildfly-clustering-cache-spi</artifactId>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents.client5</groupId>
+			<artifactId>httpclient5</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -98,8 +88,13 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.jboss.arquillian.junit</groupId>
-			<artifactId>arquillian-junit-container</artifactId>
+			<groupId>org.jboss.arquillian.junit5</groupId>
+			<artifactId>arquillian-junit5-container</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-suite-api</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -108,8 +103,8 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>testcontainers</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -149,23 +144,6 @@
 			</testResource>
 		</testResources>
 		<plugins>
-			<plugin>
-				<groupId>com.googlecode.maven-download-plugin</groupId>
-				<artifactId>download-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>download-infinispan-server</id>
-						<phase>generate-test-resources</phase>
-						<goals>
-							<goal>wget</goal>
-						</goals>
-						<configuration>
-							<url>https://downloads.jboss.org/infinispan/${version.org.infinispan.server}/infinispan-server-${version.org.infinispan.server}.zip</url>
-							<unpack>true</unpack>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
@@ -300,64 +278,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
-	<profiles>
-		<profile>
-			<id>custom-infinispan-server</id>
-			<activation>
-				<property>
-					<name>infinispan.server.home.override</name>
-				</property>
-			</activation>
-			<properties>
-				<infinispan.server.home>${project.build.directory}/infinispan-server-custom</infinispan.server.home>
-				<infinispan.server.profile>${infinispan.server.home}/server/conf/infinispan.xml</infinispan.server.profile>
-			</properties>
-			<build>
-				<plugins>
-					<!-- Disable maven-download-plugin -->
-					<plugin>
-						<groupId>com.googlecode.maven-download-plugin</groupId>
-						<artifactId>download-maven-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>download-infinispan-server</id>
-								<phase>generate-test-resources</phase>
-								<goals>
-									<goal>wget</goal>
-								</goals>
-								<configuration>
-									<skip>true</skip>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<artifactId>maven-resources-plugin</artifactId>
-						<executions>
-							<!-- Copy over infinispan server distribution from custom path -->
-							<execution>
-								<id>copy-custom-infinispan-server</id>
-								<phase>generate-test-resources</phase>
-								<goals>
-									<goal>copy-resources</goal>
-								</goals>
-								<configuration>
-									<outputDirectory>${infinispan.server.home}</outputDirectory>
-									<includeEmptyDirs>true</includeEmptyDirs>
-									<resources>
-										<resource>
-											<directory>${infinispan.server.home.override}</directory>
-											<filtering>false</filtering>
-										</resource>
-									</resources>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
-
 </project>

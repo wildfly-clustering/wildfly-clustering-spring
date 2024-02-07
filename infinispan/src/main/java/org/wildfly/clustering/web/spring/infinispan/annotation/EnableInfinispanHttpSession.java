@@ -30,15 +30,18 @@ import java.lang.annotation.Target;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.wildfly.clustering.spring.session.infinispan.embedded.annotation.InfinispanHttpSessionAnnotationConfiguration;
 import org.wildfly.clustering.web.spring.annotation.SessionManager;
 
 /**
  * @author Paul Ferraro
+ * @deprecated Use {@link org.wildfly.clustering.spring.session.infinispan.embedded.annotation.EnableInfinispanHttpSession} instead.
  */
+@Deprecated(forRemoval = true)
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Import(InfinispanHttpSessionConfiguration.class)
+@Import(InfinispanHttpSessionAnnotationConfiguration.class)
 @Configuration(proxyBeanMethods = false)
 public @interface EnableInfinispanHttpSession {
 	Infinispan config();

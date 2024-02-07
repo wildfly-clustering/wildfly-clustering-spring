@@ -31,7 +31,9 @@ import java.lang.annotation.Target;
 /**
  * Configures a property. 
  * @author Paul Ferraro
+ * @deprecated Use {@link org.wildfly.clustering.spring.session.infinispan.remote.annotation.Property} instead.
  */
+@Deprecated(forRemoval = true)
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented

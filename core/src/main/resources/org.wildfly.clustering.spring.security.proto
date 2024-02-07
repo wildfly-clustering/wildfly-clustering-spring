@@ -1,0 +1,9 @@
+package org.wildfly.clustering.spring.security;
+
+/**
+ * @TypeId(390)
+ */
+enum Scheme {
+	HTTP	= 0;
+	HTTPS	= 1;
+}

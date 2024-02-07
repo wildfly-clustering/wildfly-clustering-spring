@@ -22,44 +22,29 @@
 
 package org.wildfly.clustering.web.spring;
 
-import java.util.EnumSet;
 import java.util.function.Function;
 
-import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.jboss.SimpleMarshallingConfigurationRepository;
-import org.wildfly.clustering.marshalling.jdk.JavaByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
-import org.wildfly.clustering.marshalling.protostream.SimpleClassLoaderMarshaller;
-import org.wildfly.clustering.marshalling.spi.ByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.spi.ValueExternalizer;
-import org.wildfly.clustering.web.spring.security.SpringSecuritySerializationContextInitializerProvider;
+import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 
 /**
  * @author Paul Ferraro
+ * @deprecated Use {@link org.wildfly.clustering.spring.session.SessionMarshallerFactory} instead.
  */
+@Deprecated(forRemoval = true)
 public enum SessionMarshallerFactory implements Function<ClassLoader, ByteBufferMarshaller> {
 
-	JAVA() {
-		@Override
-		public ByteBufferMarshaller apply(ClassLoader loader) {
-			return new JavaByteBufferMarshaller(new ValueExternalizer<>(loader));
-		}
-	},
-	JBOSS() {
-		@Override
-		public ByteBufferMarshaller apply(ClassLoader loader) {
-			return new JBossByteBufferMarshaller(new SimpleMarshallingConfigurationRepository(JBossMarshallingVersion.class, JBossMarshallingVersion.CURRENT, loader), loader);
-		}
-	},
-	PROTOSTREAM() {
-		@Override
-		public ByteBufferMarshaller apply(ClassLoader loader) {
-			SerializationContextBuilder builder = new SerializationContextBuilder(new SimpleClassLoaderMarshaller(loader)).load(loader)
-					.register(EnumSet.allOf(SpringSecuritySerializationContextInitializerProvider.class))
-					;
-			return new ProtoStreamByteBufferMarshaller(builder.build());
-		}
-	},
+	JAVA(org.wildfly.clustering.spring.session.SessionMarshallerFactory.JAVA),
+	JBOSS(org.wildfly.clustering.spring.session.SessionMarshallerFactory.JBOSS),
+	PROTOSTREAM(org.wildfly.clustering.spring.session.SessionMarshallerFactory.PROTOSTREAM),
 	;
+	private final Function<ClassLoader, ByteBufferMarshaller> factory;
+
+	SessionMarshallerFactory(Function<ClassLoader, ByteBufferMarshaller> factory) {
+		this.factory = factory;
+	}
+
+	@Override
+	public ByteBufferMarshaller apply(ClassLoader loader) {
+		return this.factory.apply(loader);
+	}
 }

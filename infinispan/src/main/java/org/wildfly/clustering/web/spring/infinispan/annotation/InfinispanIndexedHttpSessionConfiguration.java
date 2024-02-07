@@ -22,58 +22,29 @@
 
 package org.wildfly.clustering.web.spring.infinispan.annotation;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.AnnotationAttributes;
-import org.wildfly.clustering.web.spring.annotation.IndexedHttpSessionConfiguration;
+import org.springframework.context.annotation.Import;
+import org.springframework.session.config.annotation.web.http.SpringHttpSessionConfiguration;
+import org.wildfly.clustering.spring.session.config.SessionRepositoryConfigurationBean;
+import org.wildfly.clustering.spring.session.infinispan.embedded.config.InfinispanSessionRepositoryConfigurationBean;
 import org.wildfly.clustering.web.spring.infinispan.InfinispanSessionRepository;
-import org.wildfly.clustering.web.spring.infinispan.InfinispanSessionRepositoryConfiguration;
 
 /**
  * @author Paul Ferraro
+ * @deprecated Use {@link org.wildfly.clustering.spring.session.infinispan.embedded.annotation.EnableInfinispanIndexedHttpSession} instead.
  */
+@Deprecated(forRemoval = true)
 @Configuration(proxyBeanMethods = false)
-public class InfinispanIndexedHttpSessionConfiguration extends IndexedHttpSessionConfiguration implements InfinispanSessionRepositoryConfiguration {
-
-	private String resource = "/WEB-INF/infinispan.xml";
-	private String templateName = null;
+@Import(SpringHttpSessionConfiguration.class)
+public class InfinispanIndexedHttpSessionConfiguration extends InfinispanSessionRepositoryConfigurationBean {
 
 	public InfinispanIndexedHttpSessionConfiguration() {
-		super(EnableInfinispanIndexedHttpSession.class);
+		super(SessionRepositoryConfigurationBean.DEFAULT_SPRING_SECURITY_INDEXES, SessionRepositoryConfigurationBean.DEFAULT_SPRING_SECURITY_INDEX_RESOLVER);
 	}
 
 	@Bean
 	public InfinispanSessionRepository sessionRepository() {
 		return new InfinispanSessionRepository(this);
-	}
-
-	@Override
-	public String getConfigurationResource() {
-		return this.resource;
-	}
-
-	@Override
-	public String getTemplateName() {
-		return this.templateName;
-	}
-
-	@Autowired(required = false)
-	public void setConfigurationResource(String resource) {
-		this.resource = resource;
-	}
-
-	@Autowired(required = false)
-	public void setTemplateName(String templateName) {
-		this.templateName = templateName;
-	}
-
-	@Override
-	public void accept(AnnotationAttributes attributes) {
-		super.accept(attributes);
-		AnnotationAttributes config = attributes.getAnnotation("config");
-		this.resource = config.getString("resource");
-		String templateName = config.getString("template");
-		this.templateName = !templateName.isEmpty() ? templateName : null;
 	}
 }

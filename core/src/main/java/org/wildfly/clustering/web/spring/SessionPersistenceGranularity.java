@@ -24,11 +24,13 @@ package org.wildfly.clustering.web.spring;
 
 import java.util.function.Supplier;
 
-import org.wildfly.clustering.web.session.SessionAttributePersistenceStrategy;
+import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 
 /**
  * @author Paul Ferraro
+ * @deprecated Use {@link org.wildfly.clustering.spring.session.SessionMarshallerFactory} instead.
  */
+@Deprecated(forRemoval = true)
 public enum SessionPersistenceGranularity implements Supplier<SessionAttributePersistenceStrategy> {
 	SESSION(SessionAttributePersistenceStrategy.COARSE),
 	ATTRIBUTE(SessionAttributePersistenceStrategy.FINE),

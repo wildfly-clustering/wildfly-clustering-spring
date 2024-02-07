@@ -120,11 +120,11 @@ Consequently, the only *feasible* way to configure Spring Session via annotation
 	```
 
 1. Since we have denied Spring the ability to register its `ServletContextListener` programmatically, we must instead define one explicitly.
-	This listener should extend `org.wildfly.clustering.web.spring.context.ContextLoaderListener` and be constructed with the component classes that would normally be registered via the application initializer.
+	This listener should extend `org.wildfly.clustering.spring.session.context.ContextLoaderListener` and be constructed with the component classes that would normally be registered via the application initializer.
 
 	```java
 	@WebListener
-	public class MyContextLoaderListener extends org.wildfly.clustering.web.spring.context.ContextLoaderListener { 
+	public class MyContextLoaderListener extends org.wildfly.clustering.spring.session.context.ContextLoaderListener { 
 		public MyContextLoaderListener() {
 			// Specify spring session repository component class to super implementation
 			super(Config.class);
@@ -156,8 +156,8 @@ The `@SessionManager` annotation defines the following properties:
 
 |Property|Description|
 |:---|:---|
-|granularity|Defines how a session is mapped to entries in the cache. Supported granularities are enumerated by the `org.wildfly.clustering.web.spring.SessionPersistenceGranularity` enum. `SESSION` will store all attributes of a session in a single cache entry, while `ATTRIBUTE` will store each session attribute in a separate cache entry.  Default is `SESSION`.|
-|marshallerFactory|Specifies the marshaller used to serialize and deserialize session attributes. Supported marshallers are enumerated by the `org.wildfly.clustering.web.spring.SessionMarshallerFactory` enum and include: `JAVA`, i.e. Java serialization; `JBOSS`, i.e. JBoss Marshalling; `PROTOSTREAM`, i.e. protobuf. Default marshaller is `JBOSS`.|
+|granularity|Defines how a session is mapped to entries in the cache. Supported granularities are enumerated by the `org.wildfly.clustering.spring.session.SessionPersistenceGranularity` enum. `SESSION` will store all attributes of a session in a single cache entry, while `ATTRIBUTE` will store each session attribute in a separate cache entry.  Default is `SESSION`.|
+|marshallerFactory|Specifies the marshaller used to serialize and deserialize session attributes. Supported marshallers are enumerated by the `org.wildfly.clustering.spring.session.SessionMarshallerFactory` enum and include: `JAVA`, i.e. Java serialization; `JBOSS`, i.e. JBoss Marshalling; `PROTOSTREAM`, i.e. protobuf. Default marshaller is `JBOSS`.|
 |maxActiveSessions|Defines the maximum number of sessions to retain within the data container, for embedded Infinispan; or within the HotRod near-cache, for a remote Infinispan cluster.  By default, embedded Infinispan will use an unbounded data container, while HotRod will disable its near-cache.|
 
 ##### @HotRod
@@ -225,7 +225,7 @@ When configuring Spring Session via XML, you must also define the ServletContext
 		xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 	<context:annotation-config/>
 
-	<bean class="org.wildfly.clustering.web.spring.hotrod.annotation.HotRodHttpSessionConfiguration">
+	<bean class="org.wildfly.clustering.spring.session.hotrod.config.HotRodHttpSessionConfiguration">
 		<property name="uri">
 			<value type="java.net.URI">hotrod://127.0.0.1:11222</value>
 		</property>
@@ -235,10 +235,10 @@ When configuring Spring Session via XML, you must also define the ServletContext
 			</props>
 		</property>
 		<property name="granularity">
-			<value type="org.wildfly.clustering.web.spring.SessionPersistenceGranularity">SESSION</value>
+			<value type="org.wildfly.clustering.spring.session.SessionPersistenceGranularity">SESSION</value>
 		</property>
 		<property name="marshallerFactory">
-			<value type="org.wildfly.clustering.web.spring.SessionMarshallerFactory">PROTOSTREAM</value>
+			<value type="org.wildfly.clustering.spring.session.SessionMarshallerFactory">PROTOSTREAM</value>
 		</property>
 		<property name="maxActiveSessions">1000</property>
 	</bean>
