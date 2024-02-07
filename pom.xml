@@ -50,7 +50,6 @@
 		<maven.compiler.source>17</maven.compiler.source>
 
 		<!-- Provided dependency versions -->
-		<version.jakarta.annotation>2.1.1</version.jakarta.annotation>
 		<version.jakarta.servlet>6.0.0</version.jakarta.servlet>
 		<version.net.jcip.annotations>1.0</version.net.jcip.annotations>
 
@@ -135,11 +134,6 @@
 			</dependency>
 
 			<!-- Provided dependencies -->
-			<dependency>
-				<groupId>jakarta.annotation</groupId>
-				<artifactId>jakarta.annotation-api</artifactId>
-				<version>${version.jakarta.annotation}</version>
-			</dependency>
 			<dependency>
 				<groupId>jakarta.servlet</groupId>
 				<artifactId>jakarta.servlet-api</artifactId>
