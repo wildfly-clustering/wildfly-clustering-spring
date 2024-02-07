@@ -2,7 +2,6 @@
  * Copyright The WildFly Authors
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package org.wildfly.clustering.spring.session.annotation;
 
 import java.lang.annotation.Annotation;
