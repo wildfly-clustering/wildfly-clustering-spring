@@ -37,7 +37,8 @@ public class BeanSmokeITCase extends AbstractSmokeITCase {
 	}
 
 	private static Archive<?> deployment() {
-		return createWebArchive(BeanSmokeITCase.class)
+		return deployment(BeanSmokeITCase.class)
+				.setWebXML(AbstractSmokeITCase.class.getPackage(), "web.xml")
 				.addAsWebInfResource(BeanSmokeITCase.class.getPackage(), "applicationContext.xml", "applicationContext.xml")
 				.addAsWebInfResource(BeanSmokeITCase.class.getPackage(), "infinispan.xml", "infinispan.xml")
 				;

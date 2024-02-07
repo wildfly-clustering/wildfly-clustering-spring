@@ -20,11 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.spring.session.infinispan.embedded;
+package org.wildfly.clustering.spring.session.infinispan.remote;
 
 import java.net.URL;
 
-import org.infinispan.protostream.SerializationContextInitializer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -34,14 +33,13 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.wildfly.clustering.spring.session.infinispan.embedded.context.ConfigContextLoaderListener;
+import org.wildfly.clustering.spring.session.AbstractSmokeITCase;
 import org.wildfly.clustering.spring.session.servlet.SessionServlet;
-import org.wildfly.clustering.spring.session.servlet.TestSerializationContextInitializer;
 
 /**
  * @author Paul Ferraro
  */
-public class AnnotationSmokeITCase extends AbstractHotRodSmokeITCase {
+public class BeanSmokeITCase extends AbstractHotRodSmokeITCase {
 
 	@RegisterExtension
 	static final ArquillianExtension ARQUILLIAN = new ArquillianExtension();
@@ -59,9 +57,9 @@ public class AnnotationSmokeITCase extends AbstractHotRodSmokeITCase {
 	}
 
 	private static Archive<?> deployment() {
-		return deployment(AnnotationSmokeITCase.class)
-				.addPackage(ConfigContextLoaderListener.class.getPackage())
-				.addAsServiceProvider(SerializationContextInitializer.class.getName(), TestSerializationContextInitializer.class.getName() + "Impl")
+		return deployment(BeanSmokeITCase.class)
+				.setWebXML(AbstractSmokeITCase.class.getPackage(), "web.xml")
+				.addAsWebInfResource(BeanSmokeITCase.class.getPackage(), "applicationContext.xml", "applicationContext.xml")
 				;
 	}
 

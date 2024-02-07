@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.spring.session.infinispan.embedded.context;
+package org.wildfly.clustering.spring.session.infinispan.remote.authentication;
 
 import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.context.annotation.Bean;
@@ -28,8 +28,9 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.util.StringValueResolver;
 import org.wildfly.clustering.spring.session.SessionMarshallerFactory;
 import org.wildfly.clustering.spring.session.SessionPersistenceGranularity;
+import org.wildfly.clustering.spring.session.annotation.Indexing;
 import org.wildfly.clustering.spring.session.annotation.SessionManager;
-import org.wildfly.clustering.spring.session.infinispan.remote.annotation.EnableHotRodHttpSession;
+import org.wildfly.clustering.spring.session.infinispan.remote.annotation.EnableHotRodIndexedHttpSession;
 import org.wildfly.clustering.spring.session.infinispan.remote.annotation.HotRod;
 
 /**
@@ -37,7 +38,7 @@ import org.wildfly.clustering.spring.session.infinispan.remote.annotation.HotRod
  * @author Paul Ferraro
  */
 @PropertySource("classpath:application.properties")
-@EnableHotRodHttpSession(config = @HotRod(uri = "hotrod://${infinispan.server.username}:${infinispan.server.password}@${infinispan.server.host}:${infinispan.server.port}?tcp_no_delay=true", template = "${infinispan.server.template}"), manager = @SessionManager(marshallerFactory = SessionMarshallerFactory.PROTOSTREAM, granularity = SessionPersistenceGranularity.ATTRIBUTE))
+@EnableHotRodIndexedHttpSession(config = @HotRod(uri = "hotrod://${infinispan.server.username}:${infinispan.server.password}@${infinispan.server.host}:${infinispan.server.port}?tcp_no_delay=true", template = "${infinispan.server.template}"), manager = @SessionManager(marshallerFactory = SessionMarshallerFactory.JBOSS, granularity = SessionPersistenceGranularity.ATTRIBUTE), indexing = @Indexing)
 public class Config implements EmbeddedValueResolverAware {
 
 	private StringValueResolver resolver;

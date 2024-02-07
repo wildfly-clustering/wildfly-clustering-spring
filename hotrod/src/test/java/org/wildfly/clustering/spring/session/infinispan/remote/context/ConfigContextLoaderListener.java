@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2021, Red Hat, Inc., and individual contributors
+ * Copyright 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,25 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.spring.session.infinispan.embedded.authentication;
+package org.wildfly.clustering.spring.session.infinispan.remote.context;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.session.FindByIndexNameSessionRepository;
-import org.wildfly.clustering.spring.security.authentication.AbstractSecurityConfig;
-import org.wildfly.clustering.spring.session.SpringSession;
-import org.wildfly.clustering.spring.session.infinispan.remote.HotRodSessionRepository;
+import jakarta.servlet.annotation.WebListener;
 
 /**
+ * Custom servlet context listener that uses annotation-based registration, using our Config.
  * @author Paul Ferraro
  */
-@EnableWebSecurity
-public class SecurityConfig extends AbstractSecurityConfig {
-	@Autowired
-	HotRodSessionRepository repository;
+@WebListener
+public class ConfigContextLoaderListener extends org.wildfly.clustering.spring.session.context.ContextLoaderListener {
 
-	@Override
-	public FindByIndexNameSessionRepository<SpringSession> get() {
-		return this.repository;
+	public ConfigContextLoaderListener() {
+		super(Config.class);
 	}
 }

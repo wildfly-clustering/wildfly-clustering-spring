@@ -37,11 +37,12 @@ public class AbstractSmokeITCase implements ExceptionBiConsumer<URL, URL, Except
 	protected static final String DEPLOYMENT_1 = "deployment-1";
 	protected static final String DEPLOYMENT_2 = "deployment-2";
 
-	protected static WebArchive createWebArchive(Class<? extends AbstractSmokeITCase> testClass) {
+	protected static WebArchive deployment(Class<? extends AbstractSmokeITCase> testClass) {
 		return ShrinkWrap.create(WebArchive.class, testClass.getSimpleName() + ".war")
 				.addPackage(SessionServlet.class.getPackage())
 				.addPackage(HttpSessionApplicationInitializer.class.getPackage())
-				.setWebXML(AbstractSmokeITCase.class.getPackage(), "web.xml")
+//				.addAsWebInfResource(AbstractSmokeITCase.class.getPackage(), "applicationContext.xml", "applicationContext.xml")
+//				.setWebXML(AbstractSmokeITCase.class.getPackage(), "web.xml")
 				;
 	}
 

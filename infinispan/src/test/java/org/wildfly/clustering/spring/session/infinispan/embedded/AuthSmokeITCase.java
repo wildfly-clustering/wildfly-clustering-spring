@@ -52,7 +52,7 @@ public class AuthSmokeITCase extends AbstractSmokeITCase {
 	}
 
 	private static Archive<?> deployment() {
-		return createWebArchive(AuthSmokeITCase.class)
+		return deployment(AuthSmokeITCase.class)
 				.addPackage(ConfigContextLoaderListener.class.getPackage())
 				.addPackage(SecurityInitializer.class.getPackage())
 				.addAsWebInfResource(AuthSmokeITCase.class.getPackage(), "infinispan.xml", "infinispan.xml")

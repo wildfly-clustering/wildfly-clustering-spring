@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.spring.session.infinispan.embedded.context;
+package org.wildfly.clustering.spring.session.infinispan.remote.authentication;
 
 import jakarta.servlet.annotation.WebListener;
 
@@ -32,6 +32,6 @@ import jakarta.servlet.annotation.WebListener;
 public class ConfigContextLoaderListener extends org.wildfly.clustering.spring.session.context.ContextLoaderListener {
 
 	public ConfigContextLoaderListener() {
-		super(Config.class);
+		super(Config.class, SecurityConfig.class);
 	}
 }

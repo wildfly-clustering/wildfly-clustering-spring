@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2020, Red Hat, Inc., and individual contributors
+ * Copyright 2021, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,10 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.clustering.spring.session.infinispan.embedded;
+package org.wildfly.clustering.spring.session.infinispan.remote;
 
+import java.net.URI;
 import java.net.URL;
 
+import org.apache.hc.client5.http.auth.AuthScope;
+import org.apache.hc.client5.http.auth.Credentials;
+import org.apache.hc.client5.http.auth.CredentialsStore;
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
+import org.apache.hc.client5.http.classic.methods.HttpHead;
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.HttpStatus;
+import org.infinispan.protostream.SerializationContextInitializer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -31,14 +42,18 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.wildfly.clustering.spring.security.authentication.SecurityInitializer;
+import org.wildfly.clustering.spring.session.infinispan.remote.authentication.ConfigContextLoaderListener;
 import org.wildfly.clustering.spring.session.servlet.SessionServlet;
+import org.wildfly.clustering.spring.session.servlet.TestSerializationContextInitializer;
 
 /**
  * @author Paul Ferraro
  */
-public class BeanSmokeITCase extends AbstractHotRodSmokeITCase {
+public class AuthSmokeITCase extends AbstractHotRodSmokeITCase {
 
 	@RegisterExtension
 	static final ArquillianExtension ARQUILLIAN = new ArquillianExtension();
@@ -56,10 +71,23 @@ public class BeanSmokeITCase extends AbstractHotRodSmokeITCase {
 	}
 
 	private static Archive<?> deployment() {
-		return deployment(BeanSmokeITCase.class)
-				.setWebXML(org.wildfly.clustering.spring.session.AbstractSmokeITCase.class.getPackage(), "web.xml")
-				.addAsWebInfResource(BeanSmokeITCase.class.getPackage(), "applicationContext.xml", "applicationContext.xml")
+		return deployment(AuthSmokeITCase.class)
+				.addPackage(SecurityInitializer.class.getPackage())
+				.addPackage(ConfigContextLoaderListener.class.getPackage())
+				.addAsServiceProvider(SerializationContextInitializer.class.getName(), TestSerializationContextInitializer.class.getName() + "Impl")
 				;
+	}
+
+	public AuthSmokeITCase() {
+		super(AuthSmokeITCase::createClient);
+	}
+
+	private static CloseableHttpClient createClient(URL url1, URL url2) {
+		CredentialsStore provider = new BasicCredentialsProvider();
+		Credentials credentials = new UsernamePasswordCredentials("admin", "password".toCharArray());
+		provider.setCredentials(new AuthScope(url1.getHost(), url1.getPort()), credentials);
+		provider.setCredentials(new AuthScope(url2.getHost(), url2.getPort()), credentials);
+		return HttpClients.custom().setDefaultCredentialsProvider(provider).build();
 	}
 
 	@ArquillianResource(SessionServlet.class)
@@ -73,6 +101,14 @@ public class BeanSmokeITCase extends AbstractHotRodSmokeITCase {
 	@Test
 	@RunAsClient
 	public void test() throws Exception {
+		URI uri1 = SessionServlet.createURI(this.baseURL1);
+		// Verify that authentication is required
+		try (CloseableHttpClient client = HttpClients.createDefault()) {
+			client.execute(new HttpHead(uri1), response -> {
+				Assertions.assertEquals(HttpStatus.SC_UNAUTHORIZED, response.getCode());
+				return null;
+			});
+		}
 		this.accept(this.baseURL1, this.baseURL2);
 	}
 }

@@ -40,7 +40,7 @@ public class AnnotationSmokeITCase extends AbstractSmokeITCase {
 	}
 
 	private static Archive<?> deployment() {
-		return createWebArchive(AnnotationSmokeITCase.class)
+		return deployment(AnnotationSmokeITCase.class)
 				.addPackage(ConfigContextLoaderListener.class.getPackage())
 				.addAsWebInfResource(AnnotationSmokeITCase.class.getPackage(), "infinispan.xml", "infinispan.xml")
 				.addAsServiceProvider(SerializationContextInitializer.class.getName(), TestSerializationContextInitializer.class.getName() + "Impl")
