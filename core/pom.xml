@@ -1,26 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ JBoss, Home of Professional Open Source.
-  ~ Copyright 2010, Red Hat, Inc., and individual contributors
-  ~ as indicated by the @author tags. See the copyright.txt file in the
-  ~ distribution for a full listing of individual contributors.
-  ~
-  ~ This is free software; you can redistribute it and/or modify it
-  ~ under the terms of the GNU Lesser General Public License as
-  ~ published by the Free Software Foundation; either version 2.1 of
-  ~ the License, or (at your option) any later version.
-  ~
-  ~ This software is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  ~ Lesser General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU Lesser General Public
-  ~ License along with this software; if not, write to the Free
-  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-  -->
-
+	Copyright The WildFly Authors
+	SPDX-License-Identifier: Apache-2.0
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -37,11 +19,6 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>jakarta.annotation</groupId>
-			<artifactId>jakarta.annotation-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
 			<groupId>jakarta.servlet</groupId>
 			<artifactId>jakarta.servlet-api</artifactId>
 			<scope>provided</scope>
@@ -53,8 +30,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.squareup</groupId>
-			<artifactId>protoparser</artifactId>
+			<groupId>io.projectreactor</groupId>
+			<artifactId>reactor-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -77,69 +54,50 @@
 			<artifactId>spring-session-core</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.wildfly</groupId>
+			<groupId>org.wildfly.clustering</groupId>
 			<artifactId>wildfly-clustering-context</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.wildfly</groupId>
-			<artifactId>wildfly-clustering-marshalling-api</artifactId>
+			<groupId>org.wildfly.clustering</groupId>
+			<artifactId>wildfly-clustering-marshalling-java</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.wildfly</groupId>
+			<groupId>org.wildfly.clustering</groupId>
 			<artifactId>wildfly-clustering-marshalling-jboss</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.wildfly</groupId>
-			<artifactId>wildfly-clustering-marshalling-protostream</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.wildfly</groupId>
-			<artifactId>wildfly-clustering-web-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.wildfly</groupId>
-			<artifactId>wildfly-clustering-web-cache</artifactId>
+			<groupId>org.wildfly.clustering</groupId>
+			<artifactId>wildfly-clustering-session-spi</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>net.jcip</groupId>
-			<artifactId>jcip-annotations</artifactId>
+			<groupId>org.jboss.marshalling</groupId>
+			<artifactId>jboss-marshalling-river</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>
-			<groupId>org.wildfly</groupId>
-			<artifactId>wildfly-clustering-marshalling-api</artifactId>
-			<version>${version.org.wildfly}</version>
+			<groupId>org.wildfly.clustering</groupId>
+			<artifactId>wildfly-clustering-marshalling-java</artifactId>
 			<classifier>tests</classifier>
-			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.wildfly</groupId>
+			<groupId>org.wildfly.clustering</groupId>
 			<artifactId>wildfly-clustering-marshalling-protostream</artifactId>
-			<version>${version.org.wildfly}</version>
 			<classifier>tests</classifier>
-			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.wildfly</groupId>
+			<groupId>org.wildfly.clustering</groupId>
 			<artifactId>wildfly-clustering-marshalling-spi</artifactId>
-			<version>${version.org.wildfly}</version>
 			<classifier>tests</classifier>
-			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.httpcomponents.client5</groupId>
 			<artifactId>httpclient5</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.infinispan</groupId>
-			<artifactId>infinispan-server-testdriver-junit4</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -153,18 +111,8 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-config</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -178,18 +126,5 @@
 				</includes>
 			</testResource>
 		</testResources>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>test-jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
 	</build>
 </project>
