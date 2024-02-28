@@ -1,0 +1,7 @@
+package org.springframework.web.util;
+
+/**
+ * @TypeId(380)
+ */
+message Mutex {
+}

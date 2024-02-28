@@ -7,22 +7,21 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.jboss</groupId>
-		<artifactId>jboss-parent</artifactId>
-		<version>41</version>
+		<groupId>org.wildfly.clustering</groupId>
+		<artifactId>wildfly-clustering-spring-bom</artifactId>
+		<version>11.0.0.Final-SNAPSHOT</version>
+		<relativePath>bom</relativePath>
 	</parent>
 
-	<groupId>org.wildfly.clustering</groupId>
-	<artifactId>wildfly-clustering-spring-session</artifactId>
-	<version>11.0.0.Final-SNAPSHOT</version>
+	<artifactId>wildfly-clustering-spring</artifactId>
 	<packaging>pom</packaging>
 
-	<name>Distributed session management for Spring Session</name>
+	<name>WildFly Clustering: Spring</name>
 
 	<scm>
-		<connection>scm:git:git://github.com:wildfly-clustering/wildfly-clustering-spring-session.git</connection>
-		<developerConnection>scm:git:git@github.com:wildfly-clustering/wildfly-clustering-spring-session.git</developerConnection>
-		<url>https://github.com/wildfly-clustering/wildfly-clustering-spring-session</url>
+		<connection>scm:git:git://github.com:wildfly-clustering/wildfly-clustering-spring.git</connection>
+		<developerConnection>scm:git:git@github.com:wildfly-clustering/wildfly-clustering-spring.git</developerConnection>
+		<url>https://github.com/wildfly-clustering/wildfly-clustering-spring</url>
 		<tag>HEAD</tag>
 	</scm>
 
@@ -34,37 +33,64 @@
 		<!-- Provided dependency versions -->
 		<version.jakarta.servlet>6.0.0</version.jakarta.servlet>
 		<version.net.jcip.annotations>1.0</version.net.jcip.annotations>
-
-		<!-- Compile dependency versions -->
-		<version.io.projectreactor.core>3.6.2</version.io.projectreactor.core>
-		<version.org.springframework>6.1.2</version.org.springframework>
-		<version.org.springframework.security>6.2.1</version.org.springframework.security>
-		<version.org.springframework.session>3.2.1</version.org.springframework.session>
-		<version.org.infinispan>14.0.24.Final</version.org.infinispan>
-		<version.org.jboss.marshalling>2.1.3.Final</version.org.jboss.marshalling>
-		<version.org.junit>5.10.0</version.org.junit>
 		<version.org.kohsuke.metainf-services>1.11</version.org.kohsuke.metainf-services>
-		<version.org.wildfly.clustering>1.0.0.Final</version.org.wildfly.clustering>
+
+		<!-- Runtime dependency versions -->
+		<version.io.projectreactor.core>3.6.2</version.io.projectreactor.core>
+		<version.org.springframework>6.1.4</version.org.springframework>
+		<version.org.springframework.security>6.2.2</version.org.springframework.security>
+		<version.org.springframework.session>3.2.1</version.org.springframework.session>
+		<version.org.infinispan>14.0.25.Final</version.org.infinispan>
+		<version.org.jboss.marshalling>2.1.3.Final</version.org.jboss.marshalling>
+		<version.org.wildfly.clustering>1.0.4.Final</version.org.wildfly.clustering>
 
 		<!-- Test dependency versions -->
-		<version.io.undertow>2.3.10.Final</version.io.undertow>
-		<version.org.apache.httpcomponents>5.2.1</version.org.apache.httpcomponents>
-		<version.org.apache.tomcat>10.1.18</version.org.apache.tomcat>
+		<version.org.apache.tomcat>10.1.19</version.org.apache.tomcat>
 		<version.org.jboss.arquillian>1.8.0.Final</version.org.jboss.arquillian>
 		<version.org.jboss.arquillian.container.tomcat>1.1.0.Final</version.org.jboss.arquillian.container.tomcat>
-		<version.org.junit>5.10.1</version.org.junit>
+		<version.org.junit>5.10.2</version.org.junit>
 		<version.org.mockito>5.10.0</version.org.mockito>
 		<version.org.testcontainers>1.19.4</version.org.testcontainers>
 	</properties>
 
 	<modules>
-		<module>core</module>
-		<module>hotrod</module>
-		<module>infinispan</module>
+		<module>bom</module>
+		<module>context</module>
+		<module>security</module>
+		<module>session</module>
+		<module>web</module>
 	</modules>
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<configuration>
+					<configLocation>checkstyle.xml</configLocation>
+					<logViolationsToConsole>true</logViolationsToConsole>
+					<sourceDirectories>
+						<sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+						<sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
+					</sourceDirectories>
+				</configuration>
+				<executions>
+					<execution>
+						<id>check-sources</id>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>check-test-sources</id>
+						<phase>process-test-sources</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
@@ -86,6 +112,9 @@
 						<goals>
 							<goal>test-jar</goal>
 						</goals>
+						<configuration>
+							<skipIfEmpty>true</skipIfEmpty>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
@@ -93,6 +122,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
 				<configuration>
+					<autoVersionSubmodules>true</autoVersionSubmodules>
 					<tagNameFormat>@{project.version}</tagNameFormat>
 				</configuration>
 			</plugin>
@@ -108,13 +138,6 @@
 
 	<dependencyManagement>
 		<dependencies>
-			<!-- Intra project dependencies -->
-			<dependency>
-				<groupId>org.wildfly.clustering</groupId>
-				<artifactId>wildfly-clustering-spring-session-core</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-
 			<!-- Provided dependencies -->
 			<dependency>
 				<groupId>jakarta.servlet</groupId>
@@ -151,6 +174,13 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+			<dependency>
+				<groupId>org.wildfly.clustering</groupId>
+				<artifactId>wildfly-clustering-bom</artifactId>
+				<version>${version.org.wildfly.clustering}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
 
 			<!-- External compile dependencies -->
 			<dependency>
@@ -162,41 +192,6 @@
 				<groupId>org.kohsuke.metainf-services</groupId>
 				<artifactId>metainf-services</artifactId>
 				<version>${version.org.kohsuke.metainf-services}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly.clustering</groupId>
-				<artifactId>wildfly-clustering-context</artifactId>
-				<version>${version.org.wildfly.clustering}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly.clustering</groupId>
-				<artifactId>wildfly-clustering-marshalling-java</artifactId>
-				<version>${version.org.wildfly.clustering}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly.clustering</groupId>
-				<artifactId>wildfly-clustering-marshalling-jboss</artifactId>
-				<version>${version.org.wildfly.clustering}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly.clustering</groupId>
-				<artifactId>wildfly-clustering-session-cache</artifactId>
-				<version>${version.org.wildfly.clustering}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly.clustering</groupId>
-				<artifactId>wildfly-clustering-session-infinispan-embedded</artifactId>
-				<version>${version.org.wildfly.clustering}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly.clustering</groupId>
-				<artifactId>wildfly-clustering-session-infinispan-remote</artifactId>
-				<version>${version.org.wildfly.clustering}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly.clustering</groupId>
-				<artifactId>wildfly-clustering-session-spi</artifactId>
-				<version>${version.org.wildfly.clustering}</version>
 			</dependency>
 
 			<!-- Test BOM dependencies -->
@@ -231,11 +226,6 @@
 
 			<!-- Test dependencies -->
 			<dependency>
-				<groupId>org.apache.httpcomponents.client5</groupId>
-				<artifactId>httpclient5</artifactId>
-				<version>${version.org.apache.httpcomponents}</version>
-			</dependency>
-			<dependency>
 				<groupId>org.apache.tomcat</groupId>
 				<artifactId>tomcat-catalina</artifactId>
 				<version>${version.org.apache.tomcat}</version>
@@ -249,50 +239,6 @@
 				<groupId>org.jboss.marshalling</groupId>
 				<artifactId>jboss-marshalling-river</artifactId>
 				<version>${version.org.jboss.marshalling}</version>
-			</dependency>
-
-			<!-- Test jar dependencies -->
-			<dependency>
-				<groupId>org.wildfly.clustering</groupId>
-				<artifactId>wildfly-clustering-cache-infinispan-remote</artifactId>
-				<version>${version.org.wildfly.clustering}</version>
-				<classifier>tests</classifier>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly.clustering</groupId>
-				<artifactId>wildfly-clustering-cache-spi</artifactId>
-				<version>${version.org.wildfly.clustering}</version>
-				<classifier>tests</classifier>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly.clustering</groupId>
-				<artifactId>wildfly-clustering-marshalling-java</artifactId>
-				<version>${version.org.wildfly.clustering}</version>
-				<classifier>tests</classifier>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly.clustering</groupId>
-				<artifactId>wildfly-clustering-marshalling-jboss</artifactId>
-				<version>${version.org.wildfly.clustering}</version>
-				<classifier>tests</classifier>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly.clustering</groupId>
-				<artifactId>wildfly-clustering-marshalling-protostream</artifactId>
-				<version>${version.org.wildfly.clustering}</version>
-				<classifier>tests</classifier>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly.clustering</groupId>
-				<artifactId>wildfly-clustering-marshalling-spi</artifactId>
-				<version>${version.org.wildfly.clustering}</version>
-				<classifier>tests</classifier>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly.clustering</groupId>
-				<artifactId>wildfly-clustering-spring-session-core</artifactId>
-				<version>${project.version}</version>
-				<classifier>tests</classifier>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

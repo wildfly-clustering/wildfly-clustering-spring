@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module PUBLIC "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN" "https://checkstyle.org/dtds/configuration_1_3.dtd">
+<module name="Checker">
+	<module name="NewlineAtEndOfFile"/>
+	<module name="RegexpSingleline">
+		<property name="format" value="^\t*(?! \*) "/>
+		<property name="message" value="Non-tab indentation detected"/>
+		<property name="fileExtensions" value="java"/>
+	</module>
+	<module name="RegexpSingleline">
+		<property name="format" value="^\t* "/>
+		<property name="message" value="Non-tab indentation detected"/>
+		<property name="fileExtensions" value="proto xml"/>
+	</module>
+	<module name="RegexpSingleline">
+		<property name="format" value="\s+$"/>
+		<property name="message" value="Tailing whitespace detected"/>
+	</module>
+	<module name="TreeWalker">
+		<module name="ArrayTypeStyle"/>
+		<module name="AvoidStarImport">
+			<property name="allowStaticMemberImports" value="true"/>
+		</module>
+		<module name="EmptyStatement"/>
+		<module name="GenericWhitespace"/>
+		<module name="IllegalImport"/>
+		<module name="IllegalInstantiation"/>
+		<module name="IllegalThrows"/>
+		<module name="ImportOrder">
+			<property name="groups" value="java,javax,jakarta,io,org,com"/>
+			<property name="option" value="top"/>
+			<property name="separated" value="true"/>
+			<property name="separatedStaticGroups" value="true"/>
+			<property name="sortStaticImportsAlphabetically" value="true"/>
+		</module>
+		<module name="LeftCurly"/>
+		<module name="ModifierOrder"/>
+		<module name="RedundantImport"/>
+		<module name="RedundantModifier"/>
+		<module name="RightCurly"/>
+		<module name="UnusedImports"/>
+		<module name="UpperEll"/>
+	</module>
+</module>
