@@ -5,10 +5,9 @@
 package org.wildfly.clustering.spring.context.config;
 
 import java.lang.annotation.Annotation;
-import java.util.Map;
 import java.util.OptionalInt;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +44,7 @@ public abstract class SessionManagementConfiguration<S, C, L> implements Session
 	private IdGenerator generator = new JdkIdGenerator();
 	private OptionalInt maxActiveSessions = OptionalInt.empty();
 	private SessionAttributePersistenceStrategy persistenceStrategy = SessionAttributePersistenceStrategy.COARSE;
-	private Function<Map.Entry<Environment, ResourceLoader>, ByteBufferMarshaller> marshallerFactory = SessionMarshallerFactory.JAVA;
+	private BiFunction<Environment, ResourceLoader, ByteBufferMarshaller> marshallerFactory = SessionMarshallerFactory.JAVA;
 	private Environment environment;
 	private ResourceLoader loader;
 
@@ -95,7 +94,7 @@ public abstract class SessionManagementConfiguration<S, C, L> implements Session
 
 	@Override
 	public ByteBufferMarshaller getMarshaller() {
-		return this.marshallerFactory.apply(Map.entry(this.environment, this.loader));
+		return this.marshallerFactory.apply(this.environment, this.loader);
 	}
 
 	@Autowired(required = false)
@@ -114,7 +113,7 @@ public abstract class SessionManagementConfiguration<S, C, L> implements Session
 	}
 
 	@Autowired(required = false)
-	public void setMarshallerFactory(Function<Map.Entry<Environment, ResourceLoader>, ByteBufferMarshaller> marshallerFactory) {
+	public void setMarshallerFactory(BiFunction<Environment, ResourceLoader, ByteBufferMarshaller> marshallerFactory) {
 		this.marshallerFactory = marshallerFactory;
 	}
 

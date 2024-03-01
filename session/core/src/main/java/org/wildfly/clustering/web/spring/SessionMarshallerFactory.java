@@ -4,8 +4,7 @@
  */
 package org.wildfly.clustering.web.spring;
 
-import java.util.Map;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
@@ -16,20 +15,20 @@ import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
  * @deprecated Use {@link org.wildfly.clustering.spring.session.SessionMarshallerFactory} instead.
  */
 @Deprecated(forRemoval = true)
-public enum SessionMarshallerFactory implements Function<Map.Entry<Environment, ResourceLoader>, ByteBufferMarshaller> {
+public enum SessionMarshallerFactory implements BiFunction<Environment, ResourceLoader, ByteBufferMarshaller> {
 
 	JAVA(org.wildfly.clustering.spring.context.SessionMarshallerFactory.JAVA),
 	JBOSS(org.wildfly.clustering.spring.context.SessionMarshallerFactory.JBOSS),
 	PROTOSTREAM(org.wildfly.clustering.spring.context.SessionMarshallerFactory.PROTOSTREAM),
 	;
-	private final Function<Map.Entry<Environment, ResourceLoader>, ByteBufferMarshaller> factory;
+	private final BiFunction<Environment, ResourceLoader, ByteBufferMarshaller> factory;
 
-	SessionMarshallerFactory(Function<Map.Entry<Environment, ResourceLoader>, ByteBufferMarshaller> factory) {
+	SessionMarshallerFactory(BiFunction<Environment, ResourceLoader, ByteBufferMarshaller> factory) {
 		this.factory = factory;
 	}
 
 	@Override
-	public ByteBufferMarshaller apply(Map.Entry<Environment, ResourceLoader> context) {
-		return this.factory.apply(context);
+	public ByteBufferMarshaller apply(Environment environment, ResourceLoader loader) {
+		return this.factory.apply(environment, loader);
 	}
 }
