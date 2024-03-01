@@ -35,6 +35,10 @@ public class SessionServlet extends HttpServlet {
 		HttpSession session = request.getSession(false);
 		if (session != null) {
 			response.setHeader(SmokeITParameters.SESSION_ID, session.getId());
+			AtomicInteger value = (AtomicInteger) session.getAttribute(SmokeITParameters.VALUE);
+			if (value != null) {
+				response.setIntHeader(SmokeITParameters.VALUE, value.get());
+			}
 		}
 	}
 
@@ -44,22 +48,18 @@ public class SessionServlet extends HttpServlet {
 		response.setHeader(SmokeITParameters.SESSION_ID, session.getId());
 
 		AtomicInteger value = (AtomicInteger) session.getAttribute(SmokeITParameters.VALUE);
-		int result = 0;
 		if (value == null) {
-			value = new AtomicInteger(result);
+			value = new AtomicInteger(0);
 			session.setAttribute(SmokeITParameters.VALUE, value);
-		} else {
-			result = value.incrementAndGet();
 		}
 
-		response.setIntHeader(SmokeITParameters.VALUE, result);
+		response.setIntHeader(SmokeITParameters.VALUE, value.incrementAndGet());
 	}
 
 	@Override
 	public void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		HttpSession session = request.getSession(false);
 		if (session != null) {
-			response.setHeader(SmokeITParameters.SESSION_ID, session.getId());
 			session.invalidate();
 		}
 	}
