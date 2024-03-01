@@ -5,7 +5,9 @@
 
 package org.wildfly.clustering.spring.web.context;
 
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -23,31 +25,41 @@ import reactor.core.publisher.Mono;
 /**
  * @author Paul Ferraro
  */
-public class SessionHandler implements WebHandler {
+public class SessionHandler implements WebHandler, Function<ServerWebExchange, Mono<WebSession>> {
+	private static final Set<HttpMethod> SUPPORTED_METHODS = Set.of(HttpMethod.GET, HttpMethod.HEAD, HttpMethod.DELETE);
 
 	@Override
 	public Mono<Void> handle(ServerWebExchange exchange) {
+		ServerHttpResponse response = exchange.getResponse();
+		ServerHttpRequest request = exchange.getRequest();
+		HttpMethod method = request.getMethod();
+		if (!SUPPORTED_METHODS.contains(method)) {
+			response.setStatusCode(HttpStatusCode.valueOf(HttpServletResponse.SC_METHOD_NOT_ALLOWED));
+			return Mono.empty();
+		}
+		Mono<WebSession> sessionPublisher = this.apply(exchange);
+		if (method.equals(HttpMethod.DELETE)) {
+			return sessionPublisher.flatMap(WebSession::invalidate);
+		}
+		return sessionPublisher.doOnNext(session -> {
+			if (session.isStarted()) {
+				response.getHeaders().set(SmokeITParameters.SESSION_ID, session.getId());
+			}
+		}).then();
+	}
+
+	@Override
+	public Mono<WebSession> apply(ServerWebExchange exchange) {
 		ServerHttpRequest request = exchange.getRequest();
 		HttpMethod method = request.getMethod();
 		ServerHttpResponse response = exchange.getResponse();
-		Mono<WebSession> publisher = exchange.getSession().doOnNext(session -> response.getHeaders().set(SmokeITParameters.SESSION_ID, session.getId()));
+		Mono<WebSession> sessionPublisher = exchange.getSession();
 		if (method.equals(HttpMethod.GET)) {
-			publisher = publisher.doOnNext(session -> {
-				AtomicInteger value = session.getAttribute(SmokeITParameters.VALUE);
-				int result = 0;
-				if (value == null) {
-					value = new AtomicInteger(result);
-					session.getAttributes().put(SmokeITParameters.VALUE, value);
-				} else {
-					result = value.incrementAndGet();
-				}
-				response.getHeaders().set(SmokeITParameters.VALUE, Integer.toString(result));
+			return sessionPublisher.doOnNext(session -> {
+				AtomicInteger value = (AtomicInteger) session.getAttributes().computeIfAbsent(SmokeITParameters.VALUE, key -> new AtomicInteger(0));
+				response.getHeaders().set(SmokeITParameters.VALUE, Integer.toString(value.incrementAndGet()));
 			});
-		} else if (method.equals(HttpMethod.DELETE)) {
-			return publisher.flatMap(WebSession::invalidate);
-		} else if (!method.equals(HttpMethod.HEAD)) {
-			response.setStatusCode(HttpStatusCode.valueOf(HttpServletResponse.SC_METHOD_NOT_ALLOWED));
 		}
-		return Mono.when(publisher);
+		return sessionPublisher;
 	}
 }

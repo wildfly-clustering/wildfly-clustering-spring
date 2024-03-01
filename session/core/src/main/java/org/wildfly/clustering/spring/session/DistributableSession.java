@@ -14,7 +14,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.BatchContext;
-import org.wildfly.clustering.session.OOBSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.user.User;
@@ -57,9 +56,6 @@ public class DistributableSession<B extends Batch> implements SpringSession {
 				oldSession.invalidate();
 				this.session = newSession;
 			} catch (IllegalStateException e) {
-				if (!oldSession.isValid()) {
-					oldSession.close();
-				}
 				newSession.invalidate();
 				throw e;
 			}
@@ -89,11 +85,6 @@ public class DistributableSession<B extends Batch> implements SpringSession {
 		Session<Void> session = this.session;
 		try (BatchContext context = this.resumeBatch()) {
 			return (T) session.getAttributes().getAttribute(name);
-		} catch (IllegalStateException e) {
-			if (!session.isValid()) {
-				session.close();
-			}
-			throw e;
 		}
 	}
 
@@ -102,11 +93,6 @@ public class DistributableSession<B extends Batch> implements SpringSession {
 		Session<Void> session = this.session;
 		try (BatchContext context = this.resumeBatch()) {
 			return session.getAttributes().getAttributeNames();
-		} catch (IllegalStateException e) {
-			if (!session.isValid()) {
-				session.close();
-			}
-			throw e;
 		}
 	}
 
@@ -115,11 +101,6 @@ public class DistributableSession<B extends Batch> implements SpringSession {
 		Session<Void> session = this.session;
 		try (BatchContext context = this.resumeBatch()) {
 			return session.getMetaData().getCreationTime();
-		} catch (IllegalStateException e) {
-			if (!session.isValid()) {
-				session.close();
-			}
-			throw e;
 		}
 	}
 
@@ -133,11 +114,6 @@ public class DistributableSession<B extends Batch> implements SpringSession {
 		Session<Void> session = this.session;
 		try (BatchContext context = this.resumeBatch()) {
 			return session.getMetaData().getLastAccessStartTime();
-		} catch (IllegalStateException e) {
-			if (!session.isValid()) {
-				session.close();
-			}
-			throw e;
 		}
 	}
 
@@ -146,11 +122,6 @@ public class DistributableSession<B extends Batch> implements SpringSession {
 		Session<Void> session = this.session;
 		try (BatchContext context = this.resumeBatch()) {
 			return session.getMetaData().getTimeout();
-		} catch (IllegalStateException e) {
-			if (!session.isValid()) {
-				session.close();
-			}
-			throw e;
 		}
 	}
 
@@ -159,11 +130,6 @@ public class DistributableSession<B extends Batch> implements SpringSession {
 		Session<Void> session = this.session;
 		try (BatchContext context = this.resumeBatch()) {
 			return session.getMetaData().isExpired();
-		} catch (IllegalStateException e) {
-			if (!session.isValid()) {
-				session.close();
-			}
-			throw e;
 		}
 	}
 
@@ -179,11 +145,6 @@ public class DistributableSession<B extends Batch> implements SpringSession {
 		Session<Void> session = this.session;
 		try (BatchContext context = this.resumeBatch()) {
 			session.getAttributes().setAttribute(name, value);
-		} catch (IllegalStateException e) {
-			if (!session.isValid()) {
-				session.close();
-			}
-			throw e;
 		}
 
 		// N.B. org.springframework.session.web.http.HttpSessionAdapter already triggers HttpSessionBindingListener events
@@ -228,11 +189,6 @@ public class DistributableSession<B extends Batch> implements SpringSession {
 		Session<Void> session = this.session;
 		try (BatchContext context = this.resumeBatch()) {
 			session.getMetaData().setTimeout(duration);
-		} catch (IllegalStateException e) {
-			if (!session.isValid()) {
-				session.close();
-			}
-			throw e;
 		}
 	}
 
@@ -241,11 +197,6 @@ public class DistributableSession<B extends Batch> implements SpringSession {
 		Session<Void> session = this.session;
 		try (BatchContext context = this.resumeBatch()) {
 			return session.getMetaData().isNew();
-		} catch (IllegalStateException e) {
-			if (!session.isValid()) {
-				session.close();
-			}
-			throw e;
 		}
 	}
 
@@ -270,9 +221,6 @@ public class DistributableSession<B extends Batch> implements SpringSession {
 						}
 					}
 				}
-			} finally {
-				// Switch to OOB session, in case this session is referenced outside the scope of this request
-				this.session = new OOBSession<>(this.manager, requestSession.getId(), null);
 			}
 		}
 	}

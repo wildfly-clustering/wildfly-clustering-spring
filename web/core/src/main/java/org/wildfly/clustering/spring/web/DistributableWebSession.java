@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.BatchContext;
-import org.wildfly.clustering.session.OOBSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionAttributes;
 import org.wildfly.clustering.session.SessionManager;
@@ -91,9 +90,6 @@ public class DistributableWebSession<B extends Batch> implements SpringWebSessio
 					oldSession.invalidate();
 					this.session = newSession;
 				} catch (IllegalStateException e) {
-					if (!oldSession.isValid()) {
-						oldSession.close();
-					}
 					newSession.invalidate();
 					throw e;
 				}
@@ -103,7 +99,7 @@ public class DistributableWebSession<B extends Batch> implements SpringWebSessio
 
 	@Override
 	public Mono<Void> invalidate() {
-		return Mono.<Void>fromRunnable(this::invalidateSync).publishOn(Schedulers.boundedElastic());
+		return Mono.<Void>fromRunnable(this::invalidateSync).subscribeOn(Schedulers.boundedElastic());
 	}
 
 	private void invalidateSync() {
@@ -113,11 +109,6 @@ public class DistributableWebSession<B extends Batch> implements SpringWebSessio
 			if (this.batch != null) {
 				this.batch.close();
 			}
-		} catch (IllegalStateException e) {
-			if (!session.isValid()) {
-				session.close();
-			}
-			throw e;
 		}
 	}
 
@@ -141,13 +132,11 @@ public class DistributableWebSession<B extends Batch> implements SpringWebSessio
 						}
 					}
 				}
-			} finally {
-				// Switch to OOB session, in case this session is referenced outside the scope of this request
-				this.session = new OOBSession<>(this.manager, requestSession.getId(), null);
 			}
 		} else if (requestSession.isValid()) {
 			// Invalidate if session was never "started".
 			this.invalidateSync();
+			requestSession.close();
 		}
 	}
 
@@ -262,11 +251,6 @@ public class DistributableWebSession<B extends Batch> implements SpringWebSessio
 		Session<Void> session = this.session;
 		try (BatchContext context = this.resumeBatch()) {
 			return function.apply(session);
-		} catch (IllegalStateException e) {
-			if (!session.isValid()) {
-				session.close();
-			}
-			throw e;
 		}
 	}
 

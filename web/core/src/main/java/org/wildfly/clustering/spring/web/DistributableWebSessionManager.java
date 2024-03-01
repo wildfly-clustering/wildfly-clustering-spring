@@ -6,7 +6,6 @@
 package org.wildfly.clustering.spring.web;
 
 import java.util.Iterator;
-import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -54,17 +53,15 @@ public class DistributableWebSessionManager<B extends Batch> implements WebSessi
 		B batch = batcher.createBatch();
 		try {
 			Mono<Session<Void>> result = Mono.fromCompletionStage(function.apply(this.manager, id));
-//			CompletionStage<Session<Void>> future = function.apply(this.manager, id);
 			B suspendedBatch = batcher.suspendBatch();
 			Supplier<Mono<Session<Void>>> creator = () -> {
 				try (BatchContext context = this.manager.getBatcher().resumeBatch(suspendedBatch)) {
-					return Mono.fromCompletionStage(this.manager.createSessionAsync(this.manager.getIdentifierFactory().get())).publishOn(Schedulers.boundedElastic());
+					return Mono.fromCompletionStage(this.manager.createSessionAsync(this.manager.getIdentifierFactory().get())).subscribeOn(Schedulers.boundedElastic());
 				}
 			};
-			return result.flatMap(session -> Optional.ofNullable(session).map(Mono::just).orElseGet(creator))
-					.flatMap(session -> Mono.just(new DistributableWebSession<>(this.manager, session, suspendedBatch)));
-//			return Mono.fromCompletionStage(future.thenCompose(session -> Optional.ofNullable(session).map(CompletableFuture::completedStage).orElseGet(creator))
-//					.thenApply(session -> new DistributableWebSession<>(this.manager, session, suspendedBatch)));
+			return result.switchIfEmpty(Mono.defer(creator)).map(session -> new DistributableWebSession<>(this.manager, session, suspendedBatch));
+//			return result.flatMap(session -> Optional.ofNullable(session).map(Mono::just).orElseGet(creator))
+//					.map(session -> new DistributableWebSession<>(this.manager, session, suspendedBatch));
 		} catch (RuntimeException | Error e) {
 			try (BatchContext context = batcher.resumeBatch(batch)) {
 				batch.discard();
@@ -82,7 +79,7 @@ public class DistributableWebSessionManager<B extends Batch> implements WebSessi
 			this.identifierResolver.setSessionId(exchange, session.getId());
 		}
 
-		return Mono.<Void>fromRunnable(session::close).publishOn(Schedulers.boundedElastic());
+		return Mono.<Void>fromRunnable(session::close).subscribeOn(Schedulers.boundedElastic());
 	}
 
 	private String requestedSessionId(ServerWebExchange exchange) {
