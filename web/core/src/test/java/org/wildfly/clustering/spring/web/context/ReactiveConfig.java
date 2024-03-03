@@ -15,7 +15,7 @@ import org.springframework.web.reactive.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.reactive.result.SimpleHandlerAdapter;
 import org.springframework.web.server.WebHandler;
 import org.springframework.web.server.adapter.WebHttpHandlerBuilder;
-import org.wildfly.clustering.spring.web.SmokeITParameters;
+import org.wildfly.clustering.session.container.SessionManagementEndpointConfiguration;
 
 /**
  * @author Paul Ferraro
@@ -24,7 +24,7 @@ public class ReactiveConfig {
 
 	@Bean
 	public HandlerMapping handlerMapping() {
-		return new SimpleUrlHandlerMapping(Map.of(SmokeITParameters.ENDPOINT_PATH, new SessionHandler()));
+		return new SimpleUrlHandlerMapping(Map.of(SessionManagementEndpointConfiguration.ENDPOINT_PATH, new SessionHandler()));
 	}
 
 	@Bean(WebHttpHandlerBuilder.WEB_HANDLER_BEAN_NAME)

@@ -5,7 +5,6 @@
 
 package org.wildfly.clustering.spring.web.infinispan.remote;
 
-import java.net.http.HttpClient;
 import java.util.Properties;
 
 import org.infinispan.client.hotrod.DefaultTemplate;
@@ -40,9 +39,5 @@ public class AbstractHotRodWebSmokeITCase extends AbstractWebSmokeITCase {
 		return AbstractWebSmokeITCase.deployment(testClass)
 				.addAsWebInfResource(new PropertiesAsset(properties), "classes/application.properties")
 				;
-	}
-
-	protected AbstractHotRodWebSmokeITCase() {
-		super(HttpClient.newBuilder());
 	}
 }

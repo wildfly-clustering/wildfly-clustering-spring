@@ -36,13 +36,13 @@ import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.SessionManager;
-import org.wildfly.clustering.session.container.ContainerFacadeProvider;
+import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
+import org.wildfly.clustering.session.spec.servlet.JakartaServletSpecificationProvider;
 import org.wildfly.clustering.spring.context.config.SessionManagementConfiguration;
 import org.wildfly.clustering.spring.security.SpringSecurityImmutability;
 import org.wildfly.clustering.spring.session.DistributableSessionRepository;
 import org.wildfly.clustering.spring.session.DistributableSessionRepositoryConfiguration;
 import org.wildfly.clustering.spring.session.ImmutableSessionDestroyAction;
-import org.wildfly.clustering.spring.session.JakartaServletFacadeProvider;
 import org.wildfly.clustering.spring.session.MutableIndexingConfiguration;
 import org.wildfly.clustering.spring.session.SpringSession;
 import org.wildfly.clustering.spring.session.UserConfiguration;
@@ -70,9 +70,14 @@ public abstract class HttpSessionConfiguration extends SessionManagementConfigur
 		this.indexResolver = defaultIndexResolver;
 	}
 
+	@Override
+	public SessionSpecificationProvider<HttpSession, ServletContext, HttpSessionActivationListener> get() {
+		return JakartaServletSpecificationProvider.INSTANCE;
+	}
+
 	@Bean
 	public <B extends Batch> FindByIndexNameSessionRepository<SpringSession> sessionRepository(SessionManager<Void, B> manager, UserConfiguration<B> userConfiguration) {
-		BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> sessionDestroyAction = new ImmutableSessionDestroyAction<>(this.publisher, this.getContext(), userConfiguration);
+		BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> sessionDestroyAction = new ImmutableSessionDestroyAction<>(this.publisher, this.getContext(), this.get(), userConfiguration);
 		DistributableSessionRepositoryConfiguration<B> configuration = new DistributableSessionRepositoryConfiguration<>() {
 			@Override
 			public SessionManager<Void, B> getSessionManager() {
@@ -130,11 +135,6 @@ public abstract class HttpSessionConfiguration extends SessionManagementConfigur
 	@Override
 	public IndexResolver<Session> getIndexResolver() {
 		return this.indexResolver;
-	}
-
-	@Override
-	public ContainerFacadeProvider<HttpSession, ServletContext, HttpSessionActivationListener> getContainerFacadeProvider() {
-		return JakartaServletFacadeProvider.INSTANCE;
 	}
 
 	@Override

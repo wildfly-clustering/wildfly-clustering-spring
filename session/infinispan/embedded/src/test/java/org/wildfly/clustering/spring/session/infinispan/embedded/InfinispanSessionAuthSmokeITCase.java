@@ -8,9 +8,11 @@ import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.net.URI;
 import java.net.http.HttpClient;
+import java.net.http.HttpClient.Builder;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.util.function.UnaryOperator;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -24,10 +26,10 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.wildfly.clustering.session.container.SessionManagementEndpointConfiguration;
 import org.wildfly.clustering.spring.session.authentication.SecurityInitializer;
 import org.wildfly.clustering.spring.session.infinispan.embedded.authentication.ConfigContextLoaderListener;
 import org.wildfly.clustering.spring.session.servlet.SessionServlet;
-import org.wildfly.clustering.spring.web.SmokeITParameters;
 
 /**
  * @author Paul Ferraro
@@ -54,13 +56,14 @@ public class InfinispanSessionAuthSmokeITCase extends AbstractInfinispanSessionS
 				;
 	}
 
-	public InfinispanSessionAuthSmokeITCase() {
-		super(HttpClient.newBuilder().authenticator(new Authenticator() {
+	@Override
+	public UnaryOperator<Builder> getHttpClientConfigurator() {
+		return builder -> builder.authenticator(new Authenticator() {
 			@Override
 			protected PasswordAuthentication getPasswordAuthentication() {
 				return new PasswordAuthentication("admin", "password".toCharArray());
 			}
-		}));
+		});
 	}
 
 	@ArquillianResource(SessionServlet.class)
@@ -74,7 +77,7 @@ public class InfinispanSessionAuthSmokeITCase extends AbstractInfinispanSessionS
 	@Test
 	@RunAsClient
 	public void test() throws Exception {
-		URI uri1 = this.baseURI1.resolve(SmokeITParameters.ENDPOINT_NAME);
+		URI uri1 = this.baseURI1.resolve(SessionManagementEndpointConfiguration.ENDPOINT_NAME);
 		// Verify that authentication is required
 		HttpResponse<Void> response = HttpClient.newHttpClient().send(HttpRequest.newBuilder(uri1).build(), BodyHandlers.discarding());
 		Assertions.assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.statusCode());

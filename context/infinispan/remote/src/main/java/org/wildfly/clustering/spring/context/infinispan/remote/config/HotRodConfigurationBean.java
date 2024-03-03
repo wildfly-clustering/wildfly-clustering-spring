@@ -20,7 +20,6 @@ public class HotRodConfigurationBean implements MutableHotRodConfiguration {
 	private URI uri;
 	private Properties properties = new Properties();
 	private String templateName = DefaultTemplate.DIST_SYNC.getTemplateName();
-	private int expirationThreadPoolSize = 16;
 	private StringValueResolver resolver = value -> value;
 
 	@Override
@@ -44,11 +43,6 @@ public class HotRodConfigurationBean implements MutableHotRodConfiguration {
 	}
 
 	@Override
-	public int getExpirationThreadPoolSize() {
-		return this.expirationThreadPoolSize;
-	}
-
-	@Override
 	public void setUri(String uri) {
 		this.uri = URI.create(this.resolver.resolveStringValue(uri));
 	}
@@ -61,11 +55,6 @@ public class HotRodConfigurationBean implements MutableHotRodConfiguration {
 	@Override
 	public void setTemplateName(String templateName) {
 		this.templateName = this.resolver.resolveStringValue(templateName);
-	}
-
-	@Override
-	public void setExpirationThreadPoolSize(int size) {
-		this.expirationThreadPoolSize = size;
 	}
 
 	@Override

@@ -42,7 +42,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.wildfly.clustering</groupId>
-			<artifactId>wildfly-clustering-session-spi</artifactId>
+			<artifactId>wildfly-clustering-session-spec-spi</artifactId>
 		</dependency>
 	</dependencies>
 </project>

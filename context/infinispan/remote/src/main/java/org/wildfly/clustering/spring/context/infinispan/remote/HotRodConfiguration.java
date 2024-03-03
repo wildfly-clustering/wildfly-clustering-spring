@@ -15,5 +15,4 @@ public interface HotRodConfiguration {
 	URI getUri();
 	Properties getProperties();
 	String getTemplateName();
-	int getExpirationThreadPoolSize();
 }

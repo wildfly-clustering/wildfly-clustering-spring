@@ -5,10 +5,9 @@
 package org.wildfly.clustering.spring.context.config;
 
 import java.lang.annotation.Annotation;
-import java.util.Map;
 import java.util.OptionalInt;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +29,7 @@ import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionManagerConfiguration;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
+import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 import org.wildfly.clustering.spring.context.SessionManagerBean;
 import org.wildfly.clustering.spring.context.SessionMarshallerFactory;
 import org.wildfly.common.function.Functions;
@@ -38,14 +38,14 @@ import org.wildfly.common.function.Functions;
  * Spring configuration bean for a distributable session repository.
  * @author Paul Ferraro
  */
-public abstract class SessionManagementConfiguration<S, C, L> implements SessionManagerFactoryConfiguration<S, C, L, Void>, SessionManagerConfiguration<C>, EnvironmentAware, ImportAware, ResourceLoaderAware, Consumer<AnnotationAttributes> {
+public abstract class SessionManagementConfiguration<S, C, L> implements SessionManagerFactoryConfiguration<Void>, SessionManagerConfiguration<C>, EnvironmentAware, ImportAware, ResourceLoaderAware, Consumer<AnnotationAttributes>, Supplier<SessionSpecificationProvider<S, C, L>> {
 
 	private final Class<? extends Annotation> annotationClass;
 
 	private IdGenerator generator = new JdkIdGenerator();
 	private OptionalInt maxActiveSessions = OptionalInt.empty();
 	private SessionAttributePersistenceStrategy persistenceStrategy = SessionAttributePersistenceStrategy.COARSE;
-	private Function<Map.Entry<Environment, ResourceLoader>, ByteBufferMarshaller> marshallerFactory = SessionMarshallerFactory.JAVA;
+	private BiFunction<Environment, ResourceLoader, ByteBufferMarshaller> marshallerFactory = SessionMarshallerFactory.JAVA;
 	private Environment environment;
 	private ResourceLoader loader;
 
@@ -95,7 +95,7 @@ public abstract class SessionManagementConfiguration<S, C, L> implements Session
 
 	@Override
 	public ByteBufferMarshaller getMarshaller() {
-		return this.marshallerFactory.apply(Map.entry(this.environment, this.loader));
+		return this.marshallerFactory.apply(this.environment, this.loader);
 	}
 
 	@Autowired(required = false)
@@ -114,7 +114,7 @@ public abstract class SessionManagementConfiguration<S, C, L> implements Session
 	}
 
 	@Autowired(required = false)
-	public void setMarshallerFactory(Function<Map.Entry<Environment, ResourceLoader>, ByteBufferMarshaller> marshallerFactory) {
+	public void setMarshallerFactory(BiFunction<Environment, ResourceLoader, ByteBufferMarshaller> marshallerFactory) {
 		this.marshallerFactory = marshallerFactory;
 	}
 

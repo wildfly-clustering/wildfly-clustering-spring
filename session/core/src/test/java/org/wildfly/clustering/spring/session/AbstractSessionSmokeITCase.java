@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.spring.session;
 
-import java.net.http.HttpClient;
-
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.wildfly.clustering.spring.session.context.SpringSessionFilter;
 import org.wildfly.clustering.spring.session.servlet.SessionServlet;
@@ -22,9 +20,5 @@ public class AbstractSessionSmokeITCase extends AbstractSmokeITCase {
 				.addPackage(SessionServlet.class.getPackage())
 				.addPackage(SpringSessionFilter.class.getPackage())
 				;
-	}
-
-	protected AbstractSessionSmokeITCase(HttpClient.Builder builder) {
-		super(builder);
 	}
 }

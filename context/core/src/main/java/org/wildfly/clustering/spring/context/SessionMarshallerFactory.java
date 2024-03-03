@@ -5,9 +5,8 @@
 package org.wildfly.clustering.spring.context;
 
 import java.io.ObjectInputFilter;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
@@ -23,28 +22,27 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilde
 /**
  * @author Paul Ferraro
  */
-public enum SessionMarshallerFactory implements Function<Map.Entry<Environment, ResourceLoader>, ByteBufferMarshaller> {
+public enum SessionMarshallerFactory implements BiFunction<Environment, ResourceLoader, ByteBufferMarshaller> {
 
 	JAVA() {
 		@Override
-		public ByteBufferMarshaller apply(Map.Entry<Environment, ResourceLoader> context) {
-			Environment environment = context.getKey();
+		public ByteBufferMarshaller apply(Environment environment, ResourceLoader loader) {
 			ObjectInputFilter filter = Optional.ofNullable(environment.getProperty("jdk.serialFilter")).map(ObjectInputFilter.Config::createFilter).orElse(null);
-			return new JavaByteBufferMarshaller(Serializer.of(context.getValue().getClassLoader()), filter);
+			return new JavaByteBufferMarshaller(Serializer.of(loader.getClassLoader()), filter);
 		}
 	},
 	JBOSS() {
 		@Override
-		public ByteBufferMarshaller apply(Map.Entry<Environment, ResourceLoader> context) {
-			ClassLoader loader = context.getValue().getClassLoader();
-			return new JBossByteBufferMarshaller(MarshallingConfigurationRepository.from(JBossMarshallingVersion.CURRENT, loader), loader);
+		public ByteBufferMarshaller apply(Environment environment, ResourceLoader loader) {
+			ClassLoader classLoader = loader.getClassLoader();
+			return new JBossByteBufferMarshaller(MarshallingConfigurationRepository.from(JBossMarshallingVersion.CURRENT, classLoader), classLoader);
 		}
 	},
 	PROTOSTREAM() {
 		@Override
-		public ByteBufferMarshaller apply(Map.Entry<Environment, ResourceLoader> context) {
-			ClassLoader loader = context.getValue().getClassLoader();
-			SerializationContextBuilder builder = SerializationContextBuilder.newInstance(ClassLoaderMarshaller.of(loader)).load(loader);
+		public ByteBufferMarshaller apply(Environment environment, ResourceLoader loader) {
+			ClassLoader classLoader = loader.getClassLoader();
+			SerializationContextBuilder builder = SerializationContextBuilder.newInstance(ClassLoaderMarshaller.of(classLoader)).load(classLoader);
 			return new ProtoStreamByteBufferMarshaller(builder.build());
 		}
 	},
