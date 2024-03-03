@@ -44,7 +44,7 @@ public class HotRodWebSessionConfiguration extends WebSessionConfiguration imple
 
 	@Bean
 	public SessionManagerFactory<ServletContext, Void, TransactionBatch> sessionManagerFactory(RemoteCacheContainerProvider provider) {
-		return new HotRodSessionManagerFactoryBean<>(this, this.configuration, provider);
+		return new HotRodSessionManagerFactoryBean<>(this, this.get(), this.configuration, provider);
 	}
 
 	@Override
@@ -68,11 +68,6 @@ public class HotRodWebSessionConfiguration extends WebSessionConfiguration imple
 	}
 
 	@Override
-	public int getExpirationThreadPoolSize() {
-		return this.configuration.getExpirationThreadPoolSize();
-	}
-
-	@Override
 	@Autowired(required = false)
 	public void setUri(String uri) {
 		this.configuration.setUri(uri);
@@ -87,12 +82,6 @@ public class HotRodWebSessionConfiguration extends WebSessionConfiguration imple
 	@Autowired(required = false)
 	public void setTemplateName(String templateName) {
 		this.configuration.setTemplateName(templateName);
-	}
-
-	@Override
-	@Autowired(required = false)
-	public void setExpirationThreadPoolSize(int size) {
-		this.configuration.setExpirationThreadPoolSize(size);
 	}
 
 	@Override

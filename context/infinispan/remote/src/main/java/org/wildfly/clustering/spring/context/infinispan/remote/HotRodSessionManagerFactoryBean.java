@@ -13,12 +13,13 @@ import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.springframework.beans.factory.InitializingBean;
 import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
+import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionManagerConfiguration;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
-import org.wildfly.clustering.session.infinispan.remote.HotRodSessionFactoryConfiguration;
 import org.wildfly.clustering.session.infinispan.remote.HotRodSessionManagerFactory;
+import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 import org.wildfly.clustering.spring.context.AutoDestroyBean;
 
 /**
@@ -26,14 +27,16 @@ import org.wildfly.clustering.spring.context.AutoDestroyBean;
  */
 public class HotRodSessionManagerFactoryBean<S, C, L> extends AutoDestroyBean implements SessionManagerFactory<C, Void, TransactionBatch>, InitializingBean {
 
-	private final SessionManagerFactoryConfiguration<S, C, L, Void> configuration;
+	private final SessionManagerFactoryConfiguration<Void> configuration;
+	private final SessionSpecificationProvider<S, C, L> specProvider;
 	private final HotRodConfiguration hotrod;
 	private final RemoteCacheContainerProvider provider;
 
 	private SessionManagerFactory<C, Void, TransactionBatch> sessionManagerFactory;
 
-	public HotRodSessionManagerFactoryBean(SessionManagerFactoryConfiguration<S, C, L, Void> configuration, HotRodConfiguration hotrod, RemoteCacheContainerProvider provider) {
+	public HotRodSessionManagerFactoryBean(SessionManagerFactoryConfiguration<Void> configuration, SessionSpecificationProvider<S, C, L> specProvider, HotRodConfiguration hotrod, RemoteCacheContainerProvider provider) {
 		this.hotrod = hotrod;
+		this.specProvider = specProvider;
 		this.provider = provider;
 		this.configuration = configuration;
 	}
@@ -47,18 +50,12 @@ public class HotRodSessionManagerFactoryBean<S, C, L> extends AutoDestroyBean im
 
 		container.getConfiguration().addRemoteCache(deploymentName, builder -> builder.forceReturnValues(false).nearCacheMode(maxActiveSessions.isEmpty() ? NearCacheMode.DISABLED : NearCacheMode.INVALIDATED).transactionMode(TransactionMode.NONE).templateName(templateName));
 
-		int expirationThreadPoolSize = this.hotrod.getExpirationThreadPoolSize();
 		RemoteCache<?, ?> cache = container.getCache(deploymentName);
 
 		cache.start();
 		this.accept(cache::stop);
 
-		HotRodSessionFactoryConfiguration hotrodConfiguration = new HotRodSessionFactoryConfiguration() {
-			@Override
-			public int getExpirationThreadPoolSize() {
-				return expirationThreadPoolSize;
-			}
-
+		RemoteCacheConfiguration hotrodConfiguration = new RemoteCacheConfiguration() {
 			@SuppressWarnings("unchecked")
 			@Override
 			public <CK, CV> RemoteCache<CK, CV> getCache() {
@@ -66,7 +63,7 @@ public class HotRodSessionManagerFactoryBean<S, C, L> extends AutoDestroyBean im
 			}
 		};
 
-		this.sessionManagerFactory = new HotRodSessionManagerFactory<>(this.configuration, hotrodConfiguration);
+		this.sessionManagerFactory = new HotRodSessionManagerFactory<>(this.configuration, this.specProvider, hotrodConfiguration);
 		this.accept(this.sessionManagerFactory::close);
 	}
 

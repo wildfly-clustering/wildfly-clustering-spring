@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.spring.web;
 
-import java.net.http.HttpClient;
-
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.wildfly.clustering.spring.web.context.SessionHandler;
 import org.wildfly.clustering.spring.web.servlet.DispatcherServlet;
@@ -21,9 +19,5 @@ public class AbstractWebSmokeITCase extends AbstractSmokeITCase {
 				.addPackage(SessionHandler.class.getPackage())
 				.addPackage(DispatcherServlet.class.getPackage())
 				;
-	}
-
-	protected AbstractWebSmokeITCase(HttpClient.Builder builder) {
-		super(builder);
 	}
 }

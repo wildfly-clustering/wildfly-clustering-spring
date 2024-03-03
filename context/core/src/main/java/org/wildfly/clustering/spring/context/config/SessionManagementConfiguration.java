@@ -29,6 +29,7 @@ import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionManagerConfiguration;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
+import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 import org.wildfly.clustering.spring.context.SessionManagerBean;
 import org.wildfly.clustering.spring.context.SessionMarshallerFactory;
 import org.wildfly.common.function.Functions;
@@ -37,7 +38,7 @@ import org.wildfly.common.function.Functions;
  * Spring configuration bean for a distributable session repository.
  * @author Paul Ferraro
  */
-public abstract class SessionManagementConfiguration<S, C, L> implements SessionManagerFactoryConfiguration<S, C, L, Void>, SessionManagerConfiguration<C>, EnvironmentAware, ImportAware, ResourceLoaderAware, Consumer<AnnotationAttributes> {
+public abstract class SessionManagementConfiguration<S, C, L> implements SessionManagerFactoryConfiguration<Void>, SessionManagerConfiguration<C>, EnvironmentAware, ImportAware, ResourceLoaderAware, Consumer<AnnotationAttributes>, Supplier<SessionSpecificationProvider<S, C, L>> {
 
 	private final Class<? extends Annotation> annotationClass;
 

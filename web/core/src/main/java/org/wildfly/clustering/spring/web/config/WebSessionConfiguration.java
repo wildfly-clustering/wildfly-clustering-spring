@@ -7,11 +7,10 @@ package org.wildfly.clustering.spring.web.config;
 
 import java.lang.annotation.Annotation;
 import java.time.Duration;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import jakarta.servlet.ServletContext;
-import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.HttpSessionActivationListener;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -23,17 +22,16 @@ import org.springframework.web.server.session.WebSessionManager;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.SessionManager;
-import org.wildfly.clustering.session.container.ContainerFacadeProvider;
+import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 import org.wildfly.clustering.spring.context.config.SessionManagementConfiguration;
 import org.wildfly.clustering.spring.web.DistributableWebSessionManager;
 import org.wildfly.clustering.spring.web.DistributableWebSessionManagerConfiguration;
-import org.wildfly.clustering.spring.web.JakartaServletFacadeProvider;
 import org.wildfly.common.function.Functions;
 
 /**
  * @author Paul Ferraro
  */
-public abstract class WebSessionConfiguration extends SessionManagementConfiguration<HttpSession, ServletContext, HttpSessionActivationListener> implements ServletContextAware {
+public abstract class WebSessionConfiguration extends SessionManagementConfiguration<Void, ServletContext, Void> implements ServletContextAware, SessionSpecificationProvider<Void, ServletContext, Void> {
 
 	private WebSessionIdResolver resolver = new CookieWebSessionIdResolver();
 
@@ -41,6 +39,11 @@ public abstract class WebSessionConfiguration extends SessionManagementConfigura
 
 	protected WebSessionConfiguration(Class<? extends Annotation> annotationClass) {
 		super(annotationClass);
+	}
+
+	@Override
+	public SessionSpecificationProvider<Void, ServletContext, Void> get() {
+		return this;
 	}
 
 	@Bean(WebHttpHandlerBuilder.WEB_SESSION_MANAGER_BEAN_NAME)
@@ -76,11 +79,6 @@ public abstract class WebSessionConfiguration extends SessionManagementConfigura
 	}
 
 	@Override
-	public ContainerFacadeProvider<HttpSession, ServletContext, HttpSessionActivationListener> getContainerFacadeProvider() {
-		return JakartaServletFacadeProvider.INSTANCE;
-	}
-
-	@Override
 	public String getServerName() {
 		return this.getContext().getVirtualServerName();
 	}
@@ -98,5 +96,35 @@ public abstract class WebSessionConfiguration extends SessionManagementConfigura
 	@Override
 	public Duration getTimeout() {
 		return Duration.ofMinutes(this.getContext().getSessionTimeout());
+	}
+
+	@Override
+	public Void asSession(ImmutableSession session, ServletContext context) {
+		return null;
+	}
+
+	@Override
+	public Optional<Void> asSessionActivationListener(Object attribute) {
+		return Optional.empty();
+	}
+
+	@Override
+	public Class<Void> getSessionActivationListenerClass() {
+		return null;
+	}
+
+	@Override
+	public Consumer<Void> prePassivate(Void listener) {
+		return Functions.discardingConsumer();
+	}
+
+	@Override
+	public Consumer<Void> postActivate(Void listener) {
+		return Functions.discardingConsumer();
+	}
+
+	@Override
+	public Void asSessionActivationListener(Consumer<Void> prePassivate, Consumer<Void> postActivate) {
+		return null;
 	}
 }

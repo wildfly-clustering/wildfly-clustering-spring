@@ -10,8 +10,6 @@ import java.util.TreeMap;
 import java.util.function.Supplier;
 
 import jakarta.servlet.ServletContext;
-import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.HttpSessionActivationListener;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -40,12 +38,12 @@ import org.wildfly.common.function.Functions;
 public class UserConfigurationBean extends AutoDestroyBean implements UserConfiguration<TransactionBatch>, InitializingBean {
 
 	private final Map<String, UserManager<Void, Void, String, String, TransactionBatch>> managers = new TreeMap<>();
-	private final SessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, Void> sessionManagerFactoryConfiguration;
+	private final SessionManagerFactoryConfiguration<Void> sessionManagerFactoryConfiguration;
 	private final SessionManagerConfiguration<ServletContext> sessionManagerConfiguration;
 	private final IndexingConfiguration indexing;
 	private final EmbeddedCacheContainerConfiguration infinispan;
 
-	public UserConfigurationBean(SessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, Void> managerFactoryConfiguration, SessionManagerConfiguration<ServletContext> managerConfiguration, IndexingConfiguration indexing, EmbeddedCacheContainerConfiguration infinispan) {
+	public UserConfigurationBean(SessionManagerFactoryConfiguration<Void> managerFactoryConfiguration, SessionManagerConfiguration<ServletContext> managerConfiguration, IndexingConfiguration indexing, EmbeddedCacheContainerConfiguration infinispan) {
 		this.sessionManagerFactoryConfiguration = managerFactoryConfiguration;
 		this.sessionManagerConfiguration = managerConfiguration;
 		this.indexing = indexing;

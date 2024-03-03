@@ -10,8 +10,6 @@ import java.util.TreeMap;
 import java.util.function.Supplier;
 
 import jakarta.servlet.ServletContext;
-import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.HttpSessionActivationListener;
 
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheContainer;
@@ -45,7 +43,7 @@ import org.wildfly.common.function.Functions;
 public class UserConfigurationBean extends AutoDestroyBean implements UserConfiguration<TransactionBatch>, InitializingBean, ApplicationContextAware {
 
 	private final Map<String, UserManager<Void, Void, String, String, TransactionBatch>> managers = new TreeMap<>();
-	private final SessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, Void> managerFactoryConfiguration;
+	private final SessionManagerFactoryConfiguration<Void> managerFactoryConfiguration;
 	private final SessionManagerConfiguration<ServletContext> managerConfiguration;
 	private final IndexingConfiguration indexing;
 	private final HotRodConfiguration hotrod;
@@ -53,7 +51,7 @@ public class UserConfigurationBean extends AutoDestroyBean implements UserConfig
 
 	private ApplicationContext context;
 
-	public UserConfigurationBean(SessionManagerFactoryConfiguration<HttpSession, ServletContext, HttpSessionActivationListener, Void> managerFactoryConfiguration, SessionManagerConfiguration<ServletContext> managerConfiguration, IndexingConfiguration indexing, HotRodConfiguration hotrod, RemoteCacheContainerProvider provider) {
+	public UserConfigurationBean(SessionManagerFactoryConfiguration<Void> managerFactoryConfiguration, SessionManagerConfiguration<ServletContext> managerConfiguration, IndexingConfiguration indexing, HotRodConfiguration hotrod, RemoteCacheContainerProvider provider) {
 		this.managerFactoryConfiguration = managerFactoryConfiguration;
 		this.managerConfiguration = managerConfiguration;
 		this.indexing = indexing;

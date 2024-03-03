@@ -5,6 +5,7 @@
 package org.wildfly.clustering.spring.session.servlet;
 
 import java.io.IOException;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import jakarta.servlet.ServletException;
@@ -14,12 +15,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-import org.wildfly.clustering.spring.web.SmokeITParameters;
+import org.wildfly.clustering.session.container.SessionManagementEndpointConfiguration;
 
 /**
  * @author Paul Ferraro
  */
-@WebServlet(SmokeITParameters.ENDPOINT_PATH)
+@WebServlet(SessionManagementEndpointConfiguration.ENDPOINT_PATH)
 public class SessionServlet extends HttpServlet {
 	private static final long serialVersionUID = 2878267318695777395L;
 
@@ -28,32 +29,48 @@ public class SessionServlet extends HttpServlet {
 		String query = request.getQueryString();
 		this.getServletContext().log(String.format("[%s] %s%s", request.getMethod(), request.getRequestURI(), (query != null) ? '?' + query : ""));
 		super.service(request, response);
+
+		HttpSession session = request.getSession(false);
+		if (session != null) {
+			response.setHeader(SessionManagementEndpointConfiguration.SESSION_ID, session.getId());
+		}
 	}
 
 	@Override
-	public void doHead(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public void doHead(HttpServletRequest request, HttpServletResponse response) {
+		recordSession(request, response, AtomicInteger::get);
+	}
+
+	@Override
+	public void doGet(HttpServletRequest request, HttpServletResponse response) {
+		recordSession(request, response, AtomicInteger::incrementAndGet);
+	}
+
+	private static void recordSession(HttpServletRequest request, HttpServletResponse response, java.util.function.ToIntFunction<AtomicInteger> count) {
 		HttpSession session = request.getSession(false);
 		if (session != null) {
-			response.setHeader(SmokeITParameters.SESSION_ID, session.getId());
-			AtomicInteger value = (AtomicInteger) session.getAttribute(SmokeITParameters.VALUE);
+			AtomicInteger counter = (AtomicInteger) session.getAttribute(SessionManagementEndpointConfiguration.COUNTER);
+			if (counter != null) {
+				response.setIntHeader(SessionManagementEndpointConfiguration.COUNTER, count.applyAsInt(counter));
+			}
+			UUID value = (UUID) session.getAttribute(SessionManagementEndpointConfiguration.IMMUTABLE);
 			if (value != null) {
-				response.setIntHeader(SmokeITParameters.VALUE, value.get());
+				response.setHeader(SessionManagementEndpointConfiguration.IMMUTABLE, value.toString());
 			}
 		}
 	}
 
 	@Override
-	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		HttpSession session = request.getSession();
-		response.setHeader(SmokeITParameters.SESSION_ID, session.getId());
+	protected void doPut(HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession(true);
 
-		AtomicInteger value = (AtomicInteger) session.getAttribute(SmokeITParameters.VALUE);
-		if (value == null) {
-			value = new AtomicInteger(0);
-			session.setAttribute(SmokeITParameters.VALUE, value);
-		}
+		UUID immutableValue = UUID.randomUUID();
+		session.setAttribute(SessionManagementEndpointConfiguration.IMMUTABLE, immutableValue);
+		response.addHeader(SessionManagementEndpointConfiguration.IMMUTABLE, immutableValue.toString());
 
-		response.setIntHeader(SmokeITParameters.VALUE, value.incrementAndGet());
+		AtomicInteger counter = new AtomicInteger(0);
+		session.setAttribute(SessionManagementEndpointConfiguration.COUNTER, counter);
+		response.addIntHeader(SessionManagementEndpointConfiguration.COUNTER, counter.get());
 	}
 
 	@Override

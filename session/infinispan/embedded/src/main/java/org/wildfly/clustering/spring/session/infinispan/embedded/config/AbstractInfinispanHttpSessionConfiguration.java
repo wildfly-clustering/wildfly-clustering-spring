@@ -43,7 +43,7 @@ public class AbstractInfinispanHttpSessionConfiguration  extends HttpSessionConf
 
 	@Bean
 	public SessionManagerFactory<ServletContext, Void, TransactionBatch> sessionManagerFactory(ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration embeddedCacheManagerConfiguration) {
-		return new InfinispanSessionManagerFactoryBean<>(this, this.configuration, embeddedCacheManagerConfiguration);
+		return new InfinispanSessionManagerFactoryBean<>(this, this.get(), this.configuration, embeddedCacheManagerConfiguration);
 	}
 
 	@Override

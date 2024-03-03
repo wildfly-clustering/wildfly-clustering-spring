@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.spring.web.infinispan.embedded;
 
-import java.net.http.HttpClient;
-
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.wildfly.clustering.spring.web.AbstractSmokeITCase;
 import org.wildfly.clustering.spring.web.AbstractWebSmokeITCase;
@@ -20,9 +18,5 @@ public class AbstractInfinispanWebSmokeITCase extends AbstractWebSmokeITCase {
 		return AbstractWebSmokeITCase.deployment(testClass)
 				.addAsWebInfResource(AbstractInfinispanWebSmokeITCase.class.getPackage(), "infinispan.xml", "infinispan.xml")
 				;
-	}
-
-	protected AbstractInfinispanWebSmokeITCase() {
-		super(HttpClient.newBuilder());
 	}
 }
