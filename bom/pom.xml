@@ -10,12 +10,12 @@
 		<groupId>org.jboss</groupId>
 		<artifactId>jboss-parent</artifactId>
 		<version>43</version>
-		<relativePath/>
+		<relativePath />
 	</parent>
 
 	<groupId>org.wildfly.clustering</groupId>
 	<artifactId>wildfly-clustering-spring-bom</artifactId>
-	<version>11.0.0.Final-SNAPSHOT</version>
+	<version>11.0.0.Final</version>
 	<packaging>pom</packaging>
 
 	<name>WildFly Clustering: Spring: BOM</name>
@@ -89,4 +89,8 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+
+  <scm>
+    <tag>11.0.0.Final</tag>
+  </scm>
 </project>
