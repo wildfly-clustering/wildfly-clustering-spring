@@ -41,6 +41,14 @@ This module provides distinct 'WebSessionManager' implementations that workaroun
 
 :warning: The following configuration instructions deviate from the "WebSession Integration" section of the Spring Session documentation.
 
+The Spring MVC/Flux documentation directs users to provide an implementation of `org.springframework.web.WebApplicationInitializer`, which is supposed to auto-wire the requisite request filters and listeners.
+However, this mechanism *cannot possibly work correctly* in a specification-compliant Jakarta Servlet container.
+Spring Web's auto-wiring initiates from the [`AbstractReactiveWebInitializer.onStartup(ServletContext)`](https://github.com/spring-projects/spring-framework/blob/v6.1.0/spring-web/src/main/java/org/springframework/web/server/adapter/AbstractReactiveWebInitializer.java#L58) method, where it dynamically registers a `ServletContextListener`.
+Unfortunately for Spring, &sect;4.4 of the Jakarta Servlet specification is very specific about how a container should treat ServletContext events for dynamically registered listeners:
+
+> If the ServletContext passed to the ServletContextListener’s contextInitialized method where the ServletContextListener was neither declared in web.xml or web-fragment.xml nor annotated with @WebListener then an UnsupportedOperationException MUST be thrown for all the methods defined in ServletContext for programmatic configuration of servlets, filters and listeners.
+
+Consequently, the only *feasible* way to configure Spring Session via annotations for use in a specification-compliant Jakarta Servlet container is to create the WebApplicationContext from an explicitly defined `ServletContextListener`, rather than from the `HttpSessionApplicationInitializer`.
 
 1.	Define the reactive session manager configuration using one of the 2 annotations described later in this section and any beans required by [Spring Flux](https://docs.spring.io/spring-framework/reference/web/webflux/reactive-spring.html).
 	e.g.
@@ -68,8 +76,8 @@ This module provides distinct 'WebSessionManager' implementations that workaroun
 	}
 	```
 
-1.	By omitting an `AbstractHttpSessionApplicationInitializer` implementation, we have denied Spring the ability to dynamically register its `ServletContextListener`.
-	In lieu of this, we create a listener extending `org.wildfly.clustering.spring.web.context.ContextLoaderListener` constructed with the component classes that would otherwise have been registered by `AbstractHttpSessionApplicationInitializer`.
+1.	By omitting a `WebApplicationInitializer` implementation, we have denied Spring the ability to dynamically register its `ServletContextListener`.
+	In lieu of this, we create a proper servlet context listener extending `org.wildfly.clustering.spring.web.context.ContextLoaderListener` constructed with the component classes that would otherwise have been registered by `AbstractReactiveWebInitializer`.
 
 	```java
 	@WebListener
@@ -77,17 +85,6 @@ This module provides distinct 'WebSessionManager' implementations that workaroun
 		public SpringFluxContextLoaderListener() {
 			// Specify spring session repository component class to super implementation
 			super(Config.class);
-		}
-	}
-	```
-
-1.	Add the servlet filter that would otherwise have been dynamically created and registered by `AbstractHttpSessionApplicationInitializer`.
-
-	```java
-	@WebFilter(filterName = AbstractHttpSessionApplicationInitializer.DEFAULT_FILTER_NAME, urlPatterns = "/*", dispatcherTypes = { DispatcherType.REQUEST, DispatcherType.ERROR, DispatcherType.ASYNC }, asyncSupported = true)
-	public class SpringSessionFilter extends org.springframework.web.filter.DelegatingFilterProxy {
-		public SpringSessionFilter() {
-			super(AbstractHttpSessionApplicationInitializer.DEFAULT_FILTER_NAME);
 		}
 	}
 	```

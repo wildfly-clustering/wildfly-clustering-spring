@@ -10,7 +10,6 @@ import java.util.function.BiFunction;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.HttpSessionActivationListener;
 import jakarta.servlet.http.HttpSessionBindingEvent;
 import jakarta.servlet.http.HttpSessionBindingListener;
 
@@ -30,10 +29,10 @@ public class ImmutableSessionDestroyAction<B extends Batch> implements BiConsume
 
 	private final ApplicationEventPublisher publisher;
 	private final ServletContext context;
-	private final SessionSpecificationProvider<HttpSession, ServletContext, HttpSessionActivationListener> provider;
+	private final SessionSpecificationProvider<HttpSession, ServletContext> provider;
 	private final UserConfiguration<B> indexing;
 
-	public ImmutableSessionDestroyAction(ApplicationEventPublisher publisher, ServletContext context, SessionSpecificationProvider<HttpSession, ServletContext, HttpSessionActivationListener> provider, UserConfiguration<B> indexing) {
+	public ImmutableSessionDestroyAction(ApplicationEventPublisher publisher, ServletContext context, SessionSpecificationProvider<HttpSession, ServletContext> provider, UserConfiguration<B> indexing) {
 		this.publisher = publisher;
 		this.context = context;
 		this.provider = provider;
@@ -45,12 +44,13 @@ public class ImmutableSessionDestroyAction<B extends Batch> implements BiConsume
 		ApplicationEvent event = eventFactory.apply(this, new DistributableImmutableSession(session));
 		this.publisher.publishEvent(event);
 		HttpSession httpSession = this.provider.asSession(session, this.context);
-		for (Map.Entry<String, HttpSessionBindingListener> entry : session.getAttributes().getAttributes(HttpSessionBindingListener.class).entrySet()) {
-			HttpSessionBindingListener listener = entry.getValue();
-			try {
-				listener.valueUnbound(new HttpSessionBindingEvent(httpSession, entry.getKey(), listener));
-			} catch (Throwable e) {
-				this.context.log(e.getMessage(), e);
+		for (Map.Entry<String, Object> entry : session.getAttributes().entrySet()) {
+			if (entry.getValue() instanceof HttpSessionBindingListener listener) {
+				try {
+					listener.valueUnbound(new HttpSessionBindingEvent(httpSession, entry.getKey(), listener));
+				} catch (Throwable e) {
+					this.context.log(e.getMessage(), e);
+				}
 			}
 		}
 

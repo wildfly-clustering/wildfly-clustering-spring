@@ -36,8 +36,7 @@ import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.SessionManager;
-import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
-import org.wildfly.clustering.session.spec.servlet.JakartaServletSpecificationProvider;
+import org.wildfly.clustering.session.spec.servlet.HttpSessionProvider;
 import org.wildfly.clustering.spring.context.config.SessionManagementConfiguration;
 import org.wildfly.clustering.spring.security.SpringSecurityImmutability;
 import org.wildfly.clustering.spring.session.DistributableSessionRepository;
@@ -70,14 +69,9 @@ public abstract class HttpSessionConfiguration extends SessionManagementConfigur
 		this.indexResolver = defaultIndexResolver;
 	}
 
-	@Override
-	public SessionSpecificationProvider<HttpSession, ServletContext, HttpSessionActivationListener> get() {
-		return JakartaServletSpecificationProvider.INSTANCE;
-	}
-
 	@Bean
 	public <B extends Batch> FindByIndexNameSessionRepository<SpringSession> sessionRepository(SessionManager<Void, B> manager, UserConfiguration<B> userConfiguration) {
-		BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> sessionDestroyAction = new ImmutableSessionDestroyAction<>(this.publisher, this.getContext(), this.get(), userConfiguration);
+		BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> sessionDestroyAction = new ImmutableSessionDestroyAction<>(this.publisher, this.getContext(), HttpSessionProvider.INSTANCE, userConfiguration);
 		DistributableSessionRepositoryConfiguration<B> configuration = new DistributableSessionRepositoryConfiguration<>() {
 			@Override
 			public SessionManager<Void, B> getSessionManager() {

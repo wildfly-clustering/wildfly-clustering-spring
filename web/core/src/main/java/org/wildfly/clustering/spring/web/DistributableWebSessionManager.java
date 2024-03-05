@@ -58,16 +58,22 @@ public class DistributableWebSessionManager<B extends Batch> implements WebSessi
 			Mono<Session<Void>> result = Mono.fromCompletionStage(function.apply(this.manager, id));
 			B suspendedBatch = batcher.suspendBatch();
 			Supplier<Mono<Session<Void>>> creator = () -> {
-				try (BatchContext context = this.manager.getBatcher().resumeBatch(suspendedBatch)) {
+				try (BatchContext<B> context = this.manager.getBatcher().resumeBatch(suspendedBatch)) {
 					return Mono.fromCompletionStage(this.manager.createSessionAsync(this.manager.getIdentifierFactory().get())).subscribeOn(Schedulers.boundedElastic());
 				}
 			};
-			return result.switchIfEmpty(Mono.defer(creator)).map(session -> new DistributableWebSession<>(this.manager, session, suspendedBatch));
+			return result.switchIfEmpty(Mono.defer(creator)).doOnError(e -> this.rollback(suspendedBatch)).map(session -> new DistributableWebSession<>(this.manager, session, suspendedBatch));
 		} catch (RuntimeException | Error e) {
-			try (BatchContext context = batcher.resumeBatch(batch)) {
+			this.rollback(batch);
+			throw e;
+		}
+	}
+
+	private void rollback(B suspendedBatch) {
+		try (BatchContext<B> context = this.manager.getBatcher().resumeBatch(suspendedBatch)) {
+			try (B batch = context.getBatch()) {
 				batch.discard();
 			}
-			throw e;
 		}
 	}
 
