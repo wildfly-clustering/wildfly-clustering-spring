@@ -19,6 +19,7 @@ import org.wildfly.clustering.session.SessionManagerConfiguration;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.session.infinispan.remote.HotRodSessionManagerFactory;
+import org.wildfly.clustering.session.spec.SessionEventListenerSpecificationProvider;
 import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 import org.wildfly.clustering.spring.context.AutoDestroyBean;
 
@@ -28,15 +29,17 @@ import org.wildfly.clustering.spring.context.AutoDestroyBean;
 public class HotRodSessionManagerFactoryBean<S, C, L> extends AutoDestroyBean implements SessionManagerFactory<C, Void, TransactionBatch>, InitializingBean {
 
 	private final SessionManagerFactoryConfiguration<Void> configuration;
-	private final SessionSpecificationProvider<S, C, L> specProvider;
+	private final SessionSpecificationProvider<S, C> sessionProvider;
+	private final SessionEventListenerSpecificationProvider<S, L> listenerProvider;
 	private final HotRodConfiguration hotrod;
 	private final RemoteCacheContainerProvider provider;
 
 	private SessionManagerFactory<C, Void, TransactionBatch> sessionManagerFactory;
 
-	public HotRodSessionManagerFactoryBean(SessionManagerFactoryConfiguration<Void> configuration, SessionSpecificationProvider<S, C, L> specProvider, HotRodConfiguration hotrod, RemoteCacheContainerProvider provider) {
+	public HotRodSessionManagerFactoryBean(SessionManagerFactoryConfiguration<Void> configuration, SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider, HotRodConfiguration hotrod, RemoteCacheContainerProvider provider) {
 		this.hotrod = hotrod;
-		this.specProvider = specProvider;
+		this.sessionProvider = sessionProvider;
+		this.listenerProvider = listenerProvider;
 		this.provider = provider;
 		this.configuration = configuration;
 	}
@@ -63,7 +66,7 @@ public class HotRodSessionManagerFactoryBean<S, C, L> extends AutoDestroyBean im
 			}
 		};
 
-		this.sessionManagerFactory = new HotRodSessionManagerFactory<>(this.configuration, this.specProvider, hotrodConfiguration);
+		this.sessionManagerFactory = new HotRodSessionManagerFactory<>(this.configuration, this.sessionProvider, this.listenerProvider, hotrodConfiguration);
 		this.accept(this.sessionManagerFactory::close);
 	}
 

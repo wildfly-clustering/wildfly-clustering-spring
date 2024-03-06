@@ -35,12 +35,12 @@ public class DistributableImmutableSession implements SpringSession {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getAttribute(String attributeName) {
-		return (T) this.session.getAttributes().getAttribute(attributeName);
+		return (T) this.session.getAttributes().get(attributeName);
 	}
 
 	@Override
 	public Set<String> getAttributeNames() {
-		return this.session.getAttributes().getAttributeNames();
+		return this.session.getAttributes().keySet();
 	}
 
 	@Override

@@ -14,7 +14,7 @@ import org.springframework.web.filter.DelegatingFilterProxy;
  * The servlet filter otherwise registered by {@link AbstractHttpSessionApplicationInitializer}.
  * @author Paul Ferraro
  */
-@WebFilter(filterName = AbstractHttpSessionApplicationInitializer.DEFAULT_FILTER_NAME, urlPatterns = "/*", dispatcherTypes = { DispatcherType.REQUEST, DispatcherType.ERROR, DispatcherType.ASYNC }, asyncSupported = true)
+@WebFilter(filterName = AbstractHttpSessionApplicationInitializer.DEFAULT_FILTER_NAME, urlPatterns = "/*", dispatcherTypes = { DispatcherType.REQUEST, DispatcherType.ERROR })
 public class SpringSessionFilter extends DelegatingFilterProxy {
 
 	public SpringSessionFilter() {

@@ -4,7 +4,7 @@
 
 # wildfly-clustering-spring
 
-wildfly-clustering-spring is a set of Spring modules providing distributed session management for Spring Session and Spring Web (including Spring MVC and Spring Flux) using Infinispan.
+wildfly-clustering-spring is a set of Spring modules providing distributed session management for Spring Session and Spring Flux using Infinispan.
 This brings the same clustering features of WildFly's distributed session managers to the Spring ecosystem, including:
 
 * Servlet 6.0 specification compliance (excluding [limitations inherent to Spring Session and Spring Web](#notes)).
@@ -28,8 +28,8 @@ This brings the same clustering features of WildFly's distributed session manage
 
 ## Modules
 
-* [Spring Session](session/README.md)
-* [Spring Web](web/README.md)
+* [Spring Session](session/README.md), providing traditional HttpSession management for use with Jakarta Servlet applications and Spring MVC.
+* [Spring Web](web/README.md), providing reactive WebSession management for use with Spring Flux.
 
 ## Notes
 

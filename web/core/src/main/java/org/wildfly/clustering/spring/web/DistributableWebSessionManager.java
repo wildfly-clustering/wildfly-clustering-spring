@@ -7,6 +7,7 @@ package org.wildfly.clustering.spring.web;
 
 import java.util.Iterator;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -30,7 +31,8 @@ import reactor.core.scheduler.Schedulers;
  * since that implementation is unsafe for modification by multiple threads.
  * @author Paul Ferraro
  */
-public class DistributableWebSessionManager<B extends Batch> implements WebSessionManager {
+public class DistributableWebSessionManager<B extends Batch> implements WebSessionManager, AutoCloseable {
+	private static final AtomicInteger COUNTER = new AtomicInteger(0);
 
 	private final SessionManager<Void, B> manager;
 	private final WebSessionIdResolver identifierResolver;
@@ -38,6 +40,7 @@ public class DistributableWebSessionManager<B extends Batch> implements WebSessi
 	public DistributableWebSessionManager(DistributableWebSessionManagerConfiguration<B> configuration) {
 		this.manager = configuration.getSessionManager();
 		this.identifierResolver = configuration.getSessionIdentifierResolver();
+		COUNTER.incrementAndGet();
 	}
 
 	@Override
@@ -55,18 +58,22 @@ public class DistributableWebSessionManager<B extends Batch> implements WebSessi
 			Mono<Session<Void>> result = Mono.fromCompletionStage(function.apply(this.manager, id));
 			B suspendedBatch = batcher.suspendBatch();
 			Supplier<Mono<Session<Void>>> creator = () -> {
-				try (BatchContext context = this.manager.getBatcher().resumeBatch(suspendedBatch)) {
+				try (BatchContext<B> context = this.manager.getBatcher().resumeBatch(suspendedBatch)) {
 					return Mono.fromCompletionStage(this.manager.createSessionAsync(this.manager.getIdentifierFactory().get())).subscribeOn(Schedulers.boundedElastic());
 				}
 			};
-			return result.switchIfEmpty(Mono.defer(creator)).map(session -> new DistributableWebSession<>(this.manager, session, suspendedBatch));
-//			return result.flatMap(session -> Optional.ofNullable(session).map(Mono::just).orElseGet(creator))
-//					.map(session -> new DistributableWebSession<>(this.manager, session, suspendedBatch));
+			return result.switchIfEmpty(Mono.defer(creator)).doOnError(e -> this.rollback(suspendedBatch)).map(session -> new DistributableWebSession<>(this.manager, session, suspendedBatch));
 		} catch (RuntimeException | Error e) {
-			try (BatchContext context = batcher.resumeBatch(batch)) {
+			this.rollback(batch);
+			throw e;
+		}
+	}
+
+	private void rollback(B suspendedBatch) {
+		try (BatchContext<B> context = this.manager.getBatcher().resumeBatch(suspendedBatch)) {
+			try (B batch = context.getBatch()) {
 				batch.discard();
 			}
-			throw e;
 		}
 	}
 
@@ -85,5 +92,12 @@ public class DistributableWebSessionManager<B extends Batch> implements WebSessi
 	private String requestedSessionId(ServerWebExchange exchange) {
 		Iterator<String> sessionIds = this.identifierResolver.resolveSessionIds(exchange).iterator();
 		return sessionIds.hasNext() ? sessionIds.next() : null;
+	}
+
+	@Override
+	public void close() {
+		if (COUNTER.decrementAndGet() == 0) {
+			Schedulers.shutdownNow();
+		}
 	}
 }

@@ -32,6 +32,7 @@ import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.session.infinispan.embedded.InfinispanSessionManagerFactory;
 import org.wildfly.clustering.session.infinispan.embedded.InfinispanSessionManagerFactoryConfiguration;
 import org.wildfly.clustering.session.infinispan.embedded.metadata.SessionMetaDataKey;
+import org.wildfly.clustering.session.spec.SessionEventListenerSpecificationProvider;
 import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 import org.wildfly.clustering.spring.context.AutoDestroyBean;
 
@@ -41,15 +42,17 @@ import org.wildfly.clustering.spring.context.AutoDestroyBean;
 public class InfinispanSessionManagerFactoryBean<S, C, L> extends AutoDestroyBean implements SessionManagerFactory<C, Void, TransactionBatch>, InitializingBean {
 
 	private final SessionManagerFactoryConfiguration<Void> configuration;
-	private final SessionSpecificationProvider<S, C, L> provider;
+	private final SessionSpecificationProvider<S, C> sessionProvider;
+	private final SessionEventListenerSpecificationProvider<S, L> listenerProvider;
 	private final InfinispanConfiguration infinispan;
 	private final ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration embeddedCacheManagerConfiguration;
 
 	private SessionManagerFactory<C, Void, TransactionBatch> sessionManagerFactory;
 
-	public InfinispanSessionManagerFactoryBean(SessionManagerFactoryConfiguration<Void> configuration, SessionSpecificationProvider<S, C, L> provider, InfinispanConfiguration infinispan, ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration embeddedCacheManagerConfiguration) {
+	public InfinispanSessionManagerFactoryBean(SessionManagerFactoryConfiguration<Void> configuration, SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider, InfinispanConfiguration infinispan, ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration embeddedCacheManagerConfiguration) {
 		this.configuration = configuration;
-		this.provider = provider;
+		this.sessionProvider = sessionProvider;
+		this.listenerProvider = listenerProvider;
 		this.infinispan = infinispan;
 		this.embeddedCacheManagerConfiguration = embeddedCacheManagerConfiguration;
 	}
@@ -123,7 +126,7 @@ public class InfinispanSessionManagerFactoryBean<S, C, L> extends AutoDestroyBea
 			}
 		};
 
-		this.sessionManagerFactory = new InfinispanSessionManagerFactory<>(this.configuration, this.provider, infinispanConfiguration);
+		this.sessionManagerFactory = new InfinispanSessionManagerFactory<>(this.configuration, this.sessionProvider, this.listenerProvider, infinispanConfiguration);
 		this.accept(this.sessionManagerFactory::close);
 	}
 
