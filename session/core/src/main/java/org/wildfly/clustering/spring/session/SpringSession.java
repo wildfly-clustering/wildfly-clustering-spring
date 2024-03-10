@@ -19,6 +19,11 @@ public interface SpringSession extends Session, AutoCloseable {
 	boolean isNew();
 
 	/**
+	 * Invalidates this session.
+	 */
+	void invalidate();
+
+	/**
 	 * To be invoked by {@link org.springframework.session.SessionRepository#save(Session)}.
 	 */
 	@Override

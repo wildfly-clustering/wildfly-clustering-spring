@@ -37,19 +37,19 @@ public class InfinispanConfigurationBean implements MutableInfinispanConfigurati
 	}
 
 	@Override
-	public void setConfigurationResource(String resource) {
+	public void setResource(String resource) {
 		this.resource = this.resolver.resolveStringValue(resource);
 	}
 
 	@Override
-	public void setTemplateName(String templateName) {
+	public void setTemplate(String templateName) {
 		this.templateName = Optional.ofNullable(templateName).map(this.resolver::resolveStringValue).orElse(null);
 	}
 
 	@Override
 	public void accept(AnnotationAttributes attributes) {
 		AnnotationAttributes config = attributes.getAnnotation("config");
-		this.setConfigurationResource(config.getString("resource"));
-		this.setTemplateName(Optional.of(config.getString("template")).filter(Predicate.not(String::isEmpty)).orElse(null));
+		this.setResource(config.getString("resource"));
+		this.setTemplate(Optional.of(config.getString("template")).filter(Predicate.not(String::isEmpty)).orElse(null));
 	}
 }

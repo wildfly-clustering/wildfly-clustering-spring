@@ -54,11 +54,23 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
+			<artifactId>wildfly-clustering-spring-context-core</artifactId>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-spring-web-core</artifactId>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>org.wildfly.clustering</groupId>
+			<artifactId>wildfly-clustering-session-spec-servlet-6.0</artifactId>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.wildfly.clustering</groupId>
 			<artifactId>wildfly-clustering-session-spi</artifactId>
@@ -77,17 +89,4 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<testResources>
-			<testResource>
-				<directory>src/test/java</directory>
-				<includes>
-					<include>**/*.properties</include>
-					<include>**/*.xml</include>
-				</includes>
-				<filtering>true</filtering>
-			</testResource>
-		</testResources>
-	</build>
 </project>

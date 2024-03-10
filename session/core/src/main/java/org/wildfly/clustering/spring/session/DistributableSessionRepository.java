@@ -15,7 +15,6 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.session.events.SessionCreatedEvent;
-import org.springframework.session.events.SessionDestroyedEvent;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.Batcher;
 import org.wildfly.clustering.session.ImmutableSession;
@@ -54,7 +53,7 @@ public class DistributableSessionRepository<B extends Batch> implements FindByIn
 		try {
 			Session<Void> session = this.manager.createSession(id);
 			B suspendedBatch = batcher.suspendBatch();
-			DistributableSession<B> result = new DistributableSession<>(this.manager, session, suspendedBatch, this.indexing);
+			DistributableSession<B> result = new DistributableSession<>(this.manager, session, suspendedBatch, this.indexing, this.destroyAction);
 			this.publisher.publishEvent(new SessionCreatedEvent(this, result));
 			close = false;
 			return result;
@@ -82,7 +81,7 @@ public class DistributableSessionRepository<B extends Batch> implements FindByIn
 			Session<Void> session = this.manager.findSession(id);
 			if (session == null) return null;
 			B suspendedBatch = batcher.suspendBatch();
-			DistributableSession<B> result = new DistributableSession<>(this.manager, session, suspendedBatch, this.indexing);
+			DistributableSession<B> result = new DistributableSession<>(this.manager, session, suspendedBatch, this.indexing, this.destroyAction);
 			close = false;
 			CURRENT_SESSION.set(result);
 			return result;
@@ -98,9 +97,8 @@ public class DistributableSessionRepository<B extends Batch> implements FindByIn
 
 	@Override
 	public void deleteById(String id) {
-		try (Session<Void> session = this.manager.findSession(id)) {
+		try (SpringSession session = this.findById(id)) {
 			if (session != null) {
-				this.destroyAction.accept(session, SessionDestroyedEvent::new);
 				session.invalidate();
 			}
 		} finally {

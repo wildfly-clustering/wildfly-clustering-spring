@@ -12,14 +12,14 @@ import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 
 /**
  * @author Paul Ferraro
- * @deprecated Use {@link org.wildfly.clustering.spring.session.SessionMarshallerFactory} instead.
+ * @deprecated Use {@link org.wildfly.clustering.spring.session.SessionAttributeMarshaller} instead.
  */
 @Deprecated(forRemoval = true)
 public enum SessionMarshallerFactory implements BiFunction<Environment, ResourceLoader, ByteBufferMarshaller> {
 
-	JAVA(org.wildfly.clustering.spring.context.SessionMarshallerFactory.JAVA),
-	JBOSS(org.wildfly.clustering.spring.context.SessionMarshallerFactory.JBOSS),
-	PROTOSTREAM(org.wildfly.clustering.spring.context.SessionMarshallerFactory.PROTOSTREAM),
+	JAVA(org.wildfly.clustering.spring.context.SessionAttributeMarshaller.JAVA),
+	JBOSS(org.wildfly.clustering.spring.context.SessionAttributeMarshaller.JBOSS),
+	PROTOSTREAM(org.wildfly.clustering.spring.context.SessionAttributeMarshaller.PROTOSTREAM),
 	;
 	private final BiFunction<Environment, ResourceLoader, ByteBufferMarshaller> factory;
 

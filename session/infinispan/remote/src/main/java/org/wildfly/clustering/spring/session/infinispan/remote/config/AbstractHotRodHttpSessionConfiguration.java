@@ -89,8 +89,8 @@ public class AbstractHotRodHttpSessionConfiguration  extends HttpSessionConfigur
 
 	@Override
 	@Autowired(required = false)
-	public void setTemplateName(String templateName) {
-		this.configuration.setTemplateName(templateName);
+	public void setTemplate(String templateName) {
+		this.configuration.setTemplate(templateName);
 	}
 
 	@Override

@@ -55,7 +55,7 @@ public class DistributableWebSessionManager<B extends Batch> implements WebSessi
 		Batcher<B> batcher = this.manager.getBatcher();
 		B batch = batcher.createBatch();
 		try {
-			Mono<Session<Void>> result = Mono.fromCompletionStage(function.apply(this.manager, id));
+			Mono<Session<Void>> result = Mono.fromCompletionStage(function.apply(this.manager, id)).doOnError(Throwable::printStackTrace);
 			B suspendedBatch = batcher.suspendBatch();
 			Supplier<Mono<Session<Void>>> creator = () -> {
 				try (BatchContext<B> context = this.manager.getBatcher().resumeBatch(suspendedBatch)) {
@@ -86,7 +86,7 @@ public class DistributableWebSessionManager<B extends Batch> implements WebSessi
 			this.identifierResolver.setSessionId(exchange, session.getId());
 		}
 
-		return Mono.<Void>fromRunnable(session::close).subscribeOn(Schedulers.boundedElastic());
+		return Mono.<Void>fromRunnable(session::close).doOnError(Throwable::printStackTrace).subscribeOn(Schedulers.boundedElastic());
 	}
 
 	private String requestedSessionId(ServerWebExchange exchange) {

@@ -89,6 +89,10 @@ public class DistributableImmutableSession implements SpringSession {
 	}
 
 	@Override
+	public void invalidate() {
+	}
+
+	@Override
 	public void close() {
 		// Nothing to do
 	}
