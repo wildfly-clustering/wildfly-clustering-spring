@@ -30,7 +30,7 @@ import org.wildfly.clustering.spring.session.config.HttpSessionConfiguration;
 /**
  * @author Paul Ferraro
  */
-public class AbstractInfinispanHttpSessionConfiguration  extends HttpSessionConfiguration implements MutableInfinispanConfiguration {
+public class AbstractInfinispanHttpSessionConfiguration extends HttpSessionConfiguration implements MutableInfinispanConfiguration {
 
 	private final MutableInfinispanConfiguration configuration = new InfinispanConfigurationBean();
 
@@ -65,14 +65,14 @@ public class AbstractInfinispanHttpSessionConfiguration  extends HttpSessionConf
 
 	@Override
 	@Autowired(required = false)
-	public void setConfigurationResource(String resource) {
-		this.configuration.setConfigurationResource(resource);
+	public void setResource(String resource) {
+		this.configuration.setResource(resource);
 	}
 
 	@Override
 	@Autowired(required = false)
-	public void setTemplateName(String templateName) {
-		this.configuration.setTemplateName(templateName);
+	public void setTemplate(String templateName) {
+		this.configuration.setTemplate(templateName);
 	}
 
 	@Override

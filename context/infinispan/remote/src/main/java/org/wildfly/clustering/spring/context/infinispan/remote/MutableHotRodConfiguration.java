@@ -26,5 +26,5 @@ public interface MutableHotRodConfiguration extends HotRodConfiguration, Embedde
 
 	void setProperty(String name, String value);
 
-	void setTemplateName(String templateName);
+	void setTemplate(String templateName);
 }

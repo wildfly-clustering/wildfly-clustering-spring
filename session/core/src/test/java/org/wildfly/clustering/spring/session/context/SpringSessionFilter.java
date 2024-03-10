@@ -4,7 +4,13 @@
  */
 package org.wildfly.clustering.spring.session.context;
 
+import java.io.IOException;
+
 import jakarta.servlet.DispatcherType;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import jakarta.servlet.annotation.WebFilter;
 
 import org.springframework.session.web.context.AbstractHttpSessionApplicationInitializer;
@@ -19,5 +25,15 @@ public class SpringSessionFilter extends DelegatingFilterProxy {
 
 	public SpringSessionFilter() {
 		super(AbstractHttpSessionApplicationInitializer.DEFAULT_FILTER_NAME);
+	}
+
+	@Override
+	public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+		try {
+			super.doFilter(request, response, filterChain);
+		} catch (ServletException | IOException | RuntimeException | Error e) {
+			e.printStackTrace(System.err);
+			throw e;
+		}
 	}
 }

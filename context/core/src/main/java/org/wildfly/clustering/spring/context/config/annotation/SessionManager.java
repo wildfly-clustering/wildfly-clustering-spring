@@ -10,7 +10,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.wildfly.clustering.spring.context.SessionMarshallerFactory;
+import org.wildfly.clustering.spring.context.SessionAttributeMarshaller;
 import org.wildfly.clustering.spring.context.SessionPersistenceGranularity;
 
 /**
@@ -25,7 +25,7 @@ public @interface SessionManager {
 	 * Defines the marshaller implementation to use for session attribute marshalling.  Default uses JBoss Marshalling.
 	 * @return a marshaller implementation
 	 */
-	SessionMarshallerFactory marshallerFactory() default SessionMarshallerFactory.JBOSS;
+	SessionAttributeMarshaller marshaller() default SessionAttributeMarshaller.JBOSS;
 
 	/**
 	 * Defines the granularity for persisting/replicating sessions, i.e. per session or per attribute.  Default is per-session.

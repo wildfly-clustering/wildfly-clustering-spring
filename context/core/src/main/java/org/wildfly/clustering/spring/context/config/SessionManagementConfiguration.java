@@ -29,8 +29,8 @@ import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionManagerConfiguration;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
+import org.wildfly.clustering.spring.context.SessionAttributeMarshaller;
 import org.wildfly.clustering.spring.context.SessionManagerBean;
-import org.wildfly.clustering.spring.context.SessionMarshallerFactory;
 import org.wildfly.common.function.Functions;
 
 /**
@@ -44,7 +44,7 @@ public abstract class SessionManagementConfiguration<S, C, L> implements Session
 	private IdGenerator generator = new JdkIdGenerator();
 	private OptionalInt maxActiveSessions = OptionalInt.empty();
 	private SessionAttributePersistenceStrategy persistenceStrategy = SessionAttributePersistenceStrategy.COARSE;
-	private BiFunction<Environment, ResourceLoader, ByteBufferMarshaller> marshallerFactory = SessionMarshallerFactory.JAVA;
+	private BiFunction<Environment, ResourceLoader, ByteBufferMarshaller> marshallerFactory = SessionAttributeMarshaller.JAVA;
 	private Environment environment;
 	private ResourceLoader loader;
 
@@ -113,7 +113,7 @@ public abstract class SessionManagementConfiguration<S, C, L> implements Session
 	}
 
 	@Autowired(required = false)
-	public void setMarshallerFactory(BiFunction<Environment, ResourceLoader, ByteBufferMarshaller> marshallerFactory) {
+	public void setMarshaller(BiFunction<Environment, ResourceLoader, ByteBufferMarshaller> marshallerFactory) {
 		this.marshallerFactory = marshallerFactory;
 	}
 
@@ -127,7 +127,7 @@ public abstract class SessionManagementConfiguration<S, C, L> implements Session
 		AnnotationAttributes attributes = AnnotationAttributes.fromMap(metadata.getAnnotationAttributes(this.annotationClass.getName()));
 		AnnotationAttributes manager = attributes.getAnnotation("manager");
 		this.setMaxActiveSessions(manager.getNumber("maxActiveSessions").intValue());
-		this.setMarshallerFactory(manager.getEnum("marshallerFactory"));
+		this.setMarshaller(manager.getEnum("marshaller"));
 		this.setGranularity(manager.getEnum("granularity"));
 		this.accept(attributes);
 	}

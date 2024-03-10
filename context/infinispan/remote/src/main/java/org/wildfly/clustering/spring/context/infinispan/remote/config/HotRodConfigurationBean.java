@@ -53,7 +53,7 @@ public class HotRodConfigurationBean implements MutableHotRodConfiguration {
 	}
 
 	@Override
-	public void setTemplateName(String templateName) {
+	public void setTemplate(String templateName) {
 		this.templateName = this.resolver.resolveStringValue(templateName);
 	}
 
@@ -61,7 +61,7 @@ public class HotRodConfigurationBean implements MutableHotRodConfiguration {
 	public void accept(AnnotationAttributes attributes) {
 		AnnotationAttributes config = attributes.getAnnotation("config");
 		this.setUri(config.getString("uri"));
-		this.setTemplateName(config.getString("template"));
+		this.setTemplate(config.getString("template"));
 		for (AnnotationAttributes property : config.getAnnotationArray("properties")) {
 			this.setProperty(property.getString("name"), property.getString("value"));
 		}

@@ -27,7 +27,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.util.StringValueResolver;
-import org.wildfly.clustering.spring.context.SessionMarshallerFactory;
+import org.wildfly.clustering.spring.context.SessionAttributeMarshaller;
 import org.wildfly.clustering.spring.context.SessionPersistenceGranularity;
 import org.wildfly.clustering.spring.context.config.annotation.SessionManager;
 import org.wildfly.clustering.spring.context.infinispan.remote.config.annotation.HotRod;
@@ -39,7 +39,7 @@ import org.wildfly.clustering.spring.web.infinispan.remote.config.annotation.Ena
  * @author Paul Ferraro
  */
 @PropertySource("classpath:application.properties")
-@EnableHotRodWebSession(config = @HotRod(uri = "hotrod://${infinispan.server.username}:${infinispan.server.password}@${infinispan.server.host}:${infinispan.server.port}?tcp_no_delay=true", template = "${infinispan.server.template}"), manager = @SessionManager(marshallerFactory = SessionMarshallerFactory.PROTOSTREAM, granularity = SessionPersistenceGranularity.ATTRIBUTE))
+@EnableHotRodWebSession(config = @HotRod(uri = "hotrod://${infinispan.server.username}:${infinispan.server.password}@${infinispan.server.host}:${infinispan.server.port}?tcp_no_delay=true", template = "${infinispan.server.template}"), manager = @SessionManager(marshaller = SessionAttributeMarshaller.PROTOSTREAM, granularity = SessionPersistenceGranularity.ATTRIBUTE))
 @Configuration(proxyBeanMethods = false)
 public class Config extends ReactiveConfig implements EmbeddedValueResolverAware {
 

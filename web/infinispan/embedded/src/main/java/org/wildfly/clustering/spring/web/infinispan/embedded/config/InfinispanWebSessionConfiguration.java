@@ -53,14 +53,14 @@ public class InfinispanWebSessionConfiguration extends WebSessionConfiguration i
 
 	@Override
 	@Autowired(required = false)
-	public void setConfigurationResource(String resource) {
-		this.configuration.setConfigurationResource(resource);
+	public void setResource(String resource) {
+		this.configuration.setResource(resource);
 	}
 
 	@Override
 	@Autowired(required = false)
-	public void setTemplateName(String templateName) {
-		this.configuration.setTemplateName(templateName);
+	public void setTemplate(String templateName) {
+		this.configuration.setTemplate(templateName);
 	}
 
 	@Override

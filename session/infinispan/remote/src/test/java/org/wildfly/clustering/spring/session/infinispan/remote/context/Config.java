@@ -26,7 +26,7 @@ import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.util.StringValueResolver;
-import org.wildfly.clustering.spring.context.SessionMarshallerFactory;
+import org.wildfly.clustering.spring.context.SessionAttributeMarshaller;
 import org.wildfly.clustering.spring.context.SessionPersistenceGranularity;
 import org.wildfly.clustering.spring.context.config.annotation.SessionManager;
 import org.wildfly.clustering.spring.context.infinispan.remote.config.annotation.HotRod;
@@ -37,7 +37,7 @@ import org.wildfly.clustering.spring.session.infinispan.remote.config.annotation
  * @author Paul Ferraro
  */
 @PropertySource("classpath:application.properties")
-@EnableHotRodHttpSession(config = @HotRod(uri = "hotrod://${infinispan.server.username}:${infinispan.server.password}@${infinispan.server.host}:${infinispan.server.port}?tcp_no_delay=true", template = "${infinispan.server.template}"), manager = @SessionManager(marshallerFactory = SessionMarshallerFactory.PROTOSTREAM, granularity = SessionPersistenceGranularity.ATTRIBUTE))
+@EnableHotRodHttpSession(config = @HotRod(uri = "hotrod://${infinispan.server.username}:${infinispan.server.password}@${infinispan.server.host}:${infinispan.server.port}?tcp_no_delay=true", template = "${infinispan.server.template}"), manager = @SessionManager(marshaller = SessionAttributeMarshaller.PROTOSTREAM, granularity = SessionPersistenceGranularity.ATTRIBUTE))
 public class Config implements EmbeddedValueResolverAware {
 
 	private StringValueResolver resolver;

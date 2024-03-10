@@ -14,7 +14,7 @@ import org.springframework.core.annotation.AnnotationAttributes;
  * @author Paul Ferraro
  */
 public interface MutableInfinispanConfiguration extends InfinispanConfiguration, EmbeddedValueResolverAware, Consumer<AnnotationAttributes> {
-	void setConfigurationResource(String resource);
+	void setResource(String resource);
 
-	void setTemplateName(String templateName);
+	void setTemplate(String templateName);
 }

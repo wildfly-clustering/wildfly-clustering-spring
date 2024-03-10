@@ -39,6 +39,18 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
+			<artifactId>wildfly-clustering-spring-context-core</artifactId>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>wildfly-clustering-spring-context-infinispan-embedded</artifactId>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-spring-session-core</artifactId>
 			<classifier>tests</classifier>
 			<scope>test</scope>
@@ -50,6 +62,12 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>org.wildfly.clustering</groupId>
+			<artifactId>wildfly-clustering-session-spec-servlet-6.0</artifactId>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.wildfly.clustering</groupId>
 			<artifactId>wildfly-clustering-session-spi</artifactId>
@@ -77,10 +95,21 @@
 			<artifactId>spring-security-config</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.wildfly.clustering</groupId>
+			<artifactId>wildfly-clustering-arquillian</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
 		<testResources>
+			<testResource>
+				<directory>src/test/resources</directory>
+				<includes>
+					<include>applicationContext.xml</include>
+				</includes>
+			</testResource>
 			<testResource>
 				<directory>src/test/resources</directory>
 				<includes>
@@ -93,14 +122,6 @@
 				<targetPath>${catalina.home}/conf</targetPath>
 				<includes>
 					<include>**</include>
-				</includes>
-				<filtering>true</filtering>
-			</testResource>
-			<testResource>
-				<directory>src/test/java</directory>
-				<includes>
-					<include>**/*.properties</include>
-					<include>**/*.xml</include>
 				</includes>
 				<filtering>true</filtering>
 			</testResource>
@@ -209,6 +230,21 @@
 						</goals>
 						<configuration>
 							<outputDirectory>${project.build.directory}/tomcat-2</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${catalina.home}</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-tomcat-3</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/tomcat-3</outputDirectory>
 							<resources>
 								<resource>
 									<directory>${catalina.home}</directory>
