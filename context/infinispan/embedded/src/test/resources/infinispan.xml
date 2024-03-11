@@ -10,26 +10,14 @@
 	<cache-container name="default" default-cache="dist">
 		<transport/>
 		<distributed-cache-configuration name="dist">
-			<persistence passivation="true">
-				<file-store purge="true" path="infinispan"/>
-			</persistence>
 		</distributed-cache-configuration>
 		<distributed-cache-configuration name="dist-tx">
 			<transaction mode="BATCH" locking="PESSIMISTIC"/>
-			<persistence passivation="true">
-				<file-store purge="true" path="infinispan"/>
-			</persistence>
 		</distributed-cache-configuration>
 		<replicated-cache-configuration name="repl">
-			<persistence passivation="true">
-				<file-store purge="true" path="infinispan"/>
-			</persistence>
 		</replicated-cache-configuration>
 		<replicated-cache-configuration name="repl-tx">
 			<transaction mode="BATCH" locking="PESSIMISTIC"/>
-			<persistence passivation="true">
-				<file-store purge="true" path="infinispan"/>
-			</persistence>
 		</replicated-cache-configuration>
 	</cache-container>
 </infinispan>
