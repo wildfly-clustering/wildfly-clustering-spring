@@ -22,6 +22,7 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
 import org.springframework.http.server.reactive.ServletHttpHandlerAdapter;
+import org.springframework.http.server.reactive.TomcatHttpHandlerAdapter;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.server.adapter.WebHttpHandlerBuilder;
 
@@ -42,7 +43,7 @@ public class DispatcherServlet implements Servlet, UnaryOperator<HttpHandler> {
 	public void init(ServletConfig config) throws ServletException {
 		ApplicationContext context = (ApplicationContext) config.getServletContext().getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
 		HttpHandler handler = WebHttpHandlerBuilder.applicationContext(context).httpHandlerDecorator(this).build();
-		this.servlet = new ServletHttpHandlerAdapter(handler);
+		this.servlet = new TomcatHttpHandlerAdapter(handler);
 		this.servlet.init(config);
 	}
 
