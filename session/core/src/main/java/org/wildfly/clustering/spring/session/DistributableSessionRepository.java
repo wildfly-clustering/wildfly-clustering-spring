@@ -27,6 +27,7 @@ import org.wildfly.clustering.session.user.UserManager;
  * A session repository implementation based on a {@link SessionManager}.
  * Additionally indexes sessions using a set of {@link UserManager} instances.
  * @author Paul Ferraro
+ * @param <B> batch type
  */
 public class DistributableSessionRepository<B extends Batch> implements FindByIndexNameSessionRepository<SpringSession> {
 	// Handle redundant calls to findById(...)

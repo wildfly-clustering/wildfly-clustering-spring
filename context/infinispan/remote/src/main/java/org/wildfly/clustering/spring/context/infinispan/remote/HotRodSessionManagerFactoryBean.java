@@ -25,6 +25,9 @@ import org.wildfly.clustering.spring.context.AutoDestroyBean;
 
 /**
  * @author Paul Ferraro
+ * @param <S> session type
+ * @param <C> session manager context type
+ * @param <L> session passivation listener type
  */
 public class HotRodSessionManagerFactoryBean<S, C, L> extends AutoDestroyBean implements SessionManagerFactory<C, Void, TransactionBatch>, InitializingBean {
 

@@ -15,6 +15,7 @@ import org.springframework.security.core.GrantedAuthority;
 
 /**
  * @author Paul Ferraro
+ * @param <T> token type
  */
 public class CredentialAuthenticationMarshaller<T extends AbstractAuthenticationToken> extends AuthenticationMarshaller<T> {
 

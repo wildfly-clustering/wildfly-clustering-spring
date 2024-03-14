@@ -19,8 +19,6 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import jakarta.servlet.ServletContext;
-import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.HttpSessionActivationListener;
 
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -51,7 +49,7 @@ import org.wildfly.common.function.Functions;
 /**
  * @author Paul Ferraro
  */
-public abstract class HttpSessionConfiguration extends SessionManagementConfiguration<HttpSession, ServletContext, HttpSessionActivationListener> implements ApplicationEventPublisherAware, ServletContextAware, MutableIndexingConfiguration {
+public abstract class HttpSessionConfiguration extends SessionManagementConfiguration<ServletContext> implements ApplicationEventPublisherAware, ServletContextAware, MutableIndexingConfiguration {
 
 	public static final String DEFAULT_SPRING_SECURITY_INDEX_ID = "SPRING_SECURITY_CONTEXT";
 	public static final String DEFAULT_STRING_SECURITY_INDEX_NAME = "org.springframework.session.FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME";

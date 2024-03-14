@@ -12,7 +12,7 @@ import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 
 /**
  * @author Paul Ferraro
- * @deprecated Use {@link org.wildfly.clustering.spring.session.SessionAttributeMarshaller} instead.
+ * @deprecated Use {@link org.wildfly.clustering.spring.context.SessionAttributeMarshaller} instead.
  */
 @Deprecated(forRemoval = true)
 public enum SessionMarshallerFactory implements BiFunction<Environment, ResourceLoader, ByteBufferMarshaller> {

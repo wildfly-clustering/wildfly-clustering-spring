@@ -16,6 +16,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
  * @author Paul Ferraro
+ * @param <A> authentication type
  */
 public class AuthenticationMarshaller<A extends Authentication> implements FieldSetMarshaller<A, AuthenticationTokenConfiguration> {
 

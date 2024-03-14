@@ -10,7 +10,7 @@ import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 
 /**
  * @author Paul Ferraro
- * @deprecated Use {@link org.wildfly.clustering.spring.session.SessionAttributeMarshaller} instead.
+ * @deprecated Use {@link org.wildfly.clustering.spring.context.SessionAttributeMarshaller} instead.
  */
 @Deprecated(forRemoval = true)
 public enum SessionPersistenceGranularity implements Supplier<SessionAttributePersistenceStrategy> {

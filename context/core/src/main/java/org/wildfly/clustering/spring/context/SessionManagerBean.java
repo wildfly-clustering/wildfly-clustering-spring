@@ -18,6 +18,7 @@ import org.wildfly.clustering.session.SessionStatistics;
 
 /**
  * @author Paul Ferraro
+ * @param <B> batch type
  */
 public class SessionManagerBean<B extends Batch> extends AutoDestroyBean implements SessionManager<Void, B>, InitializingBean {
 

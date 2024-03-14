@@ -36,8 +36,9 @@ import org.wildfly.common.function.Functions;
 /**
  * Spring configuration bean for a distributable session repository.
  * @author Paul Ferraro
+ * @param <C> session manager context type
  */
-public abstract class SessionManagementConfiguration<S, C, L> implements SessionManagerFactoryConfiguration<Void>, SessionManagerConfiguration<C>, EnvironmentAware, ImportAware, ResourceLoaderAware, Consumer<AnnotationAttributes> {
+public abstract class SessionManagementConfiguration<C> implements SessionManagerFactoryConfiguration<Void>, SessionManagerConfiguration<C>, EnvironmentAware, ImportAware, ResourceLoaderAware, Consumer<AnnotationAttributes> {
 
 	private final Class<? extends Annotation> annotationClass;
 
