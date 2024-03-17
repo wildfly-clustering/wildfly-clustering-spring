@@ -4,22 +4,25 @@
  */
 package org.wildfly.clustering.spring.security;
 
-import java.io.IOException;
 import java.util.Collections;
+import java.util.function.Consumer;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 /**
  * @author Paul Ferraro
  */
 public class SpringSecurityUserDetailsMarshallerTestCase {
 
-	@Test
-	public void test() throws IOException {
-		ProtoStreamTesterFactory.INSTANCE.createTester().test(new User("username", "password", Collections.singleton(new SimpleGrantedAuthority("admin"))));
-		ProtoStreamTesterFactory.INSTANCE.createTester().test(new User("username", "password", false, false, false, false, Collections.singleton(new SimpleGrantedAuthority("admin"))));
+	@ParameterizedTest
+	@TesterFactorySource
+	public void test(TesterFactory factory) {
+		Consumer<User> tester = factory.createTester();
+		tester.accept(new User("username", "password", Collections.singleton(new SimpleGrantedAuthority("admin"))));
+		tester.accept(new User("username", "password", false, false, false, false, Collections.singleton(new SimpleGrantedAuthority("admin"))));
 	}
 }

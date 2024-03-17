@@ -4,18 +4,18 @@
  */
 package org.wildfly.clustering.spring.security;
 
-import java.io.IOException;
-
-import org.junit.jupiter.api.Test;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 /**
  * @author Paul Ferraro
  */
 public class SpringSecurityMarshallerTestCase {
 
-	@Test
-	public void test() throws IOException {
-		ProtoStreamTesterFactory.INSTANCE.createTester(Scheme.class).test();
+	@ParameterizedTest
+	@TesterFactorySource
+	public void test(TesterFactory factory) {
+		factory.createTester(Scheme.class).run();
 	}
 }

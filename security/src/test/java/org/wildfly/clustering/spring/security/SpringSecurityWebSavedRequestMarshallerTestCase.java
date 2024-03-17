@@ -4,33 +4,35 @@
  */
 package org.wildfly.clustering.spring.security;
 
-import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 
 import jakarta.servlet.http.Cookie;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.security.web.savedrequest.SavedCookie;
-import org.wildfly.clustering.marshalling.Tester;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 /**
  * @author Paul Ferraro
  */
 public class SpringSecurityWebSavedRequestMarshallerTestCase {
 
-	@Test
-	public void test() throws IOException {
-		Tester<DefaultSavedRequest> tester = ProtoStreamTesterFactory.INSTANCE.createTester();
+	@ParameterizedTest
+	@TesterFactorySource
+	public void test(TesterFactory factory) throws UnknownHostException {
+		Consumer<DefaultSavedRequest> tester = factory.createTester(SpringSecurityWebSavedRequestMarshallerTestCase::assertEquals);
 
 		Map<String, String[]> parameters = new TreeMap<>();
 		parameters.put("foo", new String[] { "true" });
@@ -48,7 +50,7 @@ public class SpringSecurityWebSavedRequestMarshallerTestCase {
 		builder.setRequestURI("");
 		builder.setRequestURL(String.format("https://%s", InetAddress.getLoopbackAddress().getHostName()));
 
-		tester.test(builder.build(), SpringSecurityWebSavedRequestMarshallerTestCase::assertEquals);
+		tester.accept(builder.build());
 
 		builder = new DefaultSavedRequest.Builder();
 		builder.setMethod(HttpMethod.POST.name());
@@ -70,7 +72,7 @@ public class SpringSecurityWebSavedRequestMarshallerTestCase {
 		builder.setRequestURI("/foo/bar/extra/path");
 		builder.setRequestURL(String.format("http://%s:8080/foo/bar/extra/path", InetAddress.getLocalHost().getHostName()));
 
-		tester.test(builder.build(), SpringSecurityWebSavedRequestMarshallerTestCase::assertEquals);
+		tester.accept(builder.build());
 	}
 
 	private static void assertEquals(DefaultSavedRequest request1, DefaultSavedRequest request2) {
