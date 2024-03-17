@@ -23,6 +23,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
  * @author Paul Ferraro
+ * @param <T> token type
  */
 public class HashAuthenticationTokenMarshaller<T extends AbstractAuthenticationToken> implements ProtoStreamMarshaller<T> {
 

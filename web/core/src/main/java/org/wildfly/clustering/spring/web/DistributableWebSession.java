@@ -19,6 +19,7 @@ import reactor.core.scheduler.Schedulers;
 
 /**
  * @author Paul Ferraro
+ * @param <B> batch type
  */
 public class DistributableWebSession<B extends Batch> implements SpringWebSession {
 

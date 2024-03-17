@@ -27,9 +27,10 @@ import reactor.core.scheduler.Schedulers;
 
 /**
  * A distributable {@link WebSessionManager} implementation.
- * The avoidance of {@link org.springframework.web.server.session.DefaultWebSessionManager} with {@link org.springframework.session.web.server.session.SpringSessionWebSessionStore} is intentional,
+ * The avoidance of {@link org.springframework.web.server.session.DefaultWebSessionManager} with SpringSessionWebSessionStore is intentional,
  * since that implementation is unsafe for modification by multiple threads.
  * @author Paul Ferraro
+ * @param <B> batch type
  */
 public class DistributableWebSessionManager<B extends Batch> implements WebSessionManager, AutoCloseable {
 	private static final AtomicInteger COUNTER = new AtomicInteger(0);

@@ -16,6 +16,8 @@ import org.wildfly.clustering.session.SessionManager;
 
 /**
  * @author Paul Ferraro
+ * @param <S> session type
+ * @param <B> batch type
  */
 public interface DistributableSessionManagerConfiguration<S, B extends Batch> {
 	SessionManager<Void, B> getSessionManager();

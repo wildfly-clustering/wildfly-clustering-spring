@@ -14,6 +14,7 @@ import org.wildfly.clustering.marshalling.protostream.ScalarMarshaller;
 
 /**
  * @author Paul Ferraro
+ * @param <T> marshalling target type
  */
 public class AnyScalarMarshaller<T> implements ScalarMarshaller<T> {
 

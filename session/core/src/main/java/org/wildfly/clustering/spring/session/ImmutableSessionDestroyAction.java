@@ -24,6 +24,7 @@ import org.wildfly.clustering.session.user.UserManager;
 
 /**
  * @author Paul Ferraro
+ * @param <B> batch type
  */
 public class ImmutableSessionDestroyAction<B extends Batch> implements BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> {
 

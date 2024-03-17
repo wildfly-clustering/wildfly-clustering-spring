@@ -13,6 +13,7 @@ import org.wildfly.clustering.session.user.UserManager;
 
 /**
  * @author Paul Ferraro
+ * @param <B> batch type
  */
 public interface UserConfiguration<B extends Batch> {
 	Map<String, UserManager<Void, Void, String, String, B>> getUserManagers();

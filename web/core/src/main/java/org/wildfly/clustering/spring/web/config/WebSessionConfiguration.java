@@ -29,7 +29,7 @@ import org.wildfly.common.function.Functions;
 /**
  * @author Paul Ferraro
  */
-public abstract class WebSessionConfiguration extends SessionManagementConfiguration<Void, ServletContext, Void> implements ServletContextAware {
+public abstract class WebSessionConfiguration extends SessionManagementConfiguration<ServletContext> implements ServletContextAware {
 
 	private WebSessionIdResolver resolver = new CookieWebSessionIdResolver();
 

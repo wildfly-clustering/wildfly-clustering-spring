@@ -76,7 +76,6 @@ public class RemoteCacheContainerProviderBean extends AutoDestroyBean implements
 		Configuration configuration = ((uri != null) ? HotRodURI.create(uri).toConfigurationBuilder() : new ConfigurationBuilder())
 				.withProperties(this.configuration.getProperties())
 				.marshaller(new ProtoStreamMarshaller(ClassLoaderMarshaller.of(this.loader), builder -> builder.load(this.loader)))
-				.classLoader(this.loader)
 				.asyncExecutorFactory().factory(new ExecutorFactory() {
 					@Override
 					public ThreadPoolExecutor getExecutor(Properties p) {

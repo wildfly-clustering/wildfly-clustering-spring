@@ -4,21 +4,25 @@
  */
 package org.wildfly.clustering.spring.security;
 
-import java.io.IOException;
+import java.util.function.Consumer;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextImpl;
-import org.wildfly.clustering.marshalling.protostream.ProtoStreamTesterFactory;
+import org.wildfly.clustering.marshalling.TesterFactory;
+import org.wildfly.clustering.marshalling.junit.TesterFactorySource;
 
 /**
  * @author Paul Ferraro
  */
 public class SpringSecurityContextMarshallerTestCase {
 
-	@Test
-	public void test() throws IOException {
-		ProtoStreamTesterFactory.INSTANCE.createTester().test(new SecurityContextImpl());
-		ProtoStreamTesterFactory.INSTANCE.createTester().test(new SecurityContextImpl(new UsernamePasswordAuthenticationToken("username", "password")));
+	@ParameterizedTest
+	@TesterFactorySource
+	public void test(TesterFactory factory) {
+		Consumer<SecurityContext> tester = factory.createTester();
+		tester.accept(new SecurityContextImpl());
+		tester.accept(new SecurityContextImpl(new UsernamePasswordAuthenticationToken("username", "password")));
 	}
 }

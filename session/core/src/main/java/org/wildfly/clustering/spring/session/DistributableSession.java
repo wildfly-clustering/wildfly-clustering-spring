@@ -27,6 +27,7 @@ import org.wildfly.clustering.session.user.UserManager;
 /**
  * Spring Session implementation that delegates to a {@link Session} instance.
  * @author Paul Ferraro
+ * @param <B> batch type
  */
 public class DistributableSession<B extends Batch> implements SpringSession {
 
