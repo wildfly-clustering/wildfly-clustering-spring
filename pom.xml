@@ -39,7 +39,7 @@
 		<!-- Runtime dependency versions -->
 		<version.io.projectreactor.core>3.6.4</version.io.projectreactor.core>
 		<version.org.springframework>6.1.6</version.org.springframework>
-		<version.org.springframework.security>6.2.2</version.org.springframework.security>
+		<version.org.springframework.security>6.2.3</version.org.springframework.security>
 		<version.org.springframework.session>3.2.2</version.org.springframework.session>
 		<version.org.infinispan>15.0.0.Final</version.org.infinispan>
 		<version.org.jboss.marshalling>2.1.4.Final</version.org.jboss.marshalling>
