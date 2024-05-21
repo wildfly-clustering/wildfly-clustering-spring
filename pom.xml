@@ -41,7 +41,7 @@
 		<version.org.springframework>6.1.6</version.org.springframework>
 		<version.org.springframework.security>6.2.4</version.org.springframework.security>
 		<version.org.springframework.session>3.2.2</version.org.springframework.session>
-		<version.org.infinispan>15.0.2.Final</version.org.infinispan>
+		<version.org.infinispan>15.0.4.Final</version.org.infinispan>
 		<version.org.jboss.marshalling>2.1.4.Final</version.org.jboss.marshalling>
 		<version.org.wildfly.clustering>2.0.0.Final</version.org.wildfly.clustering>
 
