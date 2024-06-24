@@ -10,17 +10,15 @@ import java.util.function.BiFunction;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.session.Session;
-import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.SessionManager;
 
 /**
  * @author Paul Ferraro
- * @param <B> batch type
  */
-public interface DistributableSessionRepositoryConfiguration<B extends Batch> {
-	SessionManager<Void, B> getSessionManager();
+public interface DistributableSessionRepositoryConfiguration {
+	SessionManager<Void> getSessionManager();
 	ApplicationEventPublisher getEventPublisher();
 	BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> getSessionDestroyAction();
-	UserConfiguration<B> getUserConfiguration();
+	UserConfiguration getUserConfiguration();
 }

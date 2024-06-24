@@ -43,8 +43,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
-import org.wildfly.clustering.cache.infinispan.marshalling.protostream.ProtoStreamMarshaller;
-import org.wildfly.clustering.context.DefaultThreadFactory;
+import org.wildfly.clustering.cache.infinispan.marshalling.MediaTypes;
+import org.wildfly.clustering.cache.infinispan.marshalling.UserMarshaller;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ClassLoaderMarshaller;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
@@ -161,14 +161,15 @@ public class EmbeddedCacheManagerBean extends AutoDestroyBean implements Channel
 			this.accept(this.commandDispatcherFactory::close);
 		}
 
+		ClassLoader loader = this.loader.getClassLoader();
 		global.classLoader(this.loader.getClassLoader())
 				.shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER)
-				.blockingThreadPool().threadFactory(new DefaultThreadFactory(BlockingManager.class))
-				.expirationThreadPool().threadFactory(new DefaultThreadFactory(ExpirationManager.class))
-				.listenerThreadPool().threadFactory(new DefaultThreadFactory(ListenerInvocation.class))
+				.blockingThreadPool().threadFactory(new DefaultBlockingThreadFactory(BlockingManager.class))
+				.expirationThreadPool().threadFactory(new DefaultBlockingThreadFactory(ExpirationManager.class))
+				.listenerThreadPool().threadFactory(new DefaultBlockingThreadFactory(ListenerInvocation.class))
 				.nonBlockingThreadPool().threadFactory(new DefaultNonBlockingThreadFactory(NonBlockingManager.class))
 				.serialization()
-					.marshaller(new ProtoStreamMarshaller(ClassLoaderMarshaller.of(this.loader.getClassLoader()), builder -> builder.load(this.loader.getClassLoader())))
+					.marshaller(new UserMarshaller(MediaTypes.WILDFLY_PROTOSTREAM, new ProtoStreamByteBufferMarshaller(SerializationContextBuilder.newInstance(ClassLoaderMarshaller.of(loader)).load(loader).build())))
 					// Register dummy serialization context initializer, to bypass service loading in org.infinispan.marshall.protostream.impl.SerializationContextRegistryImpl
 					// Otherwise marshaller auto-detection will not work
 					.addContextInitializer(new SerializationContextInitializer() {

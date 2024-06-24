@@ -28,7 +28,7 @@ public class ImmutableSessionExpirationListener implements Consumer<ImmutableSes
 
 	public ImmutableSessionExpirationListener(ServletContext context, BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> destroyAction) {
 		this.destroyAction = destroyAction;
-		this.executor = ContextualExecutor.withContext(context.getClassLoader(), ContextClassLoaderReference.INSTANCE);
+		this.executor = ContextualExecutor.withContextProvider(ContextClassLoaderReference.INSTANCE.provide(context.getClassLoader()));
 	}
 
 	@Override

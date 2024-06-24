@@ -21,7 +21,6 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.IdGenerator;
 import org.springframework.util.JdkIdGenerator;
-import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
@@ -54,8 +53,8 @@ public abstract class SessionManagementConfiguration<C> implements SessionManage
 	}
 
 	@Bean
-	public <B extends Batch> SessionManager<Void, B> sessionManager(SessionManagerFactory<C, Void, B> factory) {
-		return new SessionManagerBean<>(factory.createSessionManager(this));
+	public SessionManager<Void> sessionManager(SessionManagerFactory<C, Void> factory) {
+		return new SessionManagerBean(factory.createSessionManager(this));
 	}
 
 	@Override

@@ -4,16 +4,15 @@
  */
 package org.wildfly.clustering.spring.context.infinispan.embedded;
 
-import org.infinispan.commons.executors.NonBlockingResource;
 import org.wildfly.clustering.context.DefaultThreadFactory;
 
 /**
  * Thread factory for non-blocking threads.
  * @author Paul Ferraro
  */
-public class DefaultNonBlockingThreadFactory extends DefaultThreadFactory implements NonBlockingResource {
+public class DefaultBlockingThreadFactory extends DefaultThreadFactory {
 
-	public DefaultNonBlockingThreadFactory(Class<?> targetClass) {
+	public DefaultBlockingThreadFactory(Class<?> targetClass) {
 		super(targetClass, targetClass.getClassLoader());
 	}
 }

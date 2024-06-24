@@ -19,7 +19,7 @@ public class ClassLoaderThreadFactory implements org.jgroups.util.ThreadFactory 
 	public ClassLoaderThreadFactory(ThreadFactory factory, ClassLoader targetLoader) {
 		this.factory = factory;
 		this.targetLoader = targetLoader;
-		this.contextualizer = Contextualizer.withContext(targetLoader, ContextClassLoaderReference.INSTANCE);
+		this.contextualizer = Contextualizer.withContextProvider(ContextClassLoaderReference.INSTANCE.provide(targetLoader));
 	}
 
 	@Override

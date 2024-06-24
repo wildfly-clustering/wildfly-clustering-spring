@@ -8,8 +8,7 @@ import java.util.function.Function;
 
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.SimpleClassResolver;
-import org.wildfly.clustering.marshalling.jboss.LoadedClassTable;
-import org.wildfly.clustering.marshalling.jboss.LoadedObjectTable;
+import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationBuilder;
 
 /**
  * @author Paul Ferraro
@@ -19,11 +18,7 @@ public enum JBossMarshallingVersion implements Function<ClassLoader, Marshalling
 	VERSION_1() {
 		@Override
 		public MarshallingConfiguration apply(ClassLoader loader) {
-			MarshallingConfiguration config = new MarshallingConfiguration();
-			config.setClassResolver(new SimpleClassResolver(loader));
-			config.setClassTable(new LoadedClassTable(loader));
-			config.setObjectTable(new LoadedObjectTable(loader));
-			return config;
+			return MarshallingConfigurationBuilder.newInstance(new SimpleClassResolver(loader)).load(loader).build();
 		}
 	},
 	;

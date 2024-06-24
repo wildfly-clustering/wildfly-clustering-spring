@@ -8,14 +8,12 @@ import java.util.Map;
 
 import org.springframework.session.IndexResolver;
 import org.springframework.session.Session;
-import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.session.user.UserManager;
 
 /**
  * @author Paul Ferraro
- * @param <B> batch type
  */
-public interface UserConfiguration<B extends Batch> {
-	Map<String, UserManager<Void, Void, String, String, B>> getUserManagers();
+public interface UserConfiguration {
+	Map<String, UserManager<Void, Void, String, String>> getUserManagers();
 	IndexResolver<Session> getIndexResolver();
 }

@@ -30,7 +30,6 @@ import org.springframework.session.IndexResolver;
 import org.springframework.session.PrincipalNameIndexResolver;
 import org.springframework.session.Session;
 import org.springframework.web.context.ServletContextAware;
-import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.SessionManager;
@@ -68,11 +67,11 @@ public abstract class HttpSessionConfiguration extends SessionManagementConfigur
 	}
 
 	@Bean
-	public <B extends Batch> FindByIndexNameSessionRepository<SpringSession> sessionRepository(SessionManager<Void, B> manager, UserConfiguration<B> userConfiguration) {
+	public FindByIndexNameSessionRepository<SpringSession> sessionRepository(SessionManager<Void> manager, UserConfiguration userConfiguration) {
 		BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> sessionDestroyAction = new ImmutableSessionDestroyAction<>(this.publisher, this.getContext(), HttpSessionProvider.INSTANCE, userConfiguration);
-		DistributableSessionRepositoryConfiguration<B> configuration = new DistributableSessionRepositoryConfiguration<>() {
+		DistributableSessionRepositoryConfiguration configuration = new DistributableSessionRepositoryConfiguration() {
 			@Override
-			public SessionManager<Void, B> getSessionManager() {
+			public SessionManager<Void> getSessionManager() {
 				return manager;
 			}
 
@@ -87,11 +86,11 @@ public abstract class HttpSessionConfiguration extends SessionManagementConfigur
 			}
 
 			@Override
-			public UserConfiguration<B> getUserConfiguration() {
+			public UserConfiguration getUserConfiguration() {
 				return userConfiguration;
 			}
 		};
-		return new DistributableSessionRepository<>(configuration);
+		return new DistributableSessionRepository(configuration);
 	}
 
 	@Override

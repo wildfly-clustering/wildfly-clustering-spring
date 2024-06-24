@@ -17,7 +17,6 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.session.IndexResolver;
 import org.springframework.session.Session;
-import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheContainerConfiguration;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
@@ -35,9 +34,9 @@ import org.wildfly.common.function.Functions;
 /**
  * @author Paul Ferraro
  */
-public class UserConfigurationBean extends AutoDestroyBean implements UserConfiguration<TransactionBatch>, InitializingBean {
+public class UserConfigurationBean extends AutoDestroyBean implements UserConfiguration, InitializingBean {
 
-	private final Map<String, UserManager<Void, Void, String, String, TransactionBatch>> managers = new TreeMap<>();
+	private final Map<String, UserManager<Void, Void, String, String>> managers = new TreeMap<>();
 	private final SessionManagerFactoryConfiguration<Void> sessionManagerFactoryConfiguration;
 	private final SessionManagerConfiguration<ServletContext> sessionManagerConfiguration;
 	private final IndexingConfiguration indexing;
@@ -72,9 +71,9 @@ public class UserConfigurationBean extends AutoDestroyBean implements UserConfig
 					return container.getCache(cacheName);
 				}
 			};
-			UserManagerFactory<Void, String, String, TransactionBatch> userManagerFactory = new InfinispanUserManagerFactory<>(cacheConfiguration);
+			UserManagerFactory<Void, String, String> userManagerFactory = new InfinispanUserManagerFactory<>(cacheConfiguration);
 
-			UserManager<Void, Void, String, String, TransactionBatch> userManager = userManagerFactory.createUserManager(new UserManagerConfiguration<>() {
+			UserManager<Void, Void, String, String> userManager = userManagerFactory.createUserManager(new UserManagerConfiguration<>() {
 				@Override
 				public Supplier<String> getIdentifierFactory() {
 					return UserConfigurationBean.this.sessionManagerConfiguration.getIdentifierFactory();
@@ -95,7 +94,7 @@ public class UserConfigurationBean extends AutoDestroyBean implements UserConfig
 	}
 
 	@Override
-	public Map<String, UserManager<Void, Void, String, String, TransactionBatch>> getUserManagers() {
+	public Map<String, UserManager<Void, Void, String, String>> getUserManagers() {
 		return this.managers;
 	}
 

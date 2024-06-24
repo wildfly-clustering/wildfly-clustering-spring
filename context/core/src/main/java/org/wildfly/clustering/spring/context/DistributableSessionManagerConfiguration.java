@@ -20,7 +20,7 @@ import org.wildfly.clustering.session.SessionManager;
  * @param <B> batch type
  */
 public interface DistributableSessionManagerConfiguration<S, B extends Batch> {
-	SessionManager<Void, B> getSessionManager();
+	SessionManager<Void> getSessionManager();
 	ApplicationEventPublisher getEventPublisher();
 	BiConsumer<ImmutableSession, BiFunction<Object, S, ApplicationEvent>> getSessionDestroyAction();
 }

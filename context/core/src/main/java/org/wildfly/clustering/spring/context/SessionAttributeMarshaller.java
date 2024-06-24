@@ -11,7 +11,6 @@ import java.util.function.BiFunction;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.Serializer;
 import org.wildfly.clustering.marshalling.java.JavaByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.jboss.JBossByteBufferMarshaller;
 import org.wildfly.clustering.marshalling.jboss.MarshallingConfigurationRepository;
@@ -27,8 +26,9 @@ public enum SessionAttributeMarshaller implements BiFunction<Environment, Resour
 	JAVA() {
 		@Override
 		public ByteBufferMarshaller apply(Environment environment, ResourceLoader loader) {
+			ClassLoader classLoader = loader.getClassLoader();
 			ObjectInputFilter filter = Optional.ofNullable(environment.getProperty("jdk.serialFilter")).map(ObjectInputFilter.Config::createFilter).orElse(null);
-			return new JavaByteBufferMarshaller(Serializer.of(loader.getClassLoader()), filter);
+			return new JavaByteBufferMarshaller(classLoader, filter);
 		}
 	},
 	JBOSS() {
@@ -42,8 +42,7 @@ public enum SessionAttributeMarshaller implements BiFunction<Environment, Resour
 		@Override
 		public ByteBufferMarshaller apply(Environment environment, ResourceLoader loader) {
 			ClassLoader classLoader = loader.getClassLoader();
-			SerializationContextBuilder builder = SerializationContextBuilder.newInstance(ClassLoaderMarshaller.of(classLoader)).load(classLoader);
-			return new ProtoStreamByteBufferMarshaller(builder.build());
+			return new ProtoStreamByteBufferMarshaller(SerializationContextBuilder.newInstance(ClassLoaderMarshaller.of(classLoader)).load(classLoader).build());
 		}
 	},
 	;

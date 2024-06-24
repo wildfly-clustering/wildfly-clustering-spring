@@ -26,9 +26,12 @@ import org.infinispan.commons.executors.NonBlockingResource;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.ResourceLoader;
-import org.wildfly.clustering.cache.infinispan.marshalling.protostream.ProtoStreamMarshaller;
+import org.wildfly.clustering.cache.infinispan.marshalling.MediaTypes;
+import org.wildfly.clustering.cache.infinispan.marshalling.UserMarshaller;
 import org.wildfly.clustering.context.DefaultThreadFactory;
 import org.wildfly.clustering.marshalling.protostream.ClassLoaderMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
 import org.wildfly.clustering.spring.context.AutoDestroyBean;
 
 /**
@@ -75,7 +78,7 @@ public class RemoteCacheContainerProviderBean extends AutoDestroyBean implements
 		URI uri = this.configuration.getUri();
 		Configuration configuration = ((uri != null) ? HotRodURI.create(uri).toConfigurationBuilder() : new ConfigurationBuilder())
 				.withProperties(this.configuration.getProperties())
-				.marshaller(new ProtoStreamMarshaller(ClassLoaderMarshaller.of(this.loader), builder -> builder.load(this.loader)))
+				.marshaller(new UserMarshaller(MediaTypes.WILDFLY_PROTOSTREAM, new ProtoStreamByteBufferMarshaller(SerializationContextBuilder.newInstance(ClassLoaderMarshaller.of(this.loader)).load(this.loader).build())))
 				.asyncExecutorFactory().factory(new ExecutorFactory() {
 					@Override
 					public ThreadPoolExecutor getExecutor(Properties p) {
@@ -95,7 +98,7 @@ public class RemoteCacheContainerProviderBean extends AutoDestroyBean implements
 							}
 						};
 
-						return new ThreadPoolExecutor(properties.getDefaultExecutorFactoryPoolSize(), properties.getDefaultExecutorFactoryPoolSize(), 0L, TimeUnit.MILLISECONDS, new SynchronousQueue<>(), new DefaultThreadFactory(factory));
+						return new ThreadPoolExecutor(properties.getDefaultExecutorFactoryPoolSize(), properties.getDefaultExecutorFactoryPoolSize(), 0L, TimeUnit.MILLISECONDS, new SynchronousQueue<>(), new DefaultThreadFactory(factory, RemoteCacheContainerProviderBean.this.loader));
 					}
 				})
 				.build();

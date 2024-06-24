@@ -12,7 +12,6 @@ import org.infinispan.client.hotrod.RemoteCacheContainer;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
 import org.springframework.beans.factory.InitializingBean;
-import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionManagerConfiguration;
@@ -29,7 +28,7 @@ import org.wildfly.clustering.spring.context.AutoDestroyBean;
  * @param <C> session manager context type
  * @param <L> session passivation listener type
  */
-public class HotRodSessionManagerFactoryBean<S, C, L> extends AutoDestroyBean implements SessionManagerFactory<C, Void, TransactionBatch>, InitializingBean {
+public class HotRodSessionManagerFactoryBean<S, C, L> extends AutoDestroyBean implements SessionManagerFactory<C, Void>, InitializingBean {
 
 	private final SessionManagerFactoryConfiguration<Void> configuration;
 	private final SessionSpecificationProvider<S, C> sessionProvider;
@@ -37,7 +36,7 @@ public class HotRodSessionManagerFactoryBean<S, C, L> extends AutoDestroyBean im
 	private final HotRodConfiguration hotrod;
 	private final RemoteCacheContainerProvider provider;
 
-	private SessionManagerFactory<C, Void, TransactionBatch> sessionManagerFactory;
+	private SessionManagerFactory<C, Void> sessionManagerFactory;
 
 	public HotRodSessionManagerFactoryBean(SessionManagerFactoryConfiguration<Void> configuration, SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider, HotRodConfiguration hotrod, RemoteCacheContainerProvider provider) {
 		this.hotrod = hotrod;
@@ -74,7 +73,7 @@ public class HotRodSessionManagerFactoryBean<S, C, L> extends AutoDestroyBean im
 	}
 
 	@Override
-	public SessionManager<Void, TransactionBatch> createSessionManager(SessionManagerConfiguration<C> configuration) {
+	public SessionManager<Void> createSessionManager(SessionManagerConfiguration<C> configuration) {
 		return this.sessionManagerFactory.createSessionManager(configuration);
 	}
 
