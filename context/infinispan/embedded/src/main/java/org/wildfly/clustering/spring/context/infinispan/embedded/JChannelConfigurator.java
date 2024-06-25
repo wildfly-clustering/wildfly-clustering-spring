@@ -11,8 +11,11 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+
+import javax.sql.DataSource;
 
 import org.infinispan.commons.util.StringPropertyReplacer;
 import org.infinispan.configuration.global.TransportConfiguration;
@@ -51,6 +54,7 @@ public class JChannelConfigurator implements JGroupsChannelConfigurator {
 
 	private final String name;
 	private final ProtocolStackConfigurator configurator;
+	private final List<ChannelListener> listeners = new LinkedList<>();
 
 	public JChannelConfigurator(TransportConfiguration transport, ResourceLoader loader) throws IOException {
 		this.name = transport.stack();
@@ -148,7 +152,14 @@ public class JChannelConfigurator implements JGroupsChannelConfigurator {
 		TP transport = (TP) protocols.get(0);
 		transport.setThreadFactory(new ClassLoaderThreadFactory(new DefaultThreadFactory("jgroups", false, true), JChannelConfigurator.class.getClassLoader()));
 
-		return new JChannel(protocols);
+		JChannel channel = new JChannel(protocols);
+		this.listeners.forEach(channel::addChannelListener);
+		return channel;
+	}
+
+	@Override
+	public void addChannelListener(ChannelListener listener) {
+		this.listeners.add(listener);
 	}
 
 	@Override
@@ -156,6 +167,6 @@ public class JChannelConfigurator implements JGroupsChannelConfigurator {
 	}
 
 	@Override
-	public void addChannelListener(ChannelListener listener) {
+	public void setDataSource(DataSource dataSource) {
 	}
 }

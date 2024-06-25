@@ -6,6 +6,8 @@ package org.wildfly.clustering.spring.context.infinispan.embedded;
 
 import java.util.List;
 
+import javax.sql.DataSource;
+
 import org.infinispan.remoting.transport.jgroups.JGroupsChannelConfigurator;
 import org.jgroups.ChannelListener;
 import org.jgroups.JChannel;
@@ -47,11 +49,15 @@ public class ForkChannelConfigurator implements JGroupsChannelConfigurator {
 	}
 
 	@Override
+	public void addChannelListener(ChannelListener listener) {
+		this.channel.addChannelListener(listener);
+	}
+
+	@Override
 	public void setSocketFactory(SocketFactory socketFactory) {
 	}
 
 	@Override
-	public void addChannelListener(ChannelListener listener) {
-		this.channel.addChannelListener(listener);
+	public void setDataSource(DataSource dataSource) {
 	}
 }
