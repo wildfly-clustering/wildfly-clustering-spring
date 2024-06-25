@@ -50,7 +50,7 @@
 		<version.org.jboss.arquillian>1.8.0.Final</version.org.jboss.arquillian>
 		<version.org.jboss.arquillian.container.tomcat>1.1.0.Final</version.org.jboss.arquillian.container.tomcat>
 		<version.org.junit>5.10.2</version.org.junit>
-		<version.org.mockito>5.11.0</version.org.mockito>
+		<version.org.mockito>5.12.0</version.org.mockito>
 		<version.org.testcontainers>1.19.8</version.org.testcontainers>
 
 		<!-- Plugin dependency version overrides -->
