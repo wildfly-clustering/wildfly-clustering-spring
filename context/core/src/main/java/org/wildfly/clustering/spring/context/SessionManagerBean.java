@@ -10,7 +10,6 @@ import java.util.function.Supplier;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.Batcher;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
@@ -18,13 +17,12 @@ import org.wildfly.clustering.session.SessionStatistics;
 
 /**
  * @author Paul Ferraro
- * @param <B> batch type
  */
-public class SessionManagerBean<B extends Batch> extends AutoDestroyBean implements SessionManager<Void, B>, InitializingBean {
+public class SessionManagerBean extends AutoDestroyBean implements SessionManager<Void>, InitializingBean {
 
-	private final SessionManager<Void, B> manager;
+	private final SessionManager<Void> manager;
 
-	public SessionManagerBean(SessionManager<Void, B> manager) {
+	public SessionManagerBean(SessionManager<Void> manager) {
 		this.manager = manager;
 	}
 
@@ -35,8 +33,8 @@ public class SessionManagerBean<B extends Batch> extends AutoDestroyBean impleme
 	}
 
 	@Override
-	public Batcher<B> getBatcher() {
-		return this.manager.getBatcher();
+	public Supplier<Batch> getBatchFactory() {
+		return this.manager.getBatchFactory();
 	}
 
 	@Override
@@ -67,6 +65,11 @@ public class SessionManagerBean<B extends Batch> extends AutoDestroyBean impleme
 	@Override
 	public CompletionStage<ImmutableSession> findImmutableSessionAsync(String id) {
 		return this.manager.findImmutableSessionAsync(id);
+	}
+
+	@Override
+	public Session<Void> getDetachedSession(String id) {
+		return this.manager.getDetachedSession(id);
 	}
 
 	@Override

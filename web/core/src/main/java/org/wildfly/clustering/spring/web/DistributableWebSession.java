@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.BatchContext;
+import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
 
@@ -19,18 +20,17 @@ import reactor.core.scheduler.Schedulers;
 
 /**
  * @author Paul Ferraro
- * @param <B> batch type
  */
-public class DistributableWebSession<B extends Batch> implements SpringWebSession {
+public class DistributableWebSession implements SpringWebSession {
 
-	private final SessionManager<Void, B> manager;
-	private final B batch;
+	private final SessionManager<Void> manager;
+	private final SuspendedBatch batch;
 	private final Instant startTime;
 
 	private volatile boolean started;
 	private volatile Session<Void> session;
 
-	public DistributableWebSession(SessionManager<Void, B> manager, Session<Void> session, B batch) {
+	public DistributableWebSession(SessionManager<Void> manager, Session<Void> session, SuspendedBatch batch) {
 		this.manager = manager;
 		this.session = session;
 		this.started = !session.getMetaData().isNew();
@@ -73,7 +73,7 @@ public class DistributableWebSession<B extends Batch> implements SpringWebSessio
 		Session<Void> oldSession = this.session;
 		String id = this.manager.getIdentifierFactory().get();
 		return Mono.fromRunnable(() -> {
-			try (BatchContext<B> context = this.manager.getBatcher().resumeBatch(this.batch)) {
+			try (BatchContext<Batch> context = this.batch.resumeWithContext()) {
 				Session<Void> newSession = this.manager.createSession(id);
 				try {
 					for (Map.Entry<String, Object> entry : oldSession.getAttributes().entrySet()) {
@@ -99,27 +99,23 @@ public class DistributableWebSession<B extends Batch> implements SpringWebSessio
 
 	private void invalidateSync() {
 		Session<Void> session = this.session;
-		try (BatchContext<B> context = this.manager.getBatcher().resumeBatch(this.batch)) {
-			try (Batch batch = context.getBatch()) {
-				session.invalidate();
-			}
+		try (Batch batch = this.batch.resume()) {
+			session.invalidate();
 		}
 	}
 
 	@Override
 	public void close() {
-		try (BatchContext<B> context = this.manager.getBatcher().resumeBatch(this.batch)) {
-			try (Batch batch = context.getBatch()) {
-				try (Session<Void> session = this.session) {
-					if (session.isValid()) {
-						if (this.started) {
-							// According to §7.6 of the servlet specification:
-							// The session is considered to be accessed when a request that is part of the session is first handled by the servlet container.
-							session.getMetaData().setLastAccess(this.startTime, Instant.now());
-						} else {
-							// Invalidate if session was never "started".
-							session.invalidate();
-						}
+		try (Batch batch = this.batch.resume()) {
+			try (Session<Void> session = this.session) {
+				if (session.isValid()) {
+					if (this.started) {
+						// According to §7.6 of the servlet specification:
+						// The session is considered to be accessed when a request that is part of the session is first handled by the servlet container.
+						session.getMetaData().setLastAccess(this.startTime, Instant.now());
+					} else {
+						// Invalidate if session was never "started".
+						session.invalidate();
 					}
 				}
 			}

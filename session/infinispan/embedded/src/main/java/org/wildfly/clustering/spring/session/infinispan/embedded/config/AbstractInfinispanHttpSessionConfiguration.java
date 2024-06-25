@@ -16,7 +16,6 @@ import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.session.IndexResolver;
 import org.springframework.session.Session;
 import org.springframework.util.StringValueResolver;
-import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
 import org.wildfly.clustering.server.infinispan.dispatcher.ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration;
 import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.spec.servlet.HttpSessionActivationListenerProvider;
@@ -44,7 +43,7 @@ public class AbstractInfinispanHttpSessionConfiguration extends HttpSessionConfi
 	}
 
 	@Bean
-	public SessionManagerFactory<ServletContext, Void, TransactionBatch> sessionManagerFactory(ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration embeddedCacheManagerConfiguration) {
+	public SessionManagerFactory<ServletContext, Void> sessionManagerFactory(ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration embeddedCacheManagerConfiguration) {
 		return new InfinispanSessionManagerFactoryBean<>(this, HttpSessionProvider.INSTANCE, HttpSessionActivationListenerProvider.INSTANCE, this.configuration, embeddedCacheManagerConfiguration);
 	}
 

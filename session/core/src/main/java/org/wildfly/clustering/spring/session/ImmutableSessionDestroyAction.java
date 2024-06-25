@@ -31,9 +31,9 @@ public class ImmutableSessionDestroyAction<B extends Batch> implements BiConsume
 	private final ApplicationEventPublisher publisher;
 	private final ServletContext context;
 	private final SessionSpecificationProvider<HttpSession, ServletContext> provider;
-	private final UserConfiguration<B> indexing;
+	private final UserConfiguration indexing;
 
-	public ImmutableSessionDestroyAction(ApplicationEventPublisher publisher, ServletContext context, SessionSpecificationProvider<HttpSession, ServletContext> provider, UserConfiguration<B> indexing) {
+	public ImmutableSessionDestroyAction(ApplicationEventPublisher publisher, ServletContext context, SessionSpecificationProvider<HttpSession, ServletContext> provider, UserConfiguration indexing) {
 		this.publisher = publisher;
 		this.context = context;
 		this.provider = provider;
@@ -58,9 +58,9 @@ public class ImmutableSessionDestroyAction<B extends Batch> implements BiConsume
 		// Remove any associated indexes
 		Map<String, String> indexes = this.indexing.getIndexResolver().resolveIndexesFor(new DistributableImmutableSession(session));
 		for (Map.Entry<String, String> entry : indexes.entrySet()) {
-			UserManager<Void, Void, String, String, B> manager = this.indexing.getUserManagers().get(entry.getKey());
+			UserManager<Void, Void, String, String> manager = this.indexing.getUserManagers().get(entry.getKey());
 			if (manager != null) {
-				try (B batch = manager.getBatcher().createBatch()) {
+				try (Batch batch = manager.getBatchFactory().get()) {
 					User<Void, Void, String, String> sso = manager.findUser(entry.getValue());
 					if (sso != null) {
 						sso.invalidate();

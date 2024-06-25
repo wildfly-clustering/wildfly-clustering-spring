@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.session.IndexResolver;
 import org.springframework.session.Session;
 import org.springframework.session.config.annotation.web.http.SpringHttpSessionConfiguration;
-import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
 import org.wildfly.clustering.spring.context.infinispan.remote.RemoteCacheContainerProvider;
 import org.wildfly.clustering.spring.session.UserConfiguration;
 import org.wildfly.clustering.spring.session.infinispan.remote.UserConfigurationBean;
@@ -32,7 +31,7 @@ public class HotRodIndexedHttpSessionConfiguration extends AbstractHotRodHttpSes
 	}
 
 	@Bean
-	public UserConfiguration<TransactionBatch> userConfiguration(RemoteCacheContainerProvider provider) {
+	public UserConfiguration userConfiguration(RemoteCacheContainerProvider provider) {
 		return new UserConfigurationBean(this, this, this, this, provider);
 	}
 

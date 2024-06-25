@@ -16,7 +16,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.session.events.SessionCreatedEvent;
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.Batcher;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
@@ -27,18 +26,17 @@ import org.wildfly.clustering.session.user.UserManager;
  * A session repository implementation based on a {@link SessionManager}.
  * Additionally indexes sessions using a set of {@link UserManager} instances.
  * @author Paul Ferraro
- * @param <B> batch type
  */
-public class DistributableSessionRepository<B extends Batch> implements FindByIndexNameSessionRepository<SpringSession> {
+public class DistributableSessionRepository implements FindByIndexNameSessionRepository<SpringSession> {
 	// Handle redundant calls to findById(...)
 	private static final ThreadLocal<SpringSession> CURRENT_SESSION = new ThreadLocal<>();
 
-	private final SessionManager<Void, B> manager;
+	private final SessionManager<Void> manager;
 	private final ApplicationEventPublisher publisher;
 	private final BiConsumer<ImmutableSession, BiFunction<Object, org.springframework.session.Session, ApplicationEvent>> destroyAction;
-	private final UserConfiguration<B> indexing;
+	private final UserConfiguration indexing;
 
-	public DistributableSessionRepository(DistributableSessionRepositoryConfiguration<B> configuration) {
+	public DistributableSessionRepository(DistributableSessionRepositoryConfiguration configuration) {
 		this.manager = configuration.getSessionManager();
 		this.publisher = configuration.getEventPublisher();
 		this.destroyAction = configuration.getSessionDestroyAction();
@@ -49,12 +47,10 @@ public class DistributableSessionRepository<B extends Batch> implements FindByIn
 	public SpringSession createSession() {
 		String id = this.manager.getIdentifierFactory().get();
 		boolean close = true;
-		Batcher<B> batcher = this.manager.getBatcher();
-		B batch = batcher.createBatch();
+		Batch batch = this.manager.getBatchFactory().get();
 		try {
 			Session<Void> session = this.manager.createSession(id);
-			B suspendedBatch = batcher.suspendBatch();
-			DistributableSession<B> result = new DistributableSession<>(this.manager, session, suspendedBatch, this.indexing, this.destroyAction);
+			DistributableSession result = new DistributableSession(this.manager, session, batch.suspend(), this.indexing, this.destroyAction);
 			this.publisher.publishEvent(new SessionCreatedEvent(this, result));
 			close = false;
 			return result;
@@ -76,13 +72,11 @@ public class DistributableSessionRepository<B extends Batch> implements FindByIn
 			return current;
 		}
 		boolean close = true;
-		Batcher<B> batcher = this.manager.getBatcher();
-		B batch = batcher.createBatch();
+		Batch batch = this.manager.getBatchFactory().get();
 		try {
 			Session<Void> session = this.manager.findSession(id);
 			if (session == null) return null;
-			B suspendedBatch = batcher.suspendBatch();
-			DistributableSession<B> result = new DistributableSession<>(this.manager, session, suspendedBatch, this.indexing, this.destroyAction);
+			DistributableSession result = new DistributableSession(this.manager, session, batch.suspend(), this.indexing, this.destroyAction);
 			close = false;
 			CURRENT_SESSION.set(result);
 			return result;
@@ -116,9 +110,9 @@ public class DistributableSessionRepository<B extends Batch> implements FindByIn
 	@Override
 	public Map<String, SpringSession> findByIndexNameAndIndexValue(String indexName, String indexValue) {
 		Set<String> sessions = Collections.emptySet();
-		UserManager<Void, Void, String, String, B> manager = this.indexing.getUserManagers().get(indexName);
+		UserManager<Void, Void, String, String> manager = this.indexing.getUserManagers().get(indexName);
 		if (manager != null) {
-			try (Batch batch = manager.getBatcher().createBatch()) {
+			try (Batch batch = manager.getBatchFactory().get()) {
 				User<Void, Void, String, String> sso = manager.findUser(indexValue);
 				if (sso != null) {
 					sessions = sso.getSessions().getDeployments();
@@ -127,7 +121,7 @@ public class DistributableSessionRepository<B extends Batch> implements FindByIn
 		}
 		if (!sessions.isEmpty()) {
 			Map<String, SpringSession> result = new HashMap<>();
-			try (Batch batch = this.manager.getBatcher().createBatch()) {
+			try (Batch batch = manager.getBatchFactory().get()) {
 				for (String sessionId : sessions) {
 					ImmutableSession session = this.manager.findImmutableSession(sessionId);
 					if (session != null) {

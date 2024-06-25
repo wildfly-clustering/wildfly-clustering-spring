@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.session.IndexResolver;
 import org.springframework.session.Session;
 import org.springframework.session.config.annotation.web.http.SpringHttpSessionConfiguration;
-import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.session.user.UserManager;
 import org.wildfly.clustering.spring.session.EmptyIndexResolver;
 import org.wildfly.clustering.spring.session.UserConfiguration;
@@ -30,10 +29,10 @@ public class InfinispanHttpSessionConfiguration extends AbstractInfinispanHttpSe
 	}
 
 	@Bean
-	public <B extends Batch> UserConfiguration<B> userConfiguration() {
-		return new UserConfiguration<>() {
+	public UserConfiguration userConfiguration() {
+		return new UserConfiguration() {
 			@Override
-			public Map<String, UserManager<Void, Void, String, String, B>> getUserManagers() {
+			public Map<String, UserManager<Void, Void, String, String>> getUserManagers() {
 				return Map.of();
 			}
 

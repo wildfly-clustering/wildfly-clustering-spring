@@ -18,7 +18,6 @@ import org.springframework.web.server.adapter.WebHttpHandlerBuilder;
 import org.springframework.web.server.session.CookieWebSessionIdResolver;
 import org.springframework.web.server.session.WebSessionIdResolver;
 import org.springframework.web.server.session.WebSessionManager;
-import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.spring.context.config.SessionManagementConfiguration;
@@ -40,11 +39,11 @@ public abstract class WebSessionConfiguration extends SessionManagementConfigura
 	}
 
 	@Bean(WebHttpHandlerBuilder.WEB_SESSION_MANAGER_BEAN_NAME)
-	public <B extends Batch> WebSessionManager webSessionManager(SessionManager<Void, B> manager) {
+	public WebSessionManager webSessionManager(SessionManager<Void> manager) {
 		WebSessionIdResolver resolver = this.resolver;
-		DistributableWebSessionManagerConfiguration<B> configuration = new DistributableWebSessionManagerConfiguration<>() {
+		DistributableWebSessionManagerConfiguration configuration = new DistributableWebSessionManagerConfiguration() {
 			@Override
-			public SessionManager<Void, B> getSessionManager() {
+			public SessionManager<Void> getSessionManager() {
 				return manager;
 			}
 
@@ -53,7 +52,7 @@ public abstract class WebSessionConfiguration extends SessionManagementConfigura
 				return resolver;
 			}
 		};
-		return new DistributableWebSessionManager<>(configuration);
+		return new DistributableWebSessionManager(configuration);
 	}
 
 	@Override

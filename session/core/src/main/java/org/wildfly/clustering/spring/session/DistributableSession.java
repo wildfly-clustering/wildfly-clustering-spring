@@ -18,6 +18,7 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.session.events.SessionDestroyedEvent;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.BatchContext;
+import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
@@ -27,20 +28,19 @@ import org.wildfly.clustering.session.user.UserManager;
 /**
  * Spring Session implementation that delegates to a {@link Session} instance.
  * @author Paul Ferraro
- * @param <B> batch type
  */
-public class DistributableSession<B extends Batch> implements SpringSession {
+public class DistributableSession implements SpringSession {
 
-	private final SessionManager<Void, B> manager;
-	private final B batch;
+	private final SessionManager<Void> manager;
+	private final SuspendedBatch batch;
 	private final Instant startTime;
-	private final UserConfiguration<B> indexing;
+	private final UserConfiguration indexing;
 	private final BiConsumer<ImmutableSession, BiFunction<Object, org.springframework.session.Session, ApplicationEvent>> destroyAction;
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 
 	private volatile Session<Void> session;
 
-	public DistributableSession(SessionManager<Void, B> manager, Session<Void> session, B batch, UserConfiguration<B> indexing, BiConsumer<ImmutableSession, BiFunction<Object, org.springframework.session.Session, ApplicationEvent>> destroyAction) {
+	public DistributableSession(SessionManager<Void> manager, Session<Void> session, SuspendedBatch batch, UserConfiguration indexing, BiConsumer<ImmutableSession, BiFunction<Object, org.springframework.session.Session, ApplicationEvent>> destroyAction) {
 		this.manager = manager;
 		this.session = session;
 		this.batch = batch;
@@ -53,7 +53,7 @@ public class DistributableSession<B extends Batch> implements SpringSession {
 	public String changeSessionId() {
 		Session<Void> oldSession = this.session;
 		String id = this.manager.getIdentifierFactory().get();
-		try (BatchContext<B> context = this.manager.getBatcher().resumeBatch(this.batch)) {
+		try (BatchContext<Batch> context = this.batch.resumeWithContext()) {
 			Session<Void> newSession = this.manager.createSession(id);
 			try {
 				for (Map.Entry<String, Object> entry : oldSession.getAttributes().entrySet()) {
@@ -73,9 +73,9 @@ public class DistributableSession<B extends Batch> implements SpringSession {
 		// Update indexes
 		Map<String, String> indexes = this.indexing.getIndexResolver().resolveIndexesFor(this);
 		for (Map.Entry<String, String> entry : indexes.entrySet()) {
-			UserManager<Void, Void, String, String, B> manager = this.indexing.getUserManagers().get(entry.getKey());
+			UserManager<Void, Void, String, String> manager = this.indexing.getUserManagers().get(entry.getKey());
 			if (manager != null) {
-				try (B batch = manager.getBatcher().createBatch()) {
+				try (Batch batch = manager.getBatchFactory().get()) {
 					User<Void, Void, String, String> sso = manager.findUser(entry.getValue());
 					if (sso != null) {
 						sso.getSessions().removeSession(oldSession.getId());
@@ -148,8 +148,8 @@ public class DistributableSession<B extends Batch> implements SpringSession {
 				String oldIndexValue = oldIndexes.get(indexName);
 				String indexValue = indexes.get(indexName);
 				if (!Objects.equals(indexValue, oldIndexValue)) {
-					UserManager<Void, Void, String, String, B> manager = this.indexing.getUserManagers().get(indexName);
-					try (B batch = manager.getBatcher().createBatch()) {
+					UserManager<Void, Void, String, String> manager = this.indexing.getUserManagers().get(indexName);
+					try (Batch batch = manager.getBatchFactory().get()) {
 						if (oldIndexValue != null) {
 							User<Void, Void, String, String> sso = manager.findUser(oldIndexValue);
 							if (sso != null) {
@@ -184,11 +184,9 @@ public class DistributableSession<B extends Batch> implements SpringSession {
 
 	@Override
 	public void invalidate() {
-		try (BatchContext<B> context = this.manager.getBatcher().resumeBatch(this.batch)) {
-			try (B batch = context.getBatch()) {
-				this.destroyAction.accept(this.session, SessionDestroyedEvent::new);
-				this.session.invalidate();
-			}
+		try (Batch batch = this.batch.resume()) {
+			this.destroyAction.accept(this.session, SessionDestroyedEvent::new);
+			this.session.invalidate();
 		}
 	}
 
@@ -196,14 +194,12 @@ public class DistributableSession<B extends Batch> implements SpringSession {
 	public void close() {
 		// Spring session lifecycle logic is a mess.  Ensure we only close a session once.
 		if (this.closed.compareAndSet(false, true)) {
-			try (BatchContext<B> context = this.manager.getBatcher().resumeBatch(this.batch)) {
-				try (Batch batch = context.getBatch()) {
-					try (Session<Void> session = this.session) {
-						if (session.isValid()) {
-							// According to §7.6 of the servlet specification:
-							// The session is considered to be accessed when a request that is part of the session is first handled by the servlet container.
-							session.getMetaData().setLastAccess(this.startTime, Instant.now());
-						}
+			try (Batch batch = this.batch.resume()) {
+				try (Session<Void> session = this.session) {
+					if (session.isValid()) {
+						// According to §7.6 of the servlet specification:
+						// The session is considered to be accessed when a request that is part of the session is first handled by the servlet container.
+						session.getMetaData().setLastAccess(this.startTime, Instant.now());
 					}
 				}
 			}

@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.session.IndexResolver;
 import org.springframework.session.Session;
 import org.springframework.session.config.annotation.web.http.SpringHttpSessionConfiguration;
-import org.wildfly.clustering.cache.infinispan.batch.TransactionBatch;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheContainerConfiguration;
 import org.wildfly.clustering.spring.session.UserConfiguration;
 import org.wildfly.clustering.spring.session.infinispan.embedded.UserConfigurationBean;
@@ -32,7 +31,7 @@ public class InfinispanIndexedHttpSessionConfiguration extends AbstractInfinispa
 	}
 
 	@Bean
-	public UserConfiguration<TransactionBatch> userConfiguration(EmbeddedCacheContainerConfiguration configuration) {
+	public UserConfiguration userConfiguration(EmbeddedCacheContainerConfiguration configuration) {
 		return new UserConfigurationBean(this, this, this, configuration);
 	}
 

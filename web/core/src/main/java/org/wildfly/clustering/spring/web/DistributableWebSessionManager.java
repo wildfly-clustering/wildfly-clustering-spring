@@ -18,7 +18,7 @@ import org.springframework.web.server.session.WebSessionIdResolver;
 import org.springframework.web.server.session.WebSessionManager;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.BatchContext;
-import org.wildfly.clustering.cache.batch.Batcher;
+import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
 
@@ -30,15 +30,14 @@ import reactor.core.scheduler.Schedulers;
  * The avoidance of {@link org.springframework.web.server.session.DefaultWebSessionManager} with SpringSessionWebSessionStore is intentional,
  * since that implementation is unsafe for modification by multiple threads.
  * @author Paul Ferraro
- * @param <B> batch type
  */
-public class DistributableWebSessionManager<B extends Batch> implements WebSessionManager, AutoCloseable {
+public class DistributableWebSessionManager implements WebSessionManager, AutoCloseable {
 	private static final AtomicInteger COUNTER = new AtomicInteger(0);
 
-	private final SessionManager<Void, B> manager;
+	private final SessionManager<Void> manager;
 	private final WebSessionIdResolver identifierResolver;
 
-	public DistributableWebSessionManager(DistributableWebSessionManagerConfiguration<B> configuration) {
+	public DistributableWebSessionManager(DistributableWebSessionManagerConfiguration configuration) {
 		this.manager = configuration.getSessionManager();
 		this.identifierResolver = configuration.getSessionIdentifierResolver();
 		COUNTER.incrementAndGet();
@@ -48,33 +47,30 @@ public class DistributableWebSessionManager<B extends Batch> implements WebSessi
 	public Mono<WebSession> getSession(ServerWebExchange exchange) {
 		String requestedSessionId = this.requestedSessionId(exchange);
 		String sessionId = (requestedSessionId != null) ? requestedSessionId : this.manager.getIdentifierFactory().get();
-		BiFunction<SessionManager<Void, B>, String, CompletionStage<Session<Void>>> function = (requestedSessionId != null) ? SessionManager::findSessionAsync : SessionManager::createSessionAsync;
+		BiFunction<SessionManager<Void>, String, CompletionStage<Session<Void>>> function = (requestedSessionId != null) ? SessionManager::findSessionAsync : SessionManager::createSessionAsync;
 		return this.getSession(function, sessionId).doOnNext(session -> exchange.getResponse().beforeCommit(() -> this.close(exchange, session))).map(Function.identity());
 	}
 
-	private Mono<SpringWebSession> getSession(BiFunction<SessionManager<Void, B>, String, CompletionStage<Session<Void>>> function, String id) {
-		Batcher<B> batcher = this.manager.getBatcher();
-		B batch = batcher.createBatch();
+	private Mono<SpringWebSession> getSession(BiFunction<SessionManager<Void>, String, CompletionStage<Session<Void>>> function, String id) {
+		Batch batch = this.manager.getBatchFactory().get();
 		try {
 			Mono<Session<Void>> result = Mono.fromCompletionStage(function.apply(this.manager, id)).doOnError(Throwable::printStackTrace);
-			B suspendedBatch = batcher.suspendBatch();
+			SuspendedBatch suspendedBatch = batch.suspend();
 			Supplier<Mono<Session<Void>>> creator = () -> {
-				try (BatchContext<B> context = this.manager.getBatcher().resumeBatch(suspendedBatch)) {
+				try (BatchContext<Batch> context = suspendedBatch.resumeWithContext()) {
 					return Mono.fromCompletionStage(this.manager.createSessionAsync(this.manager.getIdentifierFactory().get())).subscribeOn(Schedulers.boundedElastic());
 				}
 			};
-			return result.switchIfEmpty(Mono.defer(creator)).doOnError(e -> this.rollback(suspendedBatch)).map(session -> new DistributableWebSession<>(this.manager, session, suspendedBatch));
+			return result.switchIfEmpty(Mono.defer(creator)).doOnError(e -> rollback(suspendedBatch.resume())).map(session -> new DistributableWebSession(this.manager, session, suspendedBatch));
 		} catch (RuntimeException | Error e) {
-			this.rollback(batch);
+			rollback(batch);
 			throw e;
 		}
 	}
 
-	private void rollback(B suspendedBatch) {
-		try (BatchContext<B> context = this.manager.getBatcher().resumeBatch(suspendedBatch)) {
-			try (B batch = context.getBatch()) {
-				batch.discard();
-			}
+	private static void rollback(Batch resumedBatch) {
+		try (Batch batch = resumedBatch) {
+			batch.discard();
 		}
 	}
 
