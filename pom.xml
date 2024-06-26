@@ -32,7 +32,7 @@
 		<maven.repository.url>https://repository.jboss.org/nexus/content/groups/public/</maven.repository.url>
 
 		<!-- Provided dependency versions -->
-		<version.jakarta.servlet>6.0.0</version.jakarta.servlet>
+		<version.jakarta.servlet>6.1.0</version.jakarta.servlet>
 		<version.net.jcip.annotations>1.0</version.net.jcip.annotations>
 		<version.org.kohsuke.metainf-services>1.11</version.org.kohsuke.metainf-services>
 
