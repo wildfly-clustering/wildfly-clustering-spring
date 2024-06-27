@@ -46,7 +46,7 @@
 		<version.org.wildfly.clustering>3.0.0.CR3</version.org.wildfly.clustering>
 
 		<!-- Test dependency versions -->
-		<version.org.apache.tomcat>10.1.23</version.org.apache.tomcat>
+		<version.org.apache.tomcat>10.1.25</version.org.apache.tomcat>
 		<version.org.jboss.arquillian>1.8.0.Final</version.org.jboss.arquillian>
 		<version.org.jboss.arquillian.container.tomcat>1.1.0.Final</version.org.jboss.arquillian.container.tomcat>
 		<version.org.junit>5.10.2</version.org.junit>
