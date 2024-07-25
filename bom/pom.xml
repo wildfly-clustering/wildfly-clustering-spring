@@ -15,7 +15,7 @@
 
 	<groupId>org.wildfly.clustering</groupId>
 	<artifactId>wildfly-clustering-spring-bom</artifactId>
-	<version>12.0.1.Final-SNAPSHOT</version>
+	<version>13.0.0.Final</version>
 	<packaging>pom</packaging>
 
 	<name>WildFly Clustering: Spring: BOM</name>
@@ -107,4 +107,8 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+
+  <scm>
+    <tag>13.0.0.Final</tag>
+  </scm>
 </project>
