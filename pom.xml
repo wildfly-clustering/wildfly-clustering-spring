@@ -43,7 +43,7 @@
 		<version.org.springframework.session>3.3.2</version.org.springframework.session>
 		<version.org.infinispan>15.0.8.Final</version.org.infinispan>
 		<version.org.jboss.marshalling>2.2.1.Final</version.org.jboss.marshalling>
-		<version.org.wildfly.clustering>4.0.0.Beta1</version.org.wildfly.clustering>
+		<version.org.wildfly.clustering>4.0.0.Beta2</version.org.wildfly.clustering>
 
 		<!-- Test dependency versions -->
 		<version.org.apache.tomcat>10.1.30</version.org.apache.tomcat>
