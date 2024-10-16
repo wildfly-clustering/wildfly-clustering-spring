@@ -37,7 +37,7 @@
 		<version.org.kohsuke.metainf-services>1.11</version.org.kohsuke.metainf-services>
 
 		<!-- Runtime dependency versions -->
-		<version.io.projectreactor.core>3.6.10</version.io.projectreactor.core>
+		<version.io.projectreactor.core>3.6.11</version.io.projectreactor.core>
 		<version.org.springframework>6.1.13</version.org.springframework>
 		<version.org.springframework.security>6.3.3</version.org.springframework.security>
 		<version.org.springframework.session>3.3.2</version.org.springframework.session>
