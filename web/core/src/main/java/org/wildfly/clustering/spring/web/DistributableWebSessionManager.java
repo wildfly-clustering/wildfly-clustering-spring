@@ -5,13 +5,14 @@
 
 package org.wildfly.clustering.spring.web;
 
-import java.util.Iterator;
+import java.util.Objects;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.jboss.logging.Logger;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebSession;
 import org.springframework.web.server.session.WebSessionIdResolver;
@@ -21,6 +22,7 @@ import org.wildfly.clustering.cache.batch.BatchContext;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
+import org.wildfly.common.function.Functions;
 
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -32,6 +34,7 @@ import reactor.core.scheduler.Schedulers;
  * @author Paul Ferraro
  */
 public class DistributableWebSessionManager implements WebSessionManager, AutoCloseable {
+	private static final Logger LOGGER = Logger.getLogger(DistributableWebSessionManager.class);
 	private static final AtomicInteger COUNTER = new AtomicInteger(0);
 
 	private final SessionManager<Void> manager;
@@ -48,47 +51,55 @@ public class DistributableWebSessionManager implements WebSessionManager, AutoCl
 		String requestedSessionId = this.requestedSessionId(exchange);
 		String sessionId = (requestedSessionId != null) ? requestedSessionId : this.manager.getIdentifierFactory().get();
 		BiFunction<SessionManager<Void>, String, CompletionStage<Session<Void>>> function = (requestedSessionId != null) ? SessionManager::findSessionAsync : SessionManager::createSessionAsync;
-		return this.getSession(function, sessionId).doOnNext(session -> exchange.getResponse().beforeCommit(() -> this.close(exchange, session))).map(Function.identity());
+		return this.getSession(function, sessionId).filter(Objects::nonNull)
+				.doOnNext(session -> exchange.getResponse().beforeCommit(Functions.constantSupplier(this.getCommitAction(exchange, session, requestedSessionId))))
+				.map(Function.identity());
 	}
 
 	private Mono<SpringWebSession> getSession(BiFunction<SessionManager<Void>, String, CompletionStage<Session<Void>>> function, String id) {
 		Batch batch = this.manager.getBatchFactory().get();
 		try {
-			Mono<Session<Void>> result = Mono.fromCompletionStage(function.apply(this.manager, id)).doOnError(Throwable::printStackTrace);
+			Mono<Session<Void>> result = Mono.fromCompletionStage(function.apply(this.manager, id)).doOnError(DistributableWebSessionManager::log);
 			SuspendedBatch suspendedBatch = batch.suspend();
 			Supplier<Mono<Session<Void>>> creator = () -> {
 				try (BatchContext<Batch> context = suspendedBatch.resumeWithContext()) {
-					return Mono.fromCompletionStage(this.manager.createSessionAsync(this.manager.getIdentifierFactory().get())).subscribeOn(Schedulers.boundedElastic());
+					return Mono.fromCompletionStage(this.manager.createSessionAsync(this.manager.getIdentifierFactory().get())).doOnError(DistributableWebSessionManager::log);
 				}
 			};
-			return result.switchIfEmpty(Mono.defer(creator)).doOnError(e -> rollback(suspendedBatch.resume())).map(session -> new DistributableWebSession(this.manager, session, suspendedBatch));
+			return result.switchIfEmpty(Mono.defer(creator)).doOnError(e -> rollback(suspendedBatch.resume()))
+					.map(session -> new DistributableWebSession(this.manager, session, suspendedBatch));
 		} catch (RuntimeException | Error e) {
 			rollback(batch);
-			throw e;
+			return Mono.error(e);
 		}
 	}
 
 	private static void rollback(Batch resumedBatch) {
 		try (Batch batch = resumedBatch) {
 			batch.discard();
+		} catch (RuntimeException | Error e) {
+			log(e);
 		}
 	}
 
-	private Mono<Void> close(ServerWebExchange exchange, SpringWebSession session) {
-		String requestedSessionId = this.requestedSessionId(exchange);
+	private static void log(Throwable e) {
+		LOGGER.warn(e.getLocalizedMessage(), e);
+	}
 
-		if ((requestedSessionId != null) && (!session.isStarted() || !session.isValid())) {
-			this.identifierResolver.expireSession(exchange);
-		} else if (requestedSessionId == null || !requestedSessionId.equals(session.getId())) {
-			this.identifierResolver.setSessionId(exchange, session.getId());
-		}
-
-		return Mono.<Void>fromRunnable(session::close).doOnError(Throwable::printStackTrace).subscribeOn(Schedulers.boundedElastic());
+	private Mono<Void> getCommitAction(ServerWebExchange exchange, SpringWebSession session, String requestedSessionId) {
+		return Mono.fromRunnable(() -> {
+			if ((requestedSessionId != null) && (!session.isStarted() || !session.isValid())) {
+				this.identifierResolver.expireSession(exchange);
+			} else if (requestedSessionId == null || !requestedSessionId.equals(session.getId())) {
+				this.identifierResolver.setSessionId(exchange, session.getId());
+			}
+			// Close session asynchronously
+			Mono.fromRunnable(session::close).doOnError(DistributableWebSessionManager::log).subscribeOn(Schedulers.boundedElastic()).subscribe();
+		});
 	}
 
 	private String requestedSessionId(ServerWebExchange exchange) {
-		Iterator<String> sessionIds = this.identifierResolver.resolveSessionIds(exchange).iterator();
-		return sessionIds.hasNext() ? sessionIds.next() : null;
+		return this.identifierResolver.resolveSessionIds(exchange).stream().findFirst().orElse(null);
 	}
 
 	@Override

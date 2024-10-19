@@ -42,7 +42,7 @@ public class DispatcherServlet implements Servlet, UnaryOperator<HttpHandler> {
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		ApplicationContext context = (ApplicationContext) config.getServletContext().getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
-		HttpHandler handler = WebHttpHandlerBuilder.applicationContext(context).httpHandlerDecorator(this).build();
+		HttpHandler handler = WebHttpHandlerBuilder.applicationContext(context).build(); // .httpHandlerDecorator(this)
 		this.servlet = new TomcatHttpHandlerAdapter(handler);
 		this.servlet.init(config);
 	}

@@ -4,11 +4,11 @@
 	SPDX-License-Identifier: Apache-2.0
 -->
 <Server port="${tomcat.management.port}" shutdown="SHUTDOWN">
-	<Listener className="org.apache.catalina.startup.VersionLoggerListener"/>
-	<Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on"/>
-	<Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener"/>
-	<Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener"/>
-	<Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener"/>
+	<Listener className="org.apache.catalina.startup.VersionLoggerListener" />
+	<Listener className="org.apache.catalina.core.AprLifecycleListener" />
+	<Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
+	<Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
+	<Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
 
 	<GlobalNamingResources>
 		<Resource name="UserDatabase" auth="Container" type="org.apache.catalina.UserDatabase" factory="org.apache.catalina.users.MemoryUserDatabaseFactory" pathname="conf/tomcat-users.xml" />
@@ -16,7 +16,7 @@
 
 	<Service name="Catalina">
 
-		<Connector port="${tomcat.http.port}" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="${tomcat.https.port}"/>
+		<Connector port="${tomcat.http.port}" protocol="org.apache.coyote.http11.Http11Nio2Protocol" connectionTimeout="20000" redirectPort="${tomcat.https.port}" maxParameterCount="1000"/>
 
 		<Engine name="Catalina" defaultHost="localhost">
 
@@ -25,7 +25,7 @@
 			</Realm>
 
 			<Host name="localhost"  appBase="webapps" unpackWARs="true" autoDeploy="true">
-				<Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs" prefix="localhost_access_log." suffix=".txt" pattern="%h %l %u %t &quot;%r&quot; %s %b" />
+				<Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs" prefix="localhost_access_log" suffix=".txt" pattern="%h %l %u %t &quot;%r&quot; %s %b" />
 			</Host>
 		</Engine>
 	</Service>
