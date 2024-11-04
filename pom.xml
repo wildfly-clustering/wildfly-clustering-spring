@@ -52,7 +52,7 @@
 		<version.org.jboss.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap>
 		<version.org.junit>5.11.3</version.org.junit>
 		<version.org.mockito>5.14.2</version.org.mockito>
-		<version.org.testcontainers>1.20.2</version.org.testcontainers>
+		<version.org.testcontainers>1.20.3</version.org.testcontainers>
 	</properties>
 
 	<modules>
