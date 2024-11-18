@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>org.wildfly.clustering</groupId>
 		<artifactId>wildfly-clustering-spring-bom</artifactId>
-		<version>14.0.0.Final</version>
+		<version>15.0.0.Beta1-SNAPSHOT</version>
 		<relativePath>bom</relativePath>
 	</parent>
 
@@ -22,7 +22,7 @@
 		<connection>scm:git:git://github.com:wildfly-clustering/wildfly-clustering-spring.git</connection>
 		<developerConnection>scm:git:git@github.com:wildfly-clustering/wildfly-clustering-spring.git</developerConnection>
 		<url>https://github.com/wildfly-clustering/wildfly-clustering-spring</url>
-		<tag>14.0.0.Final</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<properties>
