@@ -53,6 +53,11 @@ public class SessionManagerBean extends AutoDestroyBean implements SessionManage
 	}
 
 	@Override
+	public boolean isStarted() {
+		return this.manager.isStarted();
+	}
+
+	@Override
 	public CompletionStage<Session<Void>> createSessionAsync(String id) {
 		return this.manager.createSessionAsync(id);
 	}

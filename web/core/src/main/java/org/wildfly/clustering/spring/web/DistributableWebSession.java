@@ -9,6 +9,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 
+import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.BatchContext;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
@@ -22,6 +23,7 @@ import reactor.core.scheduler.Schedulers;
  * @author Paul Ferraro
  */
 public class DistributableWebSession implements SpringWebSession {
+	private static final Logger LOGGER = Logger.getLogger(DistributableWebSession.class);
 
 	private final SessionManager<Void> manager;
 	private final SuspendedBatch batch;
@@ -119,6 +121,8 @@ public class DistributableWebSession implements SpringWebSession {
 					}
 				}
 			}
+		} catch (RuntimeException | Error e) {
+			LOGGER.warn(e.getLocalizedMessage(), e);
 		}
 	}
 
