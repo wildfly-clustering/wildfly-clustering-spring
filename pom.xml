@@ -40,7 +40,7 @@
 		<version.io.projectreactor>2024.0.0</version.io.projectreactor>
 		<version.org.springframework>6.1.5</version.org.springframework>
 		<version.org.springframework.security>6.3.4</version.org.springframework.security>
-		<version.org.springframework.session>3.3.3</version.org.springframework.session>
+		<version.org.springframework.session>3.4.1</version.org.springframework.session>
 		<version.org.infinispan>15.0.11.Final</version.org.infinispan>
 		<version.org.jboss.marshalling>2.2.1.Final</version.org.jboss.marshalling>
 		<version.org.wildfly.clustering>4.0.0.Final</version.org.wildfly.clustering>
