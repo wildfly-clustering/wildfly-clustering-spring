@@ -10,8 +10,8 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.wildfly.clustering.spring.context.PropertiesAsset;
+import org.wildfly.clustering.spring.context.infinispan.embedded.InfinispanSessionManagementArgumentsProvider;
 import org.wildfly.clustering.spring.context.infinispan.embedded.InfinispanSessionManagementParameters;
-import org.wildfly.clustering.spring.context.infinispan.embedded.NonTxInfinispanSessionManagementArgumentsProvider;
 import org.wildfly.clustering.spring.web.context.xml.XmlContextLoaderListener;
 
 /**
@@ -22,7 +22,7 @@ import org.wildfly.clustering.spring.web.context.xml.XmlContextLoaderListener;
 public class BeanInfinispanWebSessionManagerITCase extends AbstractInfinispanWebSessionManagerITCase {
 
 	@ParameterizedTest(name = ParameterizedTest.ARGUMENTS_PLACEHOLDER)
-	@ArgumentsSource(NonTxInfinispanSessionManagementArgumentsProvider.class)
+	@ArgumentsSource(InfinispanSessionManagementArgumentsProvider.class)
 	public void test(InfinispanSessionManagementParameters parameters) throws Exception {
 		Properties properties = new Properties();
 		properties.setProperty("session.granularity", parameters.getSessionPersistenceGranularity().name());

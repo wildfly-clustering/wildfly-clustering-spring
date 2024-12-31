@@ -19,13 +19,9 @@ import org.wildfly.clustering.spring.context.SessionPersistenceGranularity;
 /**
  * @author Paul Ferraro
  */
-public class AbstractInfinispanSessionManagementArgumentsProvider implements ArgumentsProvider {
+public class InfinispanSessionManagementArgumentsProvider implements ArgumentsProvider {
 
-	private final Set<String> templates;
-
-	AbstractInfinispanSessionManagementArgumentsProvider(Set<String> templates) {
-		this.templates = templates;
-	}
+	private final Set<String> templates = Set.of("dist-non-tx", "dist-tx", "repl-non-tx", "repl-tx");
 
 	@Override
 	public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
