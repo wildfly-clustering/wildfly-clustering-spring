@@ -4,18 +4,16 @@
 	SPDX-License-Identifier: Apache-2.0
 -->
 <infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:schemaLocation="urn:infinispan:config:14.0 https://infinispan.org/schemas/infinispan-config-14.0.xsd"
-		xmlns="urn:infinispan:config:14.0">
+		xsi:schemaLocation="urn:infinispan:config:15.0 https://infinispan.org/schemas/infinispan-config-15.0.xsd"
+		xmlns="urn:infinispan:config:15.0">
 
-	<cache-container name="default" default-cache="dist">
+	<cache-container name="default" default-cache="dist-tx">
 		<transport/>
-		<distributed-cache-configuration name="dist">
-		</distributed-cache-configuration>
+		<distributed-cache-configuration name="dist-non-tx"/>
 		<distributed-cache-configuration name="dist-tx">
 			<transaction mode="BATCH" locking="PESSIMISTIC"/>
 		</distributed-cache-configuration>
-		<replicated-cache-configuration name="repl">
-		</replicated-cache-configuration>
+		<replicated-cache-configuration name="repl-non-tx"/>
 		<replicated-cache-configuration name="repl-tx">
 			<transaction mode="BATCH" locking="PESSIMISTIC"/>
 		</replicated-cache-configuration>

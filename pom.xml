@@ -27,8 +27,7 @@
 
 	<properties>
 		<jdk.runtime.args>--add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED</jdk.runtime.args>
-		<maven.compiler.target>17</maven.compiler.target>
-		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.release>17</maven.compiler.release>
 		<maven.repository.url>https://repository.jboss.org/nexus/content/groups/public/</maven.repository.url>
 
 		<!-- Provided dependency versions -->
@@ -37,16 +36,17 @@
 		<version.org.kohsuke.metainf-services>1.11</version.org.kohsuke.metainf-services>
 
 		<!-- Runtime dependency versions -->
-		<version.io.projectreactor>2024.0.0</version.io.projectreactor>
-		<version.org.springframework>6.1.5</version.org.springframework>
-		<version.org.springframework.security>6.3.4</version.org.springframework.security>
-		<version.org.springframework.session>3.3.3</version.org.springframework.session>
+		<version.io.projectreactor>2024.0.1</version.io.projectreactor>
+		<version.org.springframework>6.2.1</version.org.springframework>
+		<version.org.springframework.security>6.4.2</version.org.springframework.security>
+		<version.org.springframework.session>3.4.1</version.org.springframework.session>
 		<version.org.infinispan>15.0.11.Final</version.org.infinispan>
 		<version.org.jboss.marshalling>2.2.1.Final</version.org.jboss.marshalling>
-		<version.org.wildfly.clustering>4.0.0.Final</version.org.wildfly.clustering>
+		<version.org.wildfly.clustering>5.0.6.Final</version.org.wildfly.clustering>
 
 		<!-- Test dependency versions -->
 		<version.org.apache.tomcat>10.1.34</version.org.apache.tomcat>
+		<version.org.assertj>3.27.0</version.org.assertj>
 		<version.org.jboss.arquillian>1.9.1.Final</version.org.jboss.arquillian>
 		<version.org.jboss.arquillian.container.tomcat>1.1.0.Final</version.org.jboss.arquillian.container.tomcat>
 		<version.org.jboss.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap>
@@ -77,6 +77,13 @@
 				<groupId>io.projectreactor</groupId>
 				<artifactId>reactor-bom</artifactId>
 				<version>2024.0.1</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.assertj</groupId>
+				<artifactId>assertj-bom</artifactId>
+				<version>${version.org.assertj}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -181,6 +188,11 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>
 			<scope>test</scope>
@@ -188,6 +200,11 @@
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-subclass</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -272,8 +289,11 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
 				<configuration>
+					<arguments combine.self="override" />
 					<autoVersionSubmodules>true</autoVersionSubmodules>
 					<tagNameFormat>@{project.version}</tagNameFormat>
+					<preparationProfiles>jboss-release</preparationProfiles>
+					<releaseProfiles>quickly,jboss-release</releaseProfiles>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -285,6 +305,47 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>jboss-release</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<configuration>
+							<detectJavaApiLink>true</detectJavaApiLink>
+						</configuration>
+						<executions>
+							<execution>
+								<id>javadoc</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>javadoc-aggregate</id>
+								<inherited>false</inherited>
+								<goals>
+									<goal>aggregate-jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>quickly</id>
+			<properties>
+				<checkstyle.skip>true</checkstyle.skip>
+				<skipTests>true</skipTests>
+				<skipITs>true</skipITs>
+				<arguments>-DskipITs -DskipTests -Dcheckstyle.skip=true</arguments>
+			</properties>
+		</profile>
+	</profiles>
 
 	<repositories>
 		<repository>
