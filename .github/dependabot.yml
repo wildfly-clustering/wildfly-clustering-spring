@@ -9,3 +9,5 @@ updates:
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
       - dependency-name: org.apache.tomcat:tomcat-catalina
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: org.infinispan:infinispan-bom
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
