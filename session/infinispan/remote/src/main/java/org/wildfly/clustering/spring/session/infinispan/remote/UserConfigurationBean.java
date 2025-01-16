@@ -15,10 +15,7 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheContainer;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.session.IndexResolver;
 import org.springframework.session.Session;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
@@ -39,7 +36,7 @@ import org.wildfly.common.function.Functions;
 /**
  * @author Paul Ferraro
  */
-public class UserConfigurationBean extends AutoDestroyBean implements UserConfiguration, InitializingBean, ApplicationContextAware {
+public class UserConfigurationBean extends AutoDestroyBean implements UserConfiguration, InitializingBean {
 
 	private final Map<String, UserManager<Void, Void, String, String>> managers = new TreeMap<>();
 	private final SessionManagerFactoryConfiguration<Void> managerFactoryConfiguration;
@@ -47,8 +44,6 @@ public class UserConfigurationBean extends AutoDestroyBean implements UserConfig
 	private final IndexingConfiguration indexing;
 	private final HotRodConfiguration hotrod;
 	private final RemoteCacheContainerProvider provider;
-
-	private ApplicationContext context;
 
 	public UserConfigurationBean(SessionManagerFactoryConfiguration<Void> managerFactoryConfiguration, SessionManagerConfiguration<ServletContext> managerConfiguration, IndexingConfiguration indexing, HotRodConfiguration hotrod, RemoteCacheContainerProvider provider) {
 		this.managerFactoryConfiguration = managerFactoryConfiguration;
@@ -61,7 +56,7 @@ public class UserConfigurationBean extends AutoDestroyBean implements UserConfig
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		RemoteCacheContainer container = this.provider.getRemoteCacheContainer();
-		String applicationName = this.context.getApplicationName();
+		String applicationName = this.managerFactoryConfiguration.getDeploymentName();
 		String templateName = this.hotrod.getTemplateName();
 		for (Map.Entry<String, String> entry : this.indexing.getIndexes().entrySet()) {
 			String cacheName = String.format("%s/%s", applicationName, entry.getKey());
@@ -95,11 +90,6 @@ public class UserConfigurationBean extends AutoDestroyBean implements UserConfig
 			});
 			this.managers.put(indexName, userManager);
 		}
-	}
-
-	@Override
-	public void setApplicationContext(ApplicationContext context) throws BeansException {
-		this.context = context;
 	}
 
 	@Override

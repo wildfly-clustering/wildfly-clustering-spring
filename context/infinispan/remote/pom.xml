@@ -35,9 +35,15 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.wildfly.clustering</groupId>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-spring-context-core</artifactId>
 			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.wildfly.clustering</groupId>
+			<artifactId>wildfly-clustering-arquillian</artifactId>
 			<scope>test</scope>
 		</dependency>
 

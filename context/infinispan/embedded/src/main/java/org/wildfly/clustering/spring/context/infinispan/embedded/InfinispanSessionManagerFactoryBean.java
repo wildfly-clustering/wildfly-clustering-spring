@@ -69,7 +69,6 @@ public class InfinispanSessionManagerFactoryBean<S, C, L> extends AutoDestroyBea
 		}
 		ConfigurationBuilder builder = new ConfigurationBuilder().read(template).template(false);
 		builder.encoding().mediaType(MediaType.APPLICATION_OBJECT_TYPE);
-		builder.clustering().hash().groups().enabled();
 
 		if (template.invocationBatching().enabled()) {
 			builder.invocationBatching().disable();

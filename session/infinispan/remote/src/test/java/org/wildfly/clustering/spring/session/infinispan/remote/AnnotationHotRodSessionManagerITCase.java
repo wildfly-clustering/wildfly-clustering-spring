@@ -36,9 +36,14 @@ public class AnnotationHotRodSessionManagerITCase extends AbstractHotRodSessionM
 
 	@Test
 	public void test() {
-		WebArchive archive = this.get()
+		this.run();
+	}
+
+	@Override
+	public WebArchive createArchive(org.wildfly.clustering.session.container.SessionManagementTesterConfiguration configuration) {
+		return super.createArchive(configuration)
 				.addAsWebInfResource(new PropertiesAsset(this.apply(new Properties())), "classes/application.properties")
-				.addPackage(Config.class.getPackage());
-		this.accept(archive);
+				.addPackage(Config.class.getPackage())
+				;
 	}
 }

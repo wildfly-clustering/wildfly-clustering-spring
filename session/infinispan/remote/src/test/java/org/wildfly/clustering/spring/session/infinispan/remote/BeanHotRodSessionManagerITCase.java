@@ -37,16 +37,22 @@ import org.wildfly.clustering.spring.session.context.xml.XmlContextLoaderListene
  */
 public class BeanHotRodSessionManagerITCase extends AbstractHotRodSessionManagerITCase {
 
+	private final Properties properties = new Properties();
+
 	@ParameterizedTest(name = ParameterizedTest.ARGUMENTS_PLACEHOLDER)
 	@ArgumentsSource(SessionManagementArgumentsProvider.class)
 	public void test(SessionManagementParameters parameters) {
-		Properties properties = new Properties();
-		properties.setProperty("session.granularity", parameters.getSessionPersistenceGranularity().name());
-		properties.setProperty("session.marshaller", parameters.getSessionMarshallerFactory().name());
-		WebArchive archive = this.get()
+		this.properties.setProperty("session.granularity", parameters.getSessionPersistenceGranularity().name());
+		this.properties.setProperty("session.marshaller", parameters.getSessionMarshallerFactory().name());
+		this.run();
+	}
+
+	@Override
+	public WebArchive createArchive(org.wildfly.clustering.session.container.SessionManagementTesterConfiguration configuration) {
+		return super.createArchive(configuration)
 				.addPackage(XmlContextLoaderListener.class.getPackage())
 				.addAsWebInfResource("applicationContext.xml")
-				.addAsWebInfResource(new PropertiesAsset(this.apply(properties)), "classes/application.properties");
-		this.accept(archive);
+				.addAsWebInfResource(new PropertiesAsset(this.apply(this.properties)), "classes/application.properties")
+				;
 	}
 }

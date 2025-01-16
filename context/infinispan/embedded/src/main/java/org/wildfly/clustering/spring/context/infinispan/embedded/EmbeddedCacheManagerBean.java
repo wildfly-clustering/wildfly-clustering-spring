@@ -7,6 +7,7 @@ package org.wildfly.clustering.spring.context.infinispan.embedded;
 
 import java.io.FileNotFoundException;
 import java.lang.management.ManagementFactory;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -40,7 +41,10 @@ import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.jmx.JmxConfigurator;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.PropertyResolver;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.wildfly.clustering.cache.infinispan.marshalling.MediaTypes;
@@ -59,7 +63,7 @@ import org.wildfly.clustering.spring.context.AutoDestroyBean;
 /**
  * @author Paul Ferraro
  */
-public class EmbeddedCacheManagerBean extends AutoDestroyBean implements ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration, InitializingBean, ResourceLoaderAware {
+public class EmbeddedCacheManagerBean extends AutoDestroyBean implements ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration, InitializingBean, ResourceLoaderAware, EnvironmentAware {
 
 	private static final Logger LOGGER = Logger.getLogger(EmbeddedCacheManagerBean.class);
 	private static final AtomicInteger COUNTER = new AtomicInteger(0);
@@ -67,6 +71,7 @@ public class EmbeddedCacheManagerBean extends AutoDestroyBean implements Channel
 	private final InfinispanConfiguration configuration;
 
 	private ResourceLoader loader;
+	private PropertyResolver resolver;
 	private EmbeddedCacheManager container;
 	private JChannelCommandDispatcherFactory commandDispatcherFactory;
 
@@ -90,6 +95,11 @@ public class EmbeddedCacheManagerBean extends AutoDestroyBean implements Channel
 	}
 
 	@Override
+	public void setEnvironment(Environment environment) {
+		this.resolver = environment;
+	}
+
+	@Override
 	public void afterPropertiesSet() throws Exception {
 		String resourceName = this.configuration.getConfigurationResource();
 
@@ -105,7 +115,8 @@ public class EmbeddedCacheManagerBean extends AutoDestroyBean implements Channel
 		if (resource == null) {
 			throw new FileNotFoundException(resourceName);
 		}
-		ConfigurationBuilderHolder holder = new ParserRegistry().parse(resource.getInputStream(), MediaType.APPLICATION_XML);
+		String xml = this.resolver.resolvePlaceholders(resource.getContentAsString(StandardCharsets.UTF_8));
+		ConfigurationBuilderHolder holder = new ParserRegistry(this.loader.getClassLoader(), false, System.getProperties()).parse(xml, MediaType.APPLICATION_XML);
 		GlobalConfigurationBuilder global = holder.getGlobalConfigurationBuilder();
 		String containerName = global.cacheContainer().name();
 		TransportConfiguration transport = global.transport().create();

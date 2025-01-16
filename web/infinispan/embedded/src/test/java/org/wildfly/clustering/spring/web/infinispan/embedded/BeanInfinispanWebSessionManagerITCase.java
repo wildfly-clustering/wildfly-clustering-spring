@@ -9,6 +9,7 @@ import java.util.Properties;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.wildfly.clustering.session.container.SessionManagementTesterConfiguration;
 import org.wildfly.clustering.spring.context.PropertiesAsset;
 import org.wildfly.clustering.spring.context.infinispan.embedded.InfinispanSessionManagementArgumentsProvider;
 import org.wildfly.clustering.spring.context.infinispan.embedded.InfinispanSessionManagementParameters;
@@ -21,17 +22,23 @@ import org.wildfly.clustering.spring.web.context.xml.XmlContextLoaderListener;
  */
 public class BeanInfinispanWebSessionManagerITCase extends AbstractInfinispanWebSessionManagerITCase {
 
+	private final Properties properties = new Properties();
+
 	@ParameterizedTest(name = ParameterizedTest.ARGUMENTS_PLACEHOLDER)
 	@ArgumentsSource(InfinispanSessionManagementArgumentsProvider.class)
 	public void test(InfinispanSessionManagementParameters parameters) throws Exception {
-		Properties properties = new Properties();
-		properties.setProperty("session.granularity", parameters.getSessionPersistenceGranularity().name());
-		properties.setProperty("session.marshaller", parameters.getSessionMarshallerFactory().name());
-		properties.setProperty("infinispan.template", parameters.getTemplate());
-		WebArchive archive = this.get()
+		this.properties.setProperty("session.granularity", parameters.getSessionPersistenceGranularity().name());
+		this.properties.setProperty("session.marshaller", parameters.getSessionMarshallerFactory().name());
+		this.properties.setProperty("infinispan.template", parameters.getTemplate());
+		this.run();
+	}
+
+	@Override
+	public WebArchive createArchive(SessionManagementTesterConfiguration configuration) {
+		return super.createArchive(configuration)
 				.addPackage(XmlContextLoaderListener.class.getPackage())
 				.addAsWebInfResource("applicationContext.xml")
-				.addAsWebInfResource(new PropertiesAsset(properties), "classes/application.properties");
-		this.accept(archive);
+				.addAsWebInfResource(new PropertiesAsset(this.properties), "classes/application.properties")
+				;
 	}
 }
