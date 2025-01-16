@@ -64,6 +64,18 @@
 
 		<dependency>
 			<groupId>org.wildfly.clustering</groupId>
+			<artifactId>wildfly-clustering-cache-infinispan-remote</artifactId>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.wildfly.clustering</groupId>
+			<artifactId>wildfly-clustering-cache-spi</artifactId>
+			<classifier>tests</classifier>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.wildfly.clustering</groupId>
 			<artifactId>wildfly-clustering-session-spec-servlet-6.0</artifactId>
 			<classifier>tests</classifier>
 			<scope>test</scope>
@@ -93,6 +105,11 @@
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-config</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>testcontainers</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
