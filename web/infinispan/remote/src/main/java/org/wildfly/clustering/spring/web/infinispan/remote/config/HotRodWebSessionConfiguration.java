@@ -69,6 +69,11 @@ public class HotRodWebSessionConfiguration extends WebSessionConfiguration imple
 	}
 
 	@Override
+	public String getConfiguration() {
+		return this.configuration.getConfiguration();
+	}
+
+	@Override
 	@Autowired(required = false)
 	public void setUri(String uri) {
 		this.configuration.setUri(uri);
@@ -77,6 +82,12 @@ public class HotRodWebSessionConfiguration extends WebSessionConfiguration imple
 	@Override
 	public void setProperty(String name, String value) {
 		this.configuration.setProperty(name, value);
+	}
+
+	@Override
+	@Autowired(required = false)
+	public void setConfiguration(String configuration) {
+		this.configuration.setConfiguration(configuration);
 	}
 
 	@Override

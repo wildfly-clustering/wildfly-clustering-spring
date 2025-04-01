@@ -51,9 +51,17 @@ public class HotRodSessionManagerFactoryBean<S, C, L> extends AutoDestroyBean im
 		RemoteCacheContainer container = this.provider.getRemoteCacheContainer();
 		String deploymentName = this.configuration.getDeploymentName();
 		String templateName = this.hotrod.getTemplateName();
+		String configuration = this.hotrod.getConfiguration();
 		OptionalInt maxActiveSessions = this.configuration.getMaxActiveSessions();
 
-		container.getConfiguration().addRemoteCache(deploymentName, builder -> builder.forceReturnValues(false).nearCacheMode(maxActiveSessions.isEmpty() ? NearCacheMode.DISABLED : NearCacheMode.INVALIDATED).transactionMode(TransactionMode.NONE).templateName(templateName));
+		container.getConfiguration().addRemoteCache(deploymentName, builder -> {
+			builder.forceReturnValues(false).nearCacheMode(maxActiveSessions.isEmpty() ? NearCacheMode.DISABLED : NearCacheMode.INVALIDATED).transactionMode(TransactionMode.NONE);
+			if (templateName != null) {
+				builder.templateName(templateName);
+			} else {
+				builder.configuration(configuration);
+			}
+		});
 
 		RemoteCache<?, ?> cache = container.getCache(deploymentName);
 

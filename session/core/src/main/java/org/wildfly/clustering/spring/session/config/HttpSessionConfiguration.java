@@ -134,6 +134,11 @@ public abstract class HttpSessionConfiguration extends SessionManagementConfigur
 	}
 
 	@Override
+	public ClassLoader getClassLoader() {
+		return this.context.getClassLoader();
+	}
+
+	@Override
 	public ServletContext getContext() {
 		return this.context;
 	}

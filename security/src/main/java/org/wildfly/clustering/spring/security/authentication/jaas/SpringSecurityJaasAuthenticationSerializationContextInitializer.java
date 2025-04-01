@@ -18,7 +18,7 @@ import org.wildfly.clustering.spring.security.authentication.CredentialAuthentic
 public class SpringSecurityJaasAuthenticationSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
 	public SpringSecurityJaasAuthenticationSerializationContextInitializer() {
-		super("org.springframework.security.authentication.jaas.proto");
+		super(JaasAuthenticationToken.class.getPackage());
 	}
 
 	@Override

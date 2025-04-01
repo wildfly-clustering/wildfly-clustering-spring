@@ -28,7 +28,13 @@ public @interface HotRod {
 	 * The Infinispan server configuration template from which to create a remote cache.
 	 * @return an Infinispan server template
 	 */
-	String template() default "org.infinispan.DIST_SYNC";
+	String template() default "";
+
+	/**
+	 * The Infinispan server configuration template from which to create a remote cache.
+	 * @return an Infinispan server template
+	 */
+	String configuration() default "<distributed-cache mode=\"SYNC\"/>";
 
 	/**
 	 * The HotRod client properties.

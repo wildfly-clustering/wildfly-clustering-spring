@@ -37,7 +37,7 @@ import org.wildfly.clustering.spring.session.infinispan.remote.config.annotation
  * @author Paul Ferraro
  */
 @PropertySource("classpath:application.properties")
-@EnableHotRodHttpSession(config = @HotRod(uri = "hotrod://${infinispan.server.username}:${infinispan.server.password}@${infinispan.server.host}:${infinispan.server.port}?tcp_no_delay=true", template = "${infinispan.server.template}"), manager = @SessionManager(marshaller = SessionAttributeMarshaller.PROTOSTREAM, granularity = SessionPersistenceGranularity.ATTRIBUTE))
+@EnableHotRodHttpSession(config = @HotRod(uri = "hotrod://${infinispan.server.username}:${infinispan.server.password}@${infinispan.server.host}:${infinispan.server.port}?tcp_no_delay=true", configuration = "${infinispan.server.configuration}"), manager = @SessionManager(marshaller = SessionAttributeMarshaller.PROTOSTREAM, granularity = SessionPersistenceGranularity.ATTRIBUTE))
 public class Config implements EmbeddedValueResolverAware {
 
 	private StringValueResolver resolver;

@@ -15,4 +15,5 @@ public interface HotRodConfiguration {
 	URI getUri();
 	Properties getProperties();
 	String getTemplateName();
+	String getConfiguration();
 }

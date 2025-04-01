@@ -18,7 +18,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 public class SpringSecurityAuthoritySerializationContextInitializer extends AbstractSerializationContextInitializer {
 
 	public SpringSecurityAuthoritySerializationContextInitializer() {
-		super("org.springframework.security.core.authority.proto");
+		super(SimpleGrantedAuthority.class.getPackage());
 	}
 
 	@Override

@@ -18,7 +18,7 @@ import org.wildfly.clustering.spring.security.authentication.CredentialAuthentic
 public class SpringSecurityWebPreAuthSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
 	public SpringSecurityWebPreAuthSerializationContextInitializer() {
-		super("org.springframework.security.web.authentication.preauth.proto");
+		super(PreAuthenticatedAuthenticationToken.class.getPackage());
 	}
 
 	@Override

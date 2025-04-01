@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.spring.web.util;
 
+import org.springframework.web.util.HttpSessionMutexListener;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamMarshaller;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
@@ -15,7 +16,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 public class UtilSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
 	public UtilSerializationContextInitializer() {
-		super("org.springframework.web.util.proto");
+		super(HttpSessionMutexListener.class.getPackage());
 	}
 
 	@Override
