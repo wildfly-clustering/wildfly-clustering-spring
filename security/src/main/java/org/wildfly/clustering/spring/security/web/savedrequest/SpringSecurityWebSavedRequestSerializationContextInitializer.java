@@ -5,6 +5,7 @@
 package org.wildfly.clustering.spring.security.web.savedrequest;
 
 import org.kohsuke.MetaInfServices;
+import org.springframework.security.web.savedrequest.SavedRequest;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
@@ -16,7 +17,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 public class SpringSecurityWebSavedRequestSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
 	public SpringSecurityWebSavedRequestSerializationContextInitializer() {
-		super("org.springframework.security.web.savedrequest.proto");
+		super(SavedRequest.class.getPackage());
 	}
 
 	@Override

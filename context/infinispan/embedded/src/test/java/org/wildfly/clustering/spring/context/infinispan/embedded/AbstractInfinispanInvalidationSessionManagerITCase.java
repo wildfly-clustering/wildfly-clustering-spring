@@ -9,7 +9,6 @@ import java.util.Properties;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
-import org.infinispan.client.hotrod.DefaultTemplate;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.ClientIntelligence;
@@ -28,25 +27,25 @@ import org.wildfly.clustering.session.container.SessionManagementTesterConfigura
 /**
  * @author Paul Ferraro
  */
-public class AbstractInfinispanInvalidationSessionManagerITCase extends AbstractSessionManagerITCase implements UnaryOperator<Properties> {
+public class AbstractInfinispanInvalidationSessionManagerITCase extends AbstractSessionManagerITCase<WebArchive> implements UnaryOperator<Properties> {
 
 	@RegisterExtension
 	static final InfinispanServerExtension INFINISPAN = new InfinispanServerExtension();
 	private static final String CACHE_NAME = "test";
 
 	protected AbstractInfinispanInvalidationSessionManagerITCase(SessionManagementTesterConfiguration configuration) {
-		super(configuration);
+		super(configuration, WebArchive.class);
 	}
 
 	protected AbstractInfinispanInvalidationSessionManagerITCase(Function<SessionManagementTesterConfiguration, Tester> testerFactory, SessionManagementTesterConfiguration configuration) {
-		super(testerFactory, configuration);
+		super(testerFactory, configuration, WebArchive.class);
 	}
 
 	@BeforeAll
 	public static void init() {
 		Configuration configuration = INFINISPAN.configure(new ConfigurationBuilder());
 		try (RemoteCacheManager manager = new RemoteCacheManager(configuration)) {
-			configuration.addRemoteCache(CACHE_NAME, builder -> builder.forceReturnValues(false).transactionMode(TransactionMode.NONE).templateName(DefaultTemplate.LOCAL));
+			configuration.addRemoteCache(CACHE_NAME, builder -> builder.forceReturnValues(false).transactionMode(TransactionMode.NONE).configuration("<local-cache/>"));
 			// Cache needs to be created on the server first
 			RemoteCache<?, ?> cache = manager.getCache(CACHE_NAME);
 			cache.start();
@@ -68,7 +67,7 @@ public class AbstractInfinispanInvalidationSessionManagerITCase extends Abstract
 		properties.setProperty("infinispan.server.password", String.valueOf(container.getPassword()));
 		// TODO Figure out how to configure HASH_DISTRIBUTION_AWARE w/bridge networking
 		properties.setProperty("infinispan.server.intelligence", (container.isPortMapping() ? ClientIntelligence.BASIC : ClientIntelligence.HASH_DISTRIBUTION_AWARE).name());
-		properties.setProperty("infinispan.server.template", DefaultTemplate.LOCAL.getTemplateName());
+		properties.setProperty("infinispan.server.configuration", "<local-cache/>");
 		properties.setProperty("infinispan.server.cache", CACHE_NAME);
 		return properties;
 	}

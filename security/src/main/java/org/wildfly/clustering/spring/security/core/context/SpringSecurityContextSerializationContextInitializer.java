@@ -19,7 +19,7 @@ import org.wildfly.clustering.spring.security.AnyScalarMarshaller;
 public class SpringSecurityContextSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
 	public SpringSecurityContextSerializationContextInitializer() {
-		super("org.springframework.security.core.context.proto");
+		super(SecurityContextImpl.class.getPackage());
 	}
 
 	@Override

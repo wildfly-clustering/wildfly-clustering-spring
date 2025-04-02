@@ -5,6 +5,7 @@
 package org.wildfly.clustering.spring.security.core.userdetails;
 
 import org.kohsuke.MetaInfServices;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.wildfly.clustering.marshalling.protostream.AbstractSerializationContextInitializer;
 import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
@@ -16,7 +17,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 public class SpringSecurityUserDetailsSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
 	public SpringSecurityUserDetailsSerializationContextInitializer() {
-		super("org.springframework.security.core.userdetails.proto");
+		super(UserDetails.class.getPackage());
 	}
 
 	@Override

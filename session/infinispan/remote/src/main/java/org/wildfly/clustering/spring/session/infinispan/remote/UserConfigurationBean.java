@@ -58,11 +58,19 @@ public class UserConfigurationBean extends AutoDestroyBean implements UserConfig
 		RemoteCacheContainer container = this.provider.getRemoteCacheContainer();
 		String applicationName = this.managerFactoryConfiguration.getDeploymentName();
 		String templateName = this.hotrod.getTemplateName();
+		String configuration = this.hotrod.getConfiguration();
 		for (Map.Entry<String, String> entry : this.indexing.getIndexes().entrySet()) {
 			String cacheName = String.format("%s/%s", applicationName, entry.getKey());
 			String indexName = entry.getValue();
 
-			container.getConfiguration().addRemoteCache(cacheName, builder -> builder.forceReturnValues(false).nearCacheMode(NearCacheMode.DISABLED).transactionMode(TransactionMode.NONE).templateName(templateName));
+			container.getConfiguration().addRemoteCache(cacheName, builder -> {
+				builder.forceReturnValues(false).nearCacheMode(NearCacheMode.DISABLED).transactionMode(TransactionMode.NONE);
+				if (templateName != null) {
+					builder.templateName(templateName);
+				} else {
+					builder.configuration(configuration);
+				}
+			});
 
 			RemoteCacheConfiguration cacheConfiguration = new RemoteCacheConfiguration() {
 				@Override

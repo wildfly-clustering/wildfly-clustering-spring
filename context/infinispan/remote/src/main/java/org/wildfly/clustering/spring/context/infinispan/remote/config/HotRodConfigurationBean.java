@@ -5,9 +5,10 @@
 package org.wildfly.clustering.spring.context.infinispan.remote.config;
 
 import java.net.URI;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Predicate;
 
-import org.infinispan.client.hotrod.DefaultTemplate;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.util.StringValueResolver;
 import org.wildfly.clustering.spring.context.infinispan.remote.MutableHotRodConfiguration;
@@ -19,7 +20,8 @@ public class HotRodConfigurationBean implements MutableHotRodConfiguration {
 
 	private URI uri;
 	private Properties properties = new Properties();
-	private String templateName = DefaultTemplate.DIST_SYNC.getTemplateName();
+	private String templateName = null;
+	private String configuration = "<distributed-cache mode=\"SYNC\"/>";
 	private StringValueResolver resolver = value -> value;
 
 	@Override
@@ -43,6 +45,11 @@ public class HotRodConfigurationBean implements MutableHotRodConfiguration {
 	}
 
 	@Override
+	public String getConfiguration() {
+		return this.configuration;
+	}
+
+	@Override
 	public void setUri(String uri) {
 		this.uri = URI.create(this.resolver.resolveStringValue(uri));
 	}
@@ -50,6 +57,11 @@ public class HotRodConfigurationBean implements MutableHotRodConfiguration {
 	@Override
 	public void setProperty(String name, String value) {
 		this.properties.setProperty(name, this.resolver.resolveStringValue(value));
+	}
+
+	@Override
+	public void setConfiguration(String configuration) {
+		this.configuration = this.resolver.resolveStringValue(configuration);
 	}
 
 	@Override
@@ -61,7 +73,8 @@ public class HotRodConfigurationBean implements MutableHotRodConfiguration {
 	public void accept(AnnotationAttributes attributes) {
 		AnnotationAttributes config = attributes.getAnnotation("config");
 		this.setUri(config.getString("uri"));
-		this.setTemplate(config.getString("template"));
+		this.setTemplate(Optional.ofNullable(config.getString("template")).filter(Predicate.not(String::isEmpty)).orElse(null));
+		this.setConfiguration(config.getString("configuration"));
 		for (AnnotationAttributes property : config.getAnnotationArray("properties")) {
 			this.setProperty(property.getString("name"), property.getString("value"));
 		}

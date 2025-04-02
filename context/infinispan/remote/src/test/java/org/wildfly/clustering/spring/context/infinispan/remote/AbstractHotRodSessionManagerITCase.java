@@ -9,8 +9,8 @@ import java.util.Properties;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
-import org.infinispan.client.hotrod.DefaultTemplate;
 import org.infinispan.client.hotrod.configuration.ClientIntelligence;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.wildfly.clustering.arquillian.Tester;
 import org.wildfly.clustering.cache.ContainerProvider;
@@ -22,17 +22,17 @@ import org.wildfly.clustering.session.container.SessionManagementTesterConfigura
 /**
  * @author Paul Ferraro
  */
-public abstract class AbstractHotRodSessionManagerITCase extends AbstractSessionManagerITCase implements UnaryOperator<Properties> {
+public abstract class AbstractHotRodSessionManagerITCase extends AbstractSessionManagerITCase<WebArchive> implements UnaryOperator<Properties> {
 
 	@RegisterExtension
 	static final ContainerProvider<InfinispanServerContainer> INFINISPAN = new InfinispanServerExtension();
 
 	protected AbstractHotRodSessionManagerITCase(SessionManagementTesterConfiguration configuration) {
-		super(configuration);
+		super(configuration, WebArchive.class);
 	}
 
 	protected AbstractHotRodSessionManagerITCase(Function<SessionManagementTesterConfiguration, Tester> testerFactory, SessionManagementTesterConfiguration configuration) {
-		super(testerFactory, configuration);
+		super(testerFactory, configuration, WebArchive.class);
 	}
 
 	@Override
@@ -44,7 +44,7 @@ public abstract class AbstractHotRodSessionManagerITCase extends AbstractSession
 		properties.setProperty("infinispan.server.password", String.valueOf(container.getPassword()));
 		// TODO Figure out how to configure HASH_DISTRIBUTION_AWARE w/bridge networking
 		properties.setProperty("infinispan.server.intelligence", (container.isPortMapping() ? ClientIntelligence.BASIC : ClientIntelligence.HASH_DISTRIBUTION_AWARE).name());
-		properties.setProperty("infinispan.server.template", DefaultTemplate.LOCAL.getTemplateName());
+		properties.setProperty("infinispan.server.configuration", "<local-cache/>");
 		return properties;
 	}
 }

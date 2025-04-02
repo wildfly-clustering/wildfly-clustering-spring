@@ -4,14 +4,13 @@
 	SPDX-License-Identifier: Apache-2.0
 -->
 <infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:schemaLocation="urn:infinispan:config:15.0 https://infinispan.org/schemas/infinispan-config-15.0.xsd urn:infinispan:config:store:remote:15.0 https://infinispan.org/schemas/infinispan-cachestore-remote-config-15.0.xsd"
-		xmlns="urn:infinispan:config:15.0">
+		xmlns="urn:infinispan:config:15.1">
 
 	<cache-container name="default" default-cache="infinispan-server">
 		<transport/>
 		<invalidation-cache-configuration name="infinispan-server">
 			<persistence>
-				<remote-store xmlns="urn:infinispan:config:store:remote:15.0" uri="hotrod://${infinispan.server.username}:${infinispan.server.password}@${infinispan.server.host}:${infinispan.server.port}?tcp_no_delay=true" cache="${infinispan.server.cache}" segmented="false" shared="true"/>
+				<remote-store xmlns="urn:infinispan:config:store:remote:15.1" uri="hotrod://${infinispan.server.username}:${infinispan.server.password}@${infinispan.server.host}:${infinispan.server.port}?tcp_no_delay=true" cache="${infinispan.server.cache}" segmented="false" shared="true"/>
 			</persistence>
 		</invalidation-cache-configuration>
 	</cache-container>

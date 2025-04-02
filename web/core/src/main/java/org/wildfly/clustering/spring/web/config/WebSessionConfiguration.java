@@ -72,12 +72,17 @@ public abstract class WebSessionConfiguration extends SessionManagementConfigura
 
 	@Override
 	public String getServerName() {
-		return this.getContext().getVirtualServerName();
+		return this.context.getVirtualServerName();
 	}
 
 	@Override
 	public ServletContext getContext() {
 		return this.context;
+	}
+
+	@Override
+	public ClassLoader getClassLoader() {
+		return this.context.getClassLoader();
 	}
 
 	@Override

@@ -15,14 +15,14 @@ import org.wildfly.clustering.session.container.SessionManagementTesterConfigura
 /**
  * @author Paul Ferraro
  */
-public abstract class AbstractInfinispanSessionManagerITCase extends AbstractSessionManagerITCase {
+public abstract class AbstractInfinispanSessionManagerITCase extends AbstractSessionManagerITCase<WebArchive> {
 
 	protected AbstractInfinispanSessionManagerITCase(SessionManagementTesterConfiguration configuration) {
-		super(configuration);
+		super(configuration, WebArchive.class);
 	}
 
 	protected AbstractInfinispanSessionManagerITCase(Function<SessionManagementTesterConfiguration, Tester> testerFactory, SessionManagementTesterConfiguration configuration) {
-		super(testerFactory, configuration);
+		super(testerFactory, configuration, WebArchive.class);
 	}
 
 	@Override

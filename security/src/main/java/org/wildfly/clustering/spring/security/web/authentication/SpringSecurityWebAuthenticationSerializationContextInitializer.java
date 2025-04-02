@@ -17,7 +17,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 public class SpringSecurityWebAuthenticationSerializationContextInitializer extends AbstractSerializationContextInitializer {
 
 	public SpringSecurityWebAuthenticationSerializationContextInitializer() {
-		super("org.springframework.security.web.authentication.proto");
+		super(WebAuthenticationDetails.class.getPackage());
 	}
 
 	@Override
