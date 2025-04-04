@@ -42,7 +42,7 @@
 		<version.org.springframework.session>3.4.2</version.org.springframework.session>
 		<version.org.infinispan>15.0.14.Final</version.org.infinispan>
 		<version.org.infinispan>15.1.7.Final</version.org.infinispan>
-		<version.org.jboss.marshalling>2.2.2.Final</version.org.jboss.marshalling>
+		<version.org.jboss.marshalling>2.2.3.Final</version.org.jboss.marshalling>
 		<version.org.wildfly.clustering>6.0.1.Final</version.org.wildfly.clustering>
 
 		<!-- Test dependency versions -->
