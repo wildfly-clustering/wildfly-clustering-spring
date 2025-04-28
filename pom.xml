@@ -43,7 +43,7 @@
 		<version.org.infinispan>15.0.14.Final</version.org.infinispan>
 		<version.org.infinispan>15.1.7.Final</version.org.infinispan>
 		<version.org.jboss.marshalling>2.2.3.Final</version.org.jboss.marshalling>
-		<version.org.wildfly.clustering>6.0.1.Final</version.org.wildfly.clustering>
+		<version.org.wildfly.clustering>6.0.2.Final</version.org.wildfly.clustering>
 
 		<!-- Test dependency versions -->
 		<version.org.apache.tomcat>10.1.40</version.org.apache.tomcat>
