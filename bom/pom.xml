@@ -13,7 +13,7 @@
 		<relativePath />
 	</parent>
 
-	<groupId>org.wildfly.clustering</groupId>
+	<groupId>org.wildfly.clustering.spring</groupId>
 	<artifactId>wildfly-clustering-spring-bom</artifactId>
 	<version>17.0.0.Final-SNAPSHOT</version>
 	<packaging>pom</packaging>
