@@ -39,17 +39,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.infinispan</groupId>
-			<artifactId>infinispan-cachestore-jdbc</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.infinispan</groupId>
-			<artifactId>infinispan-cachestore-remote</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-
-		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>wildfly-clustering-spring-context-core</artifactId>
 			<classifier>tests</classifier>

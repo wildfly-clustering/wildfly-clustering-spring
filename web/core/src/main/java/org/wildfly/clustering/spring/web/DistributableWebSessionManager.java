@@ -10,7 +10,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import org.jboss.logging.Logger;
 import org.springframework.web.server.ServerWebExchange;
@@ -20,9 +19,9 @@ import org.springframework.web.server.session.WebSessionManager;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.BatchContext;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
-import org.wildfly.common.function.Functions;
 
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -52,7 +51,7 @@ public class DistributableWebSessionManager implements WebSessionManager, AutoCl
 		String sessionId = (requestedSessionId != null) ? requestedSessionId : this.manager.getIdentifierFactory().get();
 		BiFunction<SessionManager<Void>, String, CompletionStage<Session<Void>>> function = (requestedSessionId != null) ? SessionManager::findSessionAsync : SessionManager::createSessionAsync;
 		return this.getSession(function, sessionId).filter(Objects::nonNull)
-				.doOnNext(session -> exchange.getResponse().beforeCommit(Functions.constantSupplier(this.getCommitAction(exchange, session, requestedSessionId))))
+				.doOnNext(session -> exchange.getResponse().beforeCommit(Supplier.of(this.getCommitAction(exchange, session, requestedSessionId))))
 				.map(Function.identity());
 	}
 

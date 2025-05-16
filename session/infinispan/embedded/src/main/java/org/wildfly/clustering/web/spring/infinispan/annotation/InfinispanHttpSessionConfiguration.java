@@ -38,7 +38,8 @@ public class InfinispanHttpSessionConfiguration extends org.wildfly.clustering.s
 		AnnotationAttributes manager = attributes.getAnnotation("manager");
 		this.setMaxActiveSessions(manager.getNumber("maxActiveSessions").intValue());
 		this.setMarshallerFactory(manager.getEnum("marshallerFactory"));
-		this.setGranularity(manager.getEnum("granularity"));
+		SessionPersistenceGranularity granularity = manager.getEnum("granularity");
+		this.setGranularity(granularity);
 		this.accept(attributes);
 	}
 }
