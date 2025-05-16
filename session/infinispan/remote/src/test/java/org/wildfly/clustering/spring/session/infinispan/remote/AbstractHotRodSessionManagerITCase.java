@@ -5,6 +5,8 @@
 
 package org.wildfly.clustering.spring.session.infinispan.remote;
 
+import java.time.Duration;
+import java.util.Optional;
 import java.util.function.Function;
 
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -21,6 +23,11 @@ public class AbstractHotRodSessionManagerITCase extends org.wildfly.clustering.s
 		@Override
 		default Class<?> getEndpointClass() {
 			return SessionServlet.class;
+		}
+
+		@Override
+		default Optional<Duration> getFailoverGracePeriod() {
+			return Optional.of(Duration.ofSeconds(2));
 		}
 	}
 

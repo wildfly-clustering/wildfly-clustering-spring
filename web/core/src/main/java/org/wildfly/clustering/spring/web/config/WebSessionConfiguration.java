@@ -7,7 +7,6 @@ package org.wildfly.clustering.spring.web.config;
 
 import java.lang.annotation.Annotation;
 import java.time.Duration;
-import java.util.function.Consumer;
 
 import jakarta.servlet.ServletContext;
 
@@ -18,12 +17,12 @@ import org.springframework.web.server.adapter.WebHttpHandlerBuilder;
 import org.springframework.web.server.session.CookieWebSessionIdResolver;
 import org.springframework.web.server.session.WebSessionIdResolver;
 import org.springframework.web.server.session.WebSessionManager;
+import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.spring.context.config.SessionManagementConfiguration;
 import org.wildfly.clustering.spring.web.DistributableWebSessionManager;
 import org.wildfly.clustering.spring.web.DistributableWebSessionManagerConfiguration;
-import org.wildfly.common.function.Functions;
 
 /**
  * @author Paul Ferraro
@@ -87,7 +86,7 @@ public abstract class WebSessionConfiguration extends SessionManagementConfigura
 
 	@Override
 	public Consumer<ImmutableSession> getExpirationListener() {
-		return Functions.discardingConsumer();
+		return Consumer.empty();
 	}
 
 	@Override

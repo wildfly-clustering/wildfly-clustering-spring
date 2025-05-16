@@ -35,7 +35,6 @@ import org.infinispan.remoting.transport.jgroups.JGroupsChannelConfigurator;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.infinispan.util.concurrent.BlockingManager;
 import org.infinispan.util.concurrent.NonBlockingManager;
-import org.jboss.logging.Logger;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
@@ -65,7 +64,7 @@ import org.wildfly.clustering.spring.context.AutoDestroyBean;
  */
 public class EmbeddedCacheManagerBean extends AutoDestroyBean implements ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration, InitializingBean, ResourceLoaderAware, EnvironmentAware {
 
-	private static final Logger LOGGER = Logger.getLogger(EmbeddedCacheManagerBean.class);
+	private static final System.Logger LOGGER = System.getLogger(EmbeddedCacheManagerBean.class.getPackageName());
 	private static final AtomicInteger COUNTER = new AtomicInteger(0);
 
 	private final InfinispanConfiguration configuration;
@@ -137,7 +136,7 @@ public class EmbeddedCacheManagerBean extends AutoDestroyBean implements Channel
 					try {
 						JmxConfigurator.unregisterChannel(channel, ManagementFactory.getPlatformMBeanServer(), prefix, transport.clusterName());
 					} catch (Exception e) {
-						LOGGER.warn(e.getLocalizedMessage(), e);
+						LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 					}
 				});
 			}

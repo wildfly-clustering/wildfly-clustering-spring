@@ -6,9 +6,9 @@ package org.wildfly.clustering.spring.context.config;
 
 import java.lang.annotation.Annotation;
 import java.util.OptionalInt;
+import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.EnvironmentAware;
@@ -21,6 +21,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.IdGenerator;
 import org.springframework.util.JdkIdGenerator;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
@@ -30,7 +31,6 @@ import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.spring.context.SessionAttributeMarshaller;
 import org.wildfly.clustering.spring.context.SessionManagerBean;
-import org.wildfly.common.function.Functions;
 
 /**
  * Spring configuration bean for a distributable session repository.
@@ -69,7 +69,7 @@ public abstract class SessionManagementConfiguration<C> implements SessionManage
 
 	@Override
 	public Supplier<Void> getSessionContextFactory() {
-		return Functions.constantSupplier(null);
+		return Supplier.of(null);
 	}
 
 	@Override
@@ -79,7 +79,8 @@ public abstract class SessionManagementConfiguration<C> implements SessionManage
 
 	@Override
 	public Supplier<String> getIdentifierFactory() {
-		return () -> this.generator.generateId().toString();
+		Supplier<UUID> factory = this.generator::generateId;
+		return factory.map(UUID::toString);
 	}
 
 	@Override
