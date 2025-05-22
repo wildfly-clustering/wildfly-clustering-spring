@@ -8,8 +8,8 @@ package org.wildfly.clustering.spring.web;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.function.Consumer;
 
-import org.jboss.logging.Logger;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.BatchContext;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
@@ -23,20 +23,22 @@ import reactor.core.scheduler.Schedulers;
  * @author Paul Ferraro
  */
 public class DistributableWebSession implements SpringWebSession {
-	private static final Logger LOGGER = Logger.getLogger(DistributableWebSession.class);
+	private static final System.Logger LOGGER = System.getLogger(DistributableWebSession.class.getPackageName());
 
 	private final SessionManager<Void> manager;
 	private final SuspendedBatch batch;
+	private final Runnable closeTask;
 	private final Instant startTime;
 
 	private volatile boolean started;
 	private volatile Session<Void> session;
 
-	public DistributableWebSession(SessionManager<Void> manager, Session<Void> session, SuspendedBatch batch) {
+	public DistributableWebSession(SessionManager<Void> manager, Session<Void> session, SuspendedBatch batch, Runnable closeTask) {
 		this.manager = manager;
 		this.session = session;
 		this.started = !session.getMetaData().isNew();
 		this.batch = batch;
+		this.closeTask = closeTask;
 		this.startTime = Instant.now();
 	}
 
@@ -100,29 +102,28 @@ public class DistributableWebSession implements SpringWebSession {
 	}
 
 	private void invalidateSync() {
-		Session<Void> session = this.session;
-		try (Batch batch = this.batch.resume()) {
-			session.invalidate();
-		}
+		this.close(Session::invalidate);
 	}
 
 	@Override
 	public void close() {
+		this.close(session -> {
+			if (this.started) {
+				// According to §7.6 of the servlet specification:
+				// The session is considered to be accessed when a request that is part of the session is first handled by the servlet container.
+				session.getMetaData().setLastAccess(this.startTime, Instant.now());
+			} else {
+				// Invalidate if session was never "started".
+				session.invalidate();
+			}
+		});
 		try (Batch batch = this.batch.resume()) {
 			try (Session<Void> session = this.session) {
 				if (session.isValid()) {
-					if (this.started) {
-						// According to §7.6 of the servlet specification:
-						// The session is considered to be accessed when a request that is part of the session is first handled by the servlet container.
-						session.getMetaData().setLastAccess(this.startTime, Instant.now());
-					} else {
-						// Invalidate if session was never "started".
-						session.invalidate();
-					}
 				}
 			}
 		} catch (RuntimeException | Error e) {
-			LOGGER.warn(e.getLocalizedMessage(), e);
+			LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 		}
 	}
 
@@ -155,5 +156,22 @@ public class DistributableWebSession implements SpringWebSession {
 	@Override
 	public Duration getMaxIdleTime() {
 		return this.session.getMetaData().getTimeout();
+	}
+
+	private void close(Consumer<Session<Void>> closeTask) {
+		Session<Void> session = this.session;
+		if (session.isValid()) {
+			try (Batch batch = this.batch.resume()) {
+				try {
+					closeTask.accept(session);
+				} finally {
+					session.close();
+				}
+			} catch (RuntimeException | Error e) {
+				LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
+			} finally {
+				this.closeTask.run();
+			}
+		}
 	}
 }

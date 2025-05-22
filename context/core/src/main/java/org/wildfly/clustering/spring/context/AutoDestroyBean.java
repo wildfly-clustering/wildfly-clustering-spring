@@ -10,7 +10,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import org.jboss.logging.Logger;
 import org.springframework.beans.factory.DisposableBean;
 
 /**
@@ -18,7 +17,7 @@ import org.springframework.beans.factory.DisposableBean;
  * @author Paul Ferraro
  */
 public class AutoDestroyBean implements DisposableBean, Consumer<Runnable> {
-	private final Logger logger = Logger.getLogger(this.getClass());
+	private final System.Logger logger = System.getLogger(this.getClass().getPackageName());
 	private final List<Runnable> tasks = new LinkedList<>();
 
 	@Override
@@ -34,7 +33,7 @@ public class AutoDestroyBean implements DisposableBean, Consumer<Runnable> {
 			try {
 				tasks.next().run();
 			} catch (RuntimeException | Error e) {
-				this.logger.warn(e.getLocalizedMessage(), e);
+				this.logger.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 			} finally {
 				tasks.remove();
 			}
