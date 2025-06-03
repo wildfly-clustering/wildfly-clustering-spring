@@ -21,7 +21,18 @@ public class HotRodConfigurationBean implements MutableHotRodConfiguration {
 	private URI uri;
 	private Properties properties = new Properties();
 	private String templateName = null;
-	private String configuration = "<distributed-cache mode=\"SYNC\"/>";
+	private String configuration = """
+{
+	"distributed-cache" : {
+		"mode" : "SYNC",
+		"statistics" : "true",
+		"transaction" : {
+			"mode" : "BATCH",
+			"locking" : "PESSIMISTIC"
+		}
+	}
+}""";
+
 	private StringValueResolver resolver = value -> value;
 
 	@Override

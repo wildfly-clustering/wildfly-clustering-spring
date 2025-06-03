@@ -9,7 +9,6 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import org.infinispan.remoting.transport.jgroups.JGroupsChannelConfigurator;
-import org.jgroups.ChannelListener;
 import org.jgroups.JChannel;
 import org.jgroups.conf.ProtocolConfiguration;
 import org.jgroups.fork.ForkChannel;
@@ -45,12 +44,18 @@ public class ForkChannelConfigurator implements JGroupsChannelConfigurator {
 
 	@Override
 	public JChannel createChannel(String name) throws Exception {
-		return new ForkChannel(this.channel, this.channel.getClusterName(), this.forkName);
-	}
+		// Silence log messages when Infinispan calls ForkChannel.setName(...)
+		return new ForkChannel(this.channel, this.channel.getClusterName(), this.forkName) {
+			@Override
+			public ForkChannel setName(String name) {
+				return this;
+			}
 
-	@Override
-	public void addChannelListener(ChannelListener listener) {
-		this.channel.addChannelListener(listener);
+			@Override
+			public JChannel name(String name) {
+				return this;
+			}
+		};
 	}
 
 	@Override

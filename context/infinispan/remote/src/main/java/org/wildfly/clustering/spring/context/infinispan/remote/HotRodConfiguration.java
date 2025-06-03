@@ -12,6 +12,18 @@ import java.util.Properties;
  * @author Paul Ferraro
  */
 public interface HotRodConfiguration {
+	String DEFAULT_CONFIGURATION = """
+{
+	"distributed-cache" : {
+		"mode" : "SYNC",
+		"statistics" : "true",
+		"transaction" : {
+			"mode" : "NON_XA",
+			"locking" : "PESSIMISTIC"
+		}
+	}
+}""";
+
 	URI getUri();
 	Properties getProperties();
 	String getTemplateName();

@@ -130,7 +130,7 @@ public class InfinispanSessionManagerFactoryBean<S, C, L> extends AutoDestroyBea
 		};
 
 		this.sessionManagerFactory = new InfinispanSessionManagerFactory<>(this.configuration, this.sessionProvider, this.listenerProvider, infinispanConfiguration);
-		this.accept(this.sessionManagerFactory::close);
+		this.accept(this::close);
 	}
 
 	@Override

@@ -7,7 +7,6 @@ package org.wildfly.clustering.spring.session.infinispan.remote;
 
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.function.Supplier;
 
 import jakarta.servlet.ServletContext;
 
@@ -19,6 +18,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.session.IndexResolver;
 import org.springframework.session.Session;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
 import org.wildfly.clustering.session.SessionManagerConfiguration;
 import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
@@ -31,7 +31,6 @@ import org.wildfly.clustering.spring.context.infinispan.remote.HotRodConfigurati
 import org.wildfly.clustering.spring.context.infinispan.remote.RemoteCacheContainerProvider;
 import org.wildfly.clustering.spring.session.IndexingConfiguration;
 import org.wildfly.clustering.spring.session.UserConfiguration;
-import org.wildfly.common.function.Functions;
 
 /**
  * @author Paul Ferraro
@@ -82,7 +81,7 @@ public class UserConfigurationBean extends AutoDestroyBean implements UserConfig
 
 			UserManager<Void, Void, String, String> userManager = userManagerFactory.createUserManager(new UserManagerConfiguration<>() {
 				@Override
-				public Supplier<String> getIdentifierFactory() {
+				public java.util.function.Supplier<String> getIdentifierFactory() {
 					return UserConfigurationBean.this.managerConfiguration.getIdentifierFactory();
 				}
 
@@ -93,7 +92,7 @@ public class UserConfigurationBean extends AutoDestroyBean implements UserConfig
 
 				@Override
 				public Supplier<Void> getTransientContextFactory() {
-					return Functions.constantSupplier(null);
+					return Supplier.of(null);
 				}
 			});
 			this.managers.put(indexName, userManager);

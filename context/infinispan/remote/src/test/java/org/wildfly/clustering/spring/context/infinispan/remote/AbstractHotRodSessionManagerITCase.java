@@ -44,7 +44,9 @@ public abstract class AbstractHotRodSessionManagerITCase extends AbstractSession
 		properties.setProperty("infinispan.server.password", String.valueOf(container.getPassword()));
 		// TODO Figure out how to configure HASH_DISTRIBUTION_AWARE w/bridge networking
 		properties.setProperty("infinispan.server.intelligence", (container.isPortMapping() ? ClientIntelligence.BASIC : ClientIntelligence.HASH_DISTRIBUTION_AWARE).name());
-		properties.setProperty("infinispan.server.configuration", "<local-cache/>");
+		// Use local cache since our remote cluster has only 1 member
+		// Reduce expiration interval to speed up expiration verification
+		properties.setProperty("infinispan.server.configuration", "{ \"local-cache\" : { \"expiration\" : { \"interval\" : 1000 }, \"transaction\" : { \"mode\" : \"NON_XA\", \"locking\" : \"PESSIMISTIC\" }}}");
 		return properties;
 	}
 }
