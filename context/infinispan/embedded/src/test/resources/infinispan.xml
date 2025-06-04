@@ -3,17 +3,18 @@
 	Copyright The WildFly Authors
 	SPDX-License-Identifier: Apache-2.0
 -->
-<infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:infinispan:config:15.1">
+<infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:infinispan:config:15.2"
+		xsi:schemaLocation="urn:infinispan:config:15.2 https://infinispan.org/schemas/infinispan-config-15.2.xsd">
 
 	<cache-container name="default" default-cache="dist-tx">
 		<transport/>
 		<distributed-cache-configuration name="dist-non-tx"/>
 		<distributed-cache-configuration name="dist-tx">
-			<transaction mode="BATCH" locking="PESSIMISTIC"/>
+			<transaction mode="NON_XA" locking="PESSIMISTIC"/>
 		</distributed-cache-configuration>
 		<replicated-cache-configuration name="repl-non-tx"/>
 		<replicated-cache-configuration name="repl-tx">
-			<transaction mode="BATCH" locking="PESSIMISTIC"/>
+			<transaction mode="NON_XA" locking="PESSIMISTIC"/>
 		</replicated-cache-configuration>
 	</cache-container>
 </infinispan>

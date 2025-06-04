@@ -10,9 +10,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 import org.springframework.context.ApplicationEvent;
 import org.springframework.session.events.SessionDestroyedEvent;
@@ -36,14 +37,15 @@ public class DistributableSession implements SpringSession {
 	private final Instant startTime;
 	private final UserConfiguration indexing;
 	private final BiConsumer<ImmutableSession, BiFunction<Object, org.springframework.session.Session, ApplicationEvent>> destroyAction;
-	private final AtomicBoolean closed = new AtomicBoolean(false);
+	private final AtomicReference<Runnable> closeTask;
 
 	private volatile Session<Void> session;
 
-	public DistributableSession(SessionManager<Void> manager, Session<Void> session, SuspendedBatch batch, UserConfiguration indexing, BiConsumer<ImmutableSession, BiFunction<Object, org.springframework.session.Session, ApplicationEvent>> destroyAction) {
+	public DistributableSession(SessionManager<Void> manager, Session<Void> session, SuspendedBatch batch, Runnable closeTask, UserConfiguration indexing, BiConsumer<ImmutableSession, BiFunction<Object, org.springframework.session.Session, ApplicationEvent>> destroyAction) {
 		this.manager = manager;
 		this.session = session;
 		this.batch = batch;
+		this.closeTask = new AtomicReference<>(closeTask);
 		this.indexing = indexing;
 		this.destroyAction = destroyAction;
 		this.startTime = session.getMetaData().isNew() ? session.getMetaData().getCreationTime() : Instant.now();
@@ -184,24 +186,33 @@ public class DistributableSession implements SpringSession {
 
 	@Override
 	public void invalidate() {
-		try (Batch batch = this.batch.resume()) {
-			this.destroyAction.accept(this.session, SessionDestroyedEvent::new);
-			this.session.invalidate();
-		}
+		this.close(this::invalidate);
+	}
+
+	private void invalidate(Session<Void> session) {
+		this.destroyAction.accept(session, SessionDestroyedEvent::new);
+		session.invalidate();
 	}
 
 	@Override
 	public void close() {
+		// According to §7.6 of the servlet specification:
+		// The session is considered to be accessed when a request that is part of the session is first handled by the servlet container.
+		this.close(session -> session.getMetaData().setLastAccess(this.startTime, Instant.now()));
+	}
+
+	private void close(Consumer<Session<Void>> action) {
 		// Spring session lifecycle logic is a mess.  Ensure we only close a session once.
-		if (this.closed.compareAndSet(false, true)) {
+		Runnable closeTask = this.closeTask.getAndSet(null);
+		if (closeTask != null) {
 			try (Batch batch = this.batch.resume()) {
 				try (Session<Void> session = this.session) {
 					if (session.isValid()) {
-						// According to §7.6 of the servlet specification:
-						// The session is considered to be accessed when a request that is part of the session is first handled by the servlet container.
-						session.getMetaData().setLastAccess(this.startTime, Instant.now());
+						action.accept(session);
 					}
 				}
+			} finally {
+				closeTask.run();
 			}
 		}
 	}

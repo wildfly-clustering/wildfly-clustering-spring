@@ -77,7 +77,7 @@ public class HotRodSessionManagerFactoryBean<S, C, L> extends AutoDestroyBean im
 		};
 
 		this.sessionManagerFactory = new HotRodSessionManagerFactory<>(this.configuration, this.sessionProvider, this.listenerProvider, hotrodConfiguration);
-		this.accept(this.sessionManagerFactory::close);
+		this.accept(this::close);
 	}
 
 	@Override

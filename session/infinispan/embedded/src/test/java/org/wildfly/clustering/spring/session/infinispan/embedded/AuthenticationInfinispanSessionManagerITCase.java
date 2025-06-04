@@ -23,6 +23,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.arquillian.Deployment;
 import org.wildfly.clustering.session.container.SessionManagementTester;
+import org.wildfly.clustering.session.spec.container.ServletSessionManagementTesterConfiguration;
 import org.wildfly.clustering.spring.session.authentication.SecurityInitializer;
 import org.wildfly.clustering.spring.session.infinispan.embedded.authentication.Config;
 
@@ -49,7 +50,7 @@ public class AuthenticationInfinispanSessionManagerITCase extends AbstractInfini
 					Assertions.fail(e);
 				}
 			}
-		}, new SessionManagementTesterConfiguration() {
+		}, new ServletSessionManagementTesterConfiguration() {
 			@Override
 			public UnaryOperator<HttpClient.Builder> getHttpClientConfigurator() {
 				return builder -> builder.authenticator(new Authenticator() {

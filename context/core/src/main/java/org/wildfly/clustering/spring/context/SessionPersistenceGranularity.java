@@ -4,8 +4,7 @@
  */
 package org.wildfly.clustering.spring.context;
 
-import java.util.function.Supplier;
-
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.SessionAttributePersistenceStrategy;
 
 /**

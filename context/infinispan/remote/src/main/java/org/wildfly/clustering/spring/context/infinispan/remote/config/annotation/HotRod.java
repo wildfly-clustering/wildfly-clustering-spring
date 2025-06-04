@@ -10,6 +10,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.wildfly.clustering.spring.context.infinispan.remote.HotRodConfiguration;
+
 /**
  * Configures the HotRod client used by a session repository.
  * @author Paul Ferraro
@@ -34,7 +36,7 @@ public @interface HotRod {
 	 * The Infinispan server configuration template from which to create a remote cache.
 	 * @return an Infinispan server template
 	 */
-	String configuration() default "<distributed-cache mode=\"SYNC\"/>";
+	String configuration() default HotRodConfiguration.DEFAULT_CONFIGURATION;
 
 	/**
 	 * The HotRod client properties.
