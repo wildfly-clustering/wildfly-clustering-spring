@@ -24,7 +24,7 @@ public class BeanInfinispanWebSessionManagerITCase extends AbstractInfinispanWeb
 
 	private final Properties properties = new Properties();
 
-	@ParameterizedTest(name = ParameterizedTest.ARGUMENTS_PLACEHOLDER)
+	@ParameterizedTest
 	@ArgumentsSource(InfinispanSessionManagementArgumentsProvider.class)
 	public void test(InfinispanSessionManagementParameters parameters) throws Exception {
 		this.properties.setProperty("session.granularity", parameters.getSessionPersistenceGranularity().name());

@@ -39,7 +39,7 @@ public class BeanHotRodSessionManagerITCase extends AbstractHotRodSessionManager
 
 	private final Properties properties = new Properties();
 
-	@ParameterizedTest(name = ParameterizedTest.ARGUMENTS_PLACEHOLDER)
+	@ParameterizedTest
 	@ArgumentsSource(SessionManagementArgumentsProvider.class)
 	public void test(SessionManagementParameters parameters) {
 		this.properties.setProperty("session.granularity", parameters.getSessionPersistenceGranularity().name());
