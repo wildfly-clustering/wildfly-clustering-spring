@@ -138,7 +138,8 @@
 				<directory>src/test/resources/tomcat</directory>
 				<targetPath>${catalina.home}/conf</targetPath>
 				<includes>
-					<include>**</include>
+					<include>*.properties</include>
+					<include>*.xml</include>
 				</includes>
 				<filtering>true</filtering>
 			</testResource>
