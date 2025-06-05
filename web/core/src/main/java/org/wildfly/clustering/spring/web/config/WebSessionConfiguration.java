@@ -51,12 +51,7 @@ public abstract class WebSessionConfiguration extends SessionManagementConfigura
 				return resolver;
 			}
 		};
-		try {
-			return new DistributableWebSessionManager(configuration);
-		} catch (RuntimeException | Error e) {
-			e.printStackTrace(System.err);
-			throw e;
-		}
+		return new DistributableWebSessionManager(configuration);
 	}
 
 	@Override
