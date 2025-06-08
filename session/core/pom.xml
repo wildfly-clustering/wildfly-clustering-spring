@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-spring-session-core</artifactId>
 	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: Spring Session integration</name>
+	<name>WildFly Clustering: Spring Session: Core implementation</name>
 
 	<dependencies>
 		<dependency>

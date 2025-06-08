@@ -16,12 +16,11 @@
 	<artifactId>wildfly-clustering-spring</artifactId>
 	<packaging>pom</packaging>
 
-	<name>WildFly Clustering: Spring</name>
+	<name>WildFly Clustering: Spring: Modules</name>
 
 	<properties>
 		<jdk.runtime.args>-Dorg.jboss.logging.provider=jdk --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED</jdk.runtime.args>
 		<maven.compiler.release>17</maven.compiler.release>
-		<maven.repository.url>https://repository.jboss.org/nexus/content/groups/public/</maven.repository.url>
 
 		<!-- Provided dependency versions -->
 		<version.jakarta.servlet>6.0.0</version.jakarta.servlet>
@@ -33,7 +32,7 @@
 		<version.org.springframework>6.2.7</version.org.springframework>
 		<version.org.springframework.security>6.5.0</version.org.springframework.security>
 		<version.org.springframework.session>3.5.0</version.org.springframework.session>
-		<version.org.wildfly.clustering>7.0.4.Final</version.org.wildfly.clustering>
+		<version.org.wildfly.clustering>7.0.5.Final</version.org.wildfly.clustering>
 
 		<!-- Runtime dependency versions -->
 		<version.org.slf4j>2.0.17</version.org.slf4j>
@@ -359,32 +358,4 @@
 			</properties>
 		</profile>
 	</profiles>
-
-	<repositories>
-		<repository>
-			<id>default</id>
-			<url>${maven.repository.url}</url>
-			<layout>default</layout>
-			<releases>
-				<enabled>true</enabled>
-				<updatePolicy>never</updatePolicy>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-				<updatePolicy>never</updatePolicy>
-			</snapshots>
-		</repository>
-	</repositories>
-	<pluginRepositories>
-		<pluginRepository>
-			<id>default</id>
-			<url>${maven.repository.url}</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</pluginRepository>
-	</pluginRepositories>
 </project>

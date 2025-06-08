@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-spring-session-infinispan-remote</artifactId>
 	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: Spring Session: Remote Infinispan integration</name>
+	<name>WildFly Clustering: Spring Session: Infinispan: Remote implementation</name>
 
 	<properties>
 		<catalina.home>${project.build.directory}/apache-tomcat-${version.org.apache.tomcat}</catalina.home>

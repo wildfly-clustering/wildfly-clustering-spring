@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-spring-context-infinispan-remote</artifactId>
 	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: Spring Context: Remote Infinispan integration</name>
+	<name>WildFly Clustering: Spring Context: Infinispan: Remote implementation</name>
 
 	<dependencies>
 		<dependency>
