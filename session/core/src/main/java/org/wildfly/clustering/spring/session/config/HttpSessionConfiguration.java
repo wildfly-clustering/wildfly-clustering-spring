@@ -15,7 +15,6 @@ import java.util.ServiceLoader;
 import java.util.TreeMap;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import jakarta.servlet.ServletContext;
@@ -30,6 +29,7 @@ import org.springframework.session.IndexResolver;
 import org.springframework.session.PrincipalNameIndexResolver;
 import org.springframework.session.Session;
 import org.springframework.web.context.ServletContextAware;
+import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.SessionManager;
@@ -43,7 +43,6 @@ import org.wildfly.clustering.spring.session.MutableIndexingConfiguration;
 import org.wildfly.clustering.spring.session.SpringSession;
 import org.wildfly.clustering.spring.session.UserConfiguration;
 import org.wildfly.clustering.spring.web.util.SpringWebImmutability;
-import org.wildfly.common.function.Functions;
 
 /**
  * @author Paul Ferraro
@@ -145,7 +144,7 @@ public abstract class HttpSessionConfiguration extends SessionManagementConfigur
 
 	@Override
 	public Consumer<ImmutableSession> getExpirationListener() {
-		return Functions.discardingConsumer();
+		return Consumer.empty();
 	}
 
 	@Override

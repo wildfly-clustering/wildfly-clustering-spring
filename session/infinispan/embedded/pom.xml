@@ -7,7 +7,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.wildfly.clustering</groupId>
+		<groupId>org.wildfly.clustering.spring</groupId>
 		<artifactId>wildfly-clustering-spring-session-infinispan</artifactId>
 		<version>17.0.0.Final-SNAPSHOT</version>
 	</parent>
@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-spring-session-infinispan-embedded</artifactId>
 	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: Spring Session: Embedded Infinispan integration</name>
+	<name>WildFly Clustering: Spring Session: Infinispan: Embedded implementation</name>
 
 	<properties>
 		<catalina.home>${project.build.directory}/apache-tomcat-${version.org.apache.tomcat}</catalina.home>
@@ -138,7 +138,8 @@
 				<directory>src/test/resources/tomcat</directory>
 				<targetPath>${catalina.home}/conf</targetPath>
 				<includes>
-					<include>**</include>
+					<include>*.properties</include>
+					<include>*.xml</include>
 				</includes>
 				<filtering>true</filtering>
 			</testResource>

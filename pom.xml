@@ -7,7 +7,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.wildfly.clustering</groupId>
+		<groupId>org.wildfly.clustering.spring</groupId>
 		<artifactId>wildfly-clustering-spring-bom</artifactId>
 		<version>17.0.0.Final-SNAPSHOT</version>
 		<relativePath>bom</relativePath>
@@ -16,19 +16,11 @@
 	<artifactId>wildfly-clustering-spring</artifactId>
 	<packaging>pom</packaging>
 
-	<name>WildFly Clustering: Spring</name>
-
-	<scm>
-		<connection>scm:git:git://github.com:wildfly-clustering/wildfly-clustering-spring.git</connection>
-		<developerConnection>scm:git:git@github.com:wildfly-clustering/wildfly-clustering-spring.git</developerConnection>
-		<url>https://github.com/wildfly-clustering/wildfly-clustering-spring</url>
-		<tag>HEAD</tag>
-	</scm>
+	<name>WildFly Clustering: Spring: Modules</name>
 
 	<properties>
-		<jdk.runtime.args>--add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED</jdk.runtime.args>
+		<jdk.runtime.args>-Dorg.jboss.logging.provider=jdk --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED</jdk.runtime.args>
 		<maven.compiler.release>17</maven.compiler.release>
-		<maven.repository.url>https://repository.jboss.org/nexus/content/groups/public/</maven.repository.url>
 
 		<!-- Provided dependency versions -->
 		<version.jakarta.servlet>6.0.0</version.jakarta.servlet>
@@ -37,21 +29,21 @@
 
 		<!-- Runtime dependency versions -->
 		<version.io.projectreactor>2024.0.6</version.io.projectreactor>
-		<version.org.springframework>6.2.6</version.org.springframework>
-		<version.org.springframework.security>6.4.5</version.org.springframework.security>
-		<version.org.springframework.session>3.4.3</version.org.springframework.session>
-		<version.org.infinispan>15.0.14.Final</version.org.infinispan>
-		<version.org.infinispan>15.1.7.Final</version.org.infinispan>
-		<version.org.jboss.marshalling>2.2.3.Final</version.org.jboss.marshalling>
-		<version.org.wildfly.clustering>6.0.3.Final</version.org.wildfly.clustering>
+		<version.org.springframework>6.2.7</version.org.springframework>
+		<version.org.springframework.security>6.5.0</version.org.springframework.security>
+		<version.org.springframework.session>3.5.0</version.org.springframework.session>
+		<version.org.wildfly.clustering>7.0.5.Final</version.org.wildfly.clustering>
+
+		<!-- Runtime dependency versions -->
+		<version.org.slf4j>2.0.17</version.org.slf4j>
 
 		<!-- Test dependency versions -->
-		<version.org.apache.tomcat>10.1.40</version.org.apache.tomcat>
+		<version.org.apache.tomcat>10.1.41</version.org.apache.tomcat>
 		<version.org.assertj>3.27.3</version.org.assertj>
 		<version.org.jboss.arquillian>1.9.5.Final</version.org.jboss.arquillian>
 		<version.org.jboss.arquillian.container.tomcat>1.1.0.Final</version.org.jboss.arquillian.container.tomcat>
 		<version.org.jboss.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap>
-		<version.org.junit>5.12.2</version.org.junit>
+		<version.org.junit>5.13.1</version.org.junit>
 		<version.org.mockito>5.18.0</version.org.mockito>
 		<version.org.testcontainers>1.21.1</version.org.testcontainers>
 	</properties>
@@ -89,10 +81,9 @@
 				<scope>import</scope>
 			</dependency>
 			<dependency>
-				<!-- N.B. This includes ProtoStream -->
-				<groupId>org.infinispan</groupId>
-				<artifactId>infinispan-bom</artifactId>
-				<version>${version.org.infinispan}</version>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-bom</artifactId>
+				<version>${version.org.slf4j}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -180,11 +171,6 @@
 				<artifactId>arquillian-tomcat-managed-8</artifactId>
 				<version>${version.org.jboss.arquillian.container.tomcat}</version>
 			</dependency>
-			<dependency>
-				<groupId>org.jboss.marshalling</groupId>
-				<artifactId>jboss-marshalling-river</artifactId>
-				<version>${version.org.jboss.marshalling}</version>
-			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -208,6 +194,12 @@
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-subclass</artifactId>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-jdk14</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 	</dependencies>
 
@@ -366,32 +358,4 @@
 			</properties>
 		</profile>
 	</profiles>
-
-	<repositories>
-		<repository>
-			<id>default</id>
-			<url>${maven.repository.url}</url>
-			<layout>default</layout>
-			<releases>
-				<enabled>true</enabled>
-				<updatePolicy>never</updatePolicy>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-				<updatePolicy>never</updatePolicy>
-			</snapshots>
-		</repository>
-	</repositories>
-	<pluginRepositories>
-		<pluginRepository>
-			<id>default</id>
-			<url>${maven.repository.url}</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</pluginRepository>
-	</pluginRepositories>
 </project>

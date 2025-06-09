@@ -7,7 +7,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.wildfly.clustering</groupId>
+		<groupId>org.wildfly.clustering.spring</groupId>
 		<artifactId>wildfly-clustering-spring-context-infinispan</artifactId>
 		<version>17.0.0.Final-SNAPSHOT</version>
 	</parent>
@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-spring-context-infinispan-embedded</artifactId>
 	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: Spring Context: Embedded Infinispan integration</name>
+	<name>WildFly Clustering: Spring Context: Infinispan: Embedded implementation</name>
 
 	<dependencies>
 		<dependency>
@@ -36,17 +36,6 @@
 		<dependency>
 			<groupId>org.wildfly.clustering</groupId>
 			<artifactId>wildfly-clustering-session-infinispan-embedded</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.infinispan</groupId>
-			<artifactId>infinispan-cachestore-jdbc</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.infinispan</groupId>
-			<artifactId>infinispan-cachestore-remote</artifactId>
-			<scope>runtime</scope>
 		</dependency>
 
 		<dependency>

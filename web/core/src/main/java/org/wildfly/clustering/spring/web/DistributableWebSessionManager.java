@@ -5,14 +5,14 @@
 
 package org.wildfly.clustering.spring.web;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.StampedLock;
+import java.util.function.Predicate;
 
-import org.jboss.logging.Logger;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebSession;
 import org.springframework.web.server.session.WebSessionIdResolver;
@@ -20,10 +20,12 @@ import org.springframework.web.server.session.WebSessionManager;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.BatchContext;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
+import org.wildfly.clustering.function.Function;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
-import org.wildfly.common.function.Functions;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
@@ -34,11 +36,16 @@ import reactor.core.scheduler.Schedulers;
  * @author Paul Ferraro
  */
 public class DistributableWebSessionManager implements WebSessionManager, AutoCloseable {
-	private static final Logger LOGGER = Logger.getLogger(DistributableWebSessionManager.class);
+	private static final System.Logger LOGGER = System.getLogger(DistributableWebSessionManager.class.getPackageName());
 	private static final AtomicInteger COUNTER = new AtomicInteger(0);
+
+	private static void log(Throwable exception) {
+		LOGGER.log(System.Logger.Level.ERROR, exception.getLocalizedMessage(), exception);
+	}
 
 	private final SessionManager<Void> manager;
 	private final WebSessionIdResolver identifierResolver;
+	private final StampedLock lifecycleLock = new StampedLock();
 
 	public DistributableWebSessionManager(DistributableWebSessionManagerConfiguration configuration) {
 		this.manager = configuration.getSessionManager();
@@ -48,64 +55,100 @@ public class DistributableWebSessionManager implements WebSessionManager, AutoCl
 
 	@Override
 	public Mono<WebSession> getSession(ServerWebExchange exchange) {
-		String requestedSessionId = this.requestedSessionId(exchange);
-		String sessionId = (requestedSessionId != null) ? requestedSessionId : this.manager.getIdentifierFactory().get();
-		BiFunction<SessionManager<Void>, String, CompletionStage<Session<Void>>> function = (requestedSessionId != null) ? SessionManager::findSessionAsync : SessionManager::createSessionAsync;
-		return this.getSession(function, sessionId).filter(Objects::nonNull)
-				.doOnNext(session -> exchange.getResponse().beforeCommit(Functions.constantSupplier(this.getCommitAction(exchange, session, requestedSessionId))))
+		return Flux.fromIterable(this.identifierResolver.resolveSessionIds(exchange))
+				.flatMapSequential(this::findSessionPublisher)
+				.filter(Objects::nonNull)
+				.filter(SpringWebSession::isValid)
+				.filter(Predicate.not(SpringWebSession::isExpired))
+				.next()
+				.switchIfEmpty(Mono.defer(this::createSessionPublisher))
+				.doOnNext(session -> exchange.getResponse().beforeCommit(Supplier.of(Mono.fromRunnable(() -> {
+					if (session.isStarted() && session.isValid()) {
+						this.identifierResolver.setSessionId(exchange, session.getId());
+					}
+					if (!session.isStarted() || !session.isValid()) {
+						this.identifierResolver.expireSession(exchange);
+					}
+					// Close session asynchronously
+					Mono.fromRunnable(session::close)
+							.subscribeOn(Schedulers.boundedElastic())
+							.subscribe();
+				}))))
+				.doOnError(DistributableWebSessionManager::log)
 				.map(Function.identity());
 	}
 
-	private Mono<SpringWebSession> getSession(BiFunction<SessionManager<Void>, String, CompletionStage<Session<Void>>> function, String id) {
-		Batch batch = this.manager.getBatchFactory().get();
-		try {
-			Mono<Session<Void>> result = Mono.fromCompletionStage(function.apply(this.manager, id)).doOnError(DistributableWebSessionManager::log);
-			SuspendedBatch suspendedBatch = batch.suspend();
-			Supplier<Mono<Session<Void>>> creator = () -> {
-				try (BatchContext<Batch> context = suspendedBatch.resumeWithContext()) {
-					return Mono.fromCompletionStage(this.manager.createSessionAsync(this.manager.getIdentifierFactory().get())).doOnError(DistributableWebSessionManager::log);
-				}
-			};
-			return result.switchIfEmpty(Mono.defer(creator)).doOnError(e -> rollback(suspendedBatch.resume()))
-					.map(session -> new DistributableWebSession(this.manager, session, suspendedBatch));
-		} catch (RuntimeException | Error e) {
-			rollback(batch);
-			return Mono.error(e);
-		}
+	private Mono<SpringWebSession> createSessionPublisher() {
+		Supplier<String> idFactory = this.manager.getIdentifierFactory()::get;
+		return this.getSessionPublisher(idFactory.map(this.manager::createSessionAsync));
 	}
 
-	private static void rollback(Batch resumedBatch) {
-		try (Batch batch = resumedBatch) {
-			batch.discard();
-		} catch (RuntimeException | Error e) {
-			log(e);
-		}
+	private Mono<SpringWebSession> findSessionPublisher(String id) {
+		return this.getSessionPublisher(Supplier.of(id).map(this.manager::findSessionAsync));
 	}
 
-	private static void log(Throwable e) {
-		LOGGER.warn(e.getLocalizedMessage(), e);
-	}
-
-	private Mono<Void> getCommitAction(ServerWebExchange exchange, SpringWebSession session, String requestedSessionId) {
-		return Mono.fromRunnable(() -> {
-			if ((requestedSessionId != null) && (!session.isStarted() || !session.isValid())) {
-				this.identifierResolver.expireSession(exchange);
-			} else if (requestedSessionId == null || !requestedSessionId.equals(session.getId())) {
-				this.identifierResolver.setSessionId(exchange, session.getId());
+	private Mono<SpringWebSession> getSessionPublisher(Supplier<CompletionStage<Session<Void>>> factory) {
+		return Mono.fromSupplier(this::createBatchEntry).subscribeOn(Schedulers.boundedElastic()).flatMap(entry -> {
+			SuspendedBatch batch = entry.getKey();
+			Runnable closeTask = entry.getValue();
+			try (BatchContext<Batch> context = batch.resumeWithContext()) {
+				return Mono.fromCompletionStage(factory.get())
+						.map(session -> (session != null) ? new DistributableWebSession(this.manager, session, batch, closeTask) : rollback(batch, closeTask))
+						.doOnError(DistributableWebSessionManager::log)
+						.doOnError(e -> rollback(batch, closeTask));
 			}
-			// Close session asynchronously
-			Mono.fromRunnable(session::close).doOnError(DistributableWebSessionManager::log).subscribeOn(Schedulers.boundedElastic()).subscribe();
 		});
-	}
-
-	private String requestedSessionId(ServerWebExchange exchange) {
-		return this.identifierResolver.resolveSessionIds(exchange).stream().findFirst().orElse(null);
 	}
 
 	@Override
 	public void close() {
+		try {
+			this.lifecycleLock.writeLockInterruptibly();
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
 		if (COUNTER.decrementAndGet() == 0) {
 			Schedulers.shutdownNow();
 		}
+	}
+
+	private static <T> T rollback(SuspendedBatch suspendedBatch, Runnable closeTask) {
+		try (Batch batch = suspendedBatch.resume()) {
+			batch.discard();
+		} catch (RuntimeException | Error e) {
+			log(e);
+		} finally {
+			closeTask.run();
+		}
+		return null;
+	}
+
+	private Map.Entry<SuspendedBatch, Runnable> createBatchEntry() {
+		Runnable closeTask = this.getSessionCloseTask();
+		try {
+			return Map.entry(this.manager.getBatchFactory().get().suspend(), closeTask);
+		} catch (RuntimeException | Error e) {
+			closeTask.run();
+			throw e;
+		}
+	}
+
+	private Runnable getSessionCloseTask() {
+		StampedLock lock = this.lifecycleLock;
+		long stamp = lock.tryReadLock();
+		if (!StampedLock.isReadLockStamp(stamp)) {
+			throw new IllegalStateException();
+		}
+		AtomicLong stampRef = new AtomicLong(stamp);
+		return new Runnable() {
+			@Override
+			public void run() {
+				// Ensure we only unlock once.
+				long stamp = stampRef.getAndSet(0L);
+				if (StampedLock.isReadLockStamp(stamp)) {
+					lock.unlockRead(stamp);
+				}
+			}
+		};
 	}
 }

@@ -7,7 +7,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.wildfly.clustering</groupId>
+		<groupId>org.wildfly.clustering.spring</groupId>
 		<artifactId>wildfly-clustering-spring</artifactId>
 		<version>17.0.0.Final-SNAPSHOT</version>
 	</parent>
@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-spring-web</artifactId>
 	<packaging>pom</packaging>
 
-	<name>WildFly Clustering: Spring Web modules</name>
+	<name>WildFly Clustering: Spring Web: Modules</name>
 
 	<modules>
 		<module>core</module>

@@ -7,7 +7,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.wildfly.clustering</groupId>
+		<groupId>org.wildfly.clustering.spring</groupId>
 		<artifactId>wildfly-clustering-spring-context</artifactId>
 		<version>17.0.0.Final-SNAPSHOT</version>
 	</parent>
@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-spring-context-core</artifactId>
 	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: Spring Context integration</name>
+	<name>WildFly Clustering: Spring Context: Core implementation</name>
 
 	<dependencies>
 		<dependency>
