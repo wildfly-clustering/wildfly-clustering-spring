@@ -71,7 +71,6 @@ public class InfinispanSessionManagerFactoryBean<S, C, L> extends AutoDestroyBea
 		builder.encoding().mediaType(MediaType.APPLICATION_OBJECT_TYPE);
 
 		if (template.invocationBatching().enabled()) {
-			builder.invocationBatching().disable();
 			builder.transaction().transactionMode(TransactionMode.TRANSACTIONAL).transactionManagerLookup(EmbeddedTransactionManager::getInstance);
 		}
 
