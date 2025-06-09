@@ -12,7 +12,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.StampedLock;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.util.function.Supplier;
 
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -21,6 +20,7 @@ import org.springframework.session.events.SessionCreatedEvent;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.BatchContext;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
+import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
@@ -61,8 +61,8 @@ public class DistributableSessionRepository implements FindByIndexNameSessionRep
 
 	@Override
 	public SpringSession createSession() {
-		String id = this.manager.getIdentifierFactory().get();
-		DistributableSession session = this.getSession(SessionManager::createSession, id);
+		Supplier<String> idFactory = this.manager.getIdentifierFactory()::get;
+		DistributableSession session = this.getSession(idFactory.map(this.manager::createSession));
 		this.publisher.publishEvent(new SessionCreatedEvent(this, session));
 		CURRENT_SESSION.set(session);
 		return session;
@@ -76,22 +76,21 @@ public class DistributableSessionRepository implements FindByIndexNameSessionRep
 		if ((current != null) && current.getId().equals(id)) {
 			return current;
 		}
-		DistributableSession session = this.getSession(SessionManager::findSession, id);
+		DistributableSession session = this.getSession(Supplier.of(id).map(this.manager::findSession));
 		if (session != null) {
 			CURRENT_SESSION.set(session);
 		}
 		return session;
 	}
 
-	private DistributableSession getSession(BiFunction<SessionManager<Void>, String, Session<Void>> function, String id) {
+	private DistributableSession getSession(Supplier<Session<Void>> factory) {
 		Map.Entry<SuspendedBatch, Runnable> entry = this.createBatchEntry();
 		SuspendedBatch suspendedBatch = entry.getKey();
 		Runnable closeTask = entry.getValue();
 		try (BatchContext<Batch> context = suspendedBatch.resumeWithContext()) {
-			Session<Void> session = function.apply(this.manager, id);
+			Session<Void> session = factory.get();
 			if ((session == null) || !session.isValid() || session.getMetaData().isExpired()) {
-				rollback(context, closeTask);
-				return null;
+				return rollback(context, closeTask);
 			}
 			return new DistributableSession(this.manager, session, suspendedBatch, closeTask, this.indexing, this.destroyAction);
 		} catch (RuntimeException | Error e) {
@@ -161,7 +160,7 @@ public class DistributableSessionRepository implements FindByIndexNameSessionRep
 		}
 	}
 
-	private static void rollback(Supplier<Batch> batchSupplier, Runnable closeTask) {
+	private static DistributableSession rollback(java.util.function.Supplier<Batch> batchSupplier, Runnable closeTask) {
 		try (Batch batch = batchSupplier.get()) {
 			batch.discard();
 		} catch (RuntimeException | Error e) {
@@ -169,6 +168,7 @@ public class DistributableSessionRepository implements FindByIndexNameSessionRep
 		} finally {
 			closeTask.run();
 		}
+		return null;
 	}
 
 	private Runnable getSessionCloseTask() {

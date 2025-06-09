@@ -80,7 +80,7 @@ public class DistributableWebSession implements SpringWebSession, Function<Strin
 
 	@Override
 	public Mono<Void> changeSessionId() {
-		Mono<String> identifier = Mono.fromSupplier(this.manager.getIdentifierFactory());
+		Mono<String> identifier = Mono.fromSupplier(this.manager.getIdentifierFactory()).publishOn(Schedulers.boundedElastic());
 		return identifier.map(this).doOnError(DistributableWebSession::log);
 	}
 
@@ -108,7 +108,8 @@ public class DistributableWebSession implements SpringWebSession, Function<Strin
 
 	@Override
 	public Mono<Void> invalidate() {
-		return Mono.<Void>fromRunnable(this::invalidateSync).subscribeOn(Schedulers.boundedElastic());
+		return Mono.<Void>fromRunnable(this::invalidateSync)
+				.publishOn(Schedulers.boundedElastic());
 	}
 
 	private void invalidateSync() {

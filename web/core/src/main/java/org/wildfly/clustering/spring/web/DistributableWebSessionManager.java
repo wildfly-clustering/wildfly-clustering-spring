@@ -7,6 +7,7 @@ package org.wildfly.clustering.spring.web;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.StampedLock;
@@ -21,6 +22,7 @@ import org.wildfly.clustering.cache.batch.BatchContext;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.function.Supplier;
+import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
 
 import reactor.core.publisher.Flux;
@@ -69,7 +71,6 @@ public class DistributableWebSessionManager implements WebSessionManager, AutoCl
 					}
 					// Close session asynchronously
 					Mono.fromRunnable(session::close)
-							.publishOn(Schedulers.boundedElastic())
 							.subscribeOn(Schedulers.boundedElastic())
 							.subscribe();
 				}))))
@@ -78,25 +79,20 @@ public class DistributableWebSessionManager implements WebSessionManager, AutoCl
 	}
 
 	private Mono<SpringWebSession> createSessionPublisher() {
-		return Mono.fromSupplier(this.manager.getIdentifierFactory()).flatMap(id -> Mono.fromSupplier(this::createBatchEntry).flatMap(entry -> {
-			SuspendedBatch batch = entry.getKey();
-			Runnable closeTask = entry.getValue();
-			try (BatchContext<Batch> context = batch.resumeWithContext()) {
-				return Mono.fromCompletionStage(this.manager.createSessionAsync(id))
-						.filter(Objects::nonNull)
-						.map(session -> new DistributableWebSession(this.manager, session, batch, closeTask))
-						.doOnError(DistributableWebSessionManager::log)
-						.doOnError(e -> rollback(batch, closeTask));
-			}
-		}));
+		Supplier<String> idFactory = this.manager.getIdentifierFactory()::get;
+		return this.getSessionPublisher(idFactory.map(this.manager::createSessionAsync));
 	}
 
 	private Mono<SpringWebSession> findSessionPublisher(String id) {
-		return Mono.fromSupplier(this::createBatchEntry).flatMap(entry -> {
+		return this.getSessionPublisher(Supplier.of(id).map(this.manager::findSessionAsync));
+	}
+
+	private Mono<SpringWebSession> getSessionPublisher(Supplier<CompletionStage<Session<Void>>> factory) {
+		return Mono.fromSupplier(this::createBatchEntry).subscribeOn(Schedulers.boundedElastic()).flatMap(entry -> {
 			SuspendedBatch batch = entry.getKey();
 			Runnable closeTask = entry.getValue();
 			try (BatchContext<Batch> context = batch.resumeWithContext()) {
-				return Mono.fromCompletionStage(this.manager.findSessionAsync(id))
+				return Mono.fromCompletionStage(factory.get())
 						.map(session -> (session != null) ? new DistributableWebSession(this.manager, session, batch, closeTask) : rollback(batch, closeTask))
 						.doOnError(DistributableWebSessionManager::log)
 						.doOnError(e -> rollback(batch, closeTask));
