@@ -13,8 +13,8 @@ import jakarta.servlet.ServletContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.session.Session;
 import org.springframework.session.events.SessionExpiredEvent;
-import org.wildfly.clustering.context.ContextClassLoaderReference;
 import org.wildfly.clustering.context.ContextualExecutor;
+import org.wildfly.clustering.context.ThreadContextClassLoaderReference;
 import org.wildfly.clustering.session.ImmutableSession;
 
 /**
@@ -28,7 +28,7 @@ public class ImmutableSessionExpirationListener implements Consumer<ImmutableSes
 
 	public ImmutableSessionExpirationListener(ServletContext context, BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> destroyAction) {
 		this.destroyAction = destroyAction;
-		this.executor = ContextualExecutor.withContextProvider(ContextClassLoaderReference.INSTANCE.provide(context.getClassLoader()));
+		this.executor = ContextualExecutor.withContextProvider(ThreadContextClassLoaderReference.CURRENT.provide(context.getClassLoader()));
 	}
 
 	@Override

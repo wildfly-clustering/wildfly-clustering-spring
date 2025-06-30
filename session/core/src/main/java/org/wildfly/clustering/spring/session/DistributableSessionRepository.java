@@ -18,8 +18,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.session.events.SessionCreatedEvent;
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.BatchContext;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
+import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
@@ -61,8 +61,7 @@ public class DistributableSessionRepository implements FindByIndexNameSessionRep
 
 	@Override
 	public SpringSession createSession() {
-		Supplier<String> idFactory = this.manager.getIdentifierFactory()::get;
-		DistributableSession session = this.getSession(idFactory.map(this.manager::createSession));
+		DistributableSession session = this.getSession(this.manager.getIdentifierFactory().map(this.manager::createSession));
 		this.publisher.publishEvent(new SessionCreatedEvent(this, session));
 		CURRENT_SESSION.set(session);
 		return session;
@@ -87,7 +86,7 @@ public class DistributableSessionRepository implements FindByIndexNameSessionRep
 		Map.Entry<SuspendedBatch, Runnable> entry = this.createBatchEntry();
 		SuspendedBatch suspendedBatch = entry.getKey();
 		Runnable closeTask = entry.getValue();
-		try (BatchContext<Batch> context = suspendedBatch.resumeWithContext()) {
+		try (Context<Batch> context = suspendedBatch.resumeWithContext()) {
 			Session<Void> session = factory.get();
 			if ((session == null) || !session.isValid() || session.getMetaData().isExpired()) {
 				return rollback(context, closeTask);

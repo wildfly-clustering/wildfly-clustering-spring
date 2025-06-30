@@ -31,7 +31,7 @@ import org.wildfly.clustering.spring.session.config.HttpSessionConfiguration;
 /**
  * @author Paul Ferraro
  */
-public class AbstractHotRodHttpSessionConfiguration  extends HttpSessionConfiguration implements MutableHotRodConfiguration {
+public class AbstractHotRodHttpSessionConfiguration extends HttpSessionConfiguration implements MutableHotRodConfiguration {
 
 	private final MutableHotRodConfiguration configuration = new HotRodConfigurationBean();
 

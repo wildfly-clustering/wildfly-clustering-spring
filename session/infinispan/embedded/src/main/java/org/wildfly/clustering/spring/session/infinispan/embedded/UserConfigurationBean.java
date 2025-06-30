@@ -74,7 +74,7 @@ public class UserConfigurationBean extends AutoDestroyBean implements UserConfig
 
 			UserManager<Void, Void, String, String> userManager = userManagerFactory.createUserManager(new UserManagerConfiguration<>() {
 				@Override
-				public java.util.function.Supplier<String> getIdentifierFactory() {
+				public Supplier<String> getIdentifierFactory() {
 					return UserConfigurationBean.this.sessionManagerConfiguration.getIdentifierFactory();
 				}
 

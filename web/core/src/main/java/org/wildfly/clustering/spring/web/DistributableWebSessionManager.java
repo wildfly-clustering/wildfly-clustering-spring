@@ -18,8 +18,8 @@ import org.springframework.web.server.WebSession;
 import org.springframework.web.server.session.WebSessionIdResolver;
 import org.springframework.web.server.session.WebSessionManager;
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.BatchContext;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
+import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.Session;
@@ -79,8 +79,7 @@ public class DistributableWebSessionManager implements WebSessionManager, AutoCl
 	}
 
 	private Mono<SpringWebSession> createSessionPublisher() {
-		Supplier<String> idFactory = this.manager.getIdentifierFactory()::get;
-		return this.getSessionPublisher(idFactory.map(this.manager::createSessionAsync));
+		return this.getSessionPublisher(this.manager.getIdentifierFactory().map(this.manager::createSessionAsync));
 	}
 
 	private Mono<SpringWebSession> findSessionPublisher(String id) {
@@ -91,7 +90,7 @@ public class DistributableWebSessionManager implements WebSessionManager, AutoCl
 		return Mono.fromSupplier(this::createBatchEntry).subscribeOn(Schedulers.boundedElastic()).flatMap(entry -> {
 			SuspendedBatch batch = entry.getKey();
 			Runnable closeTask = entry.getValue();
-			try (BatchContext<Batch> context = batch.resumeWithContext()) {
+			try (Context<Batch> context = batch.resumeWithContext()) {
 				return Mono.fromCompletionStage(factory.get())
 						.map(session -> (session != null) ? new DistributableWebSession(this.manager, session, batch, closeTask) : rollback(batch, closeTask))
 						.doOnError(DistributableWebSessionManager::log)
