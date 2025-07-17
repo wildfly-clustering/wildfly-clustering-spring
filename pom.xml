@@ -29,7 +29,7 @@
 
 		<!-- Runtime dependency versions -->
 		<version.io.projectreactor>2024.0.8</version.io.projectreactor>
-		<version.org.springframework>6.2.8</version.org.springframework>
+		<version.org.springframework>6.2.9</version.org.springframework>
 		<version.org.springframework.security>6.5.1</version.org.springframework.security>
 		<version.org.springframework.session>3.5.1</version.org.springframework.session>
 		<version.org.wildfly.clustering>7.0.8.Final</version.org.wildfly.clustering>
