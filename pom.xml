@@ -38,7 +38,7 @@
 		<version.org.slf4j>2.0.17</version.org.slf4j>
 
 		<!-- Test dependency versions -->
-		<version.org.apache.tomcat>10.1.43</version.org.apache.tomcat>
+		<version.org.apache.tomcat>11.0.10</version.org.apache.tomcat>
 		<version.org.assertj>3.27.3</version.org.assertj>
 		<version.org.jboss.arquillian>1.10.0.Final</version.org.jboss.arquillian>
 		<version.org.jboss.arquillian.container.tomcat>1.1.0.Final</version.org.jboss.arquillian.container.tomcat>
