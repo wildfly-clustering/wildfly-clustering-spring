@@ -162,10 +162,12 @@ public class DistributableWebSession implements SpringWebSession, Function<Strin
 	private void close(Consumer<Session<Void>> action) {
 		Runnable closeTask = this.closeTask.getAndSet(null);
 		if (closeTask != null) {
-			try (Batch batch = this.batch.resume()) {
-				try (Session<Void> session = this.session) {
-					if (session.isValid()) {
-						action.accept(session);
+			try (Context<Batch> context = this.batch.resumeWithContext()) {
+				try (Batch batch = context.get()) {
+					try (Session<Void> session = this.session) {
+						if (session.isValid()) {
+							action.accept(session);
+						}
 					}
 				}
 			} catch (RuntimeException | Error e) {

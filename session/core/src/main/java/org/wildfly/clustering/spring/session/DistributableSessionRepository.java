@@ -20,6 +20,7 @@ import org.springframework.session.events.SessionCreatedEvent;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.context.Context;
+import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
@@ -89,7 +90,7 @@ public class DistributableSessionRepository implements FindByIndexNameSessionRep
 		try (Context<Batch> context = suspendedBatch.resumeWithContext()) {
 			Session<Void> session = factory.get();
 			if ((session == null) || !session.isValid() || session.getMetaData().isExpired()) {
-				return rollback(context, closeTask);
+				return close(context, closeTask);
 			}
 			return new DistributableSession(this.manager, session, suspendedBatch, closeTask, this.indexing, this.destroyAction);
 		} catch (RuntimeException | Error e) {
@@ -159,9 +160,17 @@ public class DistributableSessionRepository implements FindByIndexNameSessionRep
 		}
 	}
 
-	private static DistributableSession rollback(java.util.function.Supplier<Batch> batchSupplier, Runnable closeTask) {
-		try (Batch batch = batchSupplier.get()) {
-			batch.discard();
+	private static DistributableSession close(Supplier<Batch> batchProvider, Runnable closeTask) {
+		return close(batchProvider, Consumer.empty(), closeTask);
+	}
+
+	private static DistributableSession rollback(Supplier<Batch> batchProvider, Runnable closeTask) {
+		return close(batchProvider, Batch::discard, closeTask);
+	}
+
+	private static DistributableSession close(Supplier<Batch> batchProvider, Consumer<Batch> batchTask, Runnable closeTask) {
+		try (Batch batch = batchProvider.get()) {
+			batchTask.accept(batch);
 		} catch (RuntimeException | Error e) {
 			LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 		} finally {

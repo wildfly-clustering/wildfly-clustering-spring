@@ -205,10 +205,12 @@ public class DistributableSession implements SpringSession {
 		// Spring session lifecycle logic is a mess.  Ensure we only close a session once.
 		Runnable closeTask = this.closeTask.getAndSet(null);
 		if (closeTask != null) {
-			try (Batch batch = this.batch.resume()) {
-				try (Session<Void> session = this.session) {
-					if (session.isValid()) {
-						action.accept(session);
+			try (Context<Batch> context = this.batch.resumeWithContext()) {
+				try (Batch batch = context.get()) {
+					try (Session<Void> session = this.session) {
+						if (session.isValid()) {
+							action.accept(session);
+						}
 					}
 				}
 			} finally {
