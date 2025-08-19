@@ -20,6 +20,7 @@ import org.springframework.web.server.session.WebSessionManager;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.context.Context;
+import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.Session;
@@ -92,9 +93,9 @@ public class DistributableWebSessionManager implements WebSessionManager, AutoCl
 			Runnable closeTask = entry.getValue();
 			try (Context<Batch> context = batch.resumeWithContext()) {
 				return Mono.fromCompletionStage(factory.get())
-						.map(session -> (session != null) ? new DistributableWebSession(this.manager, session, batch, closeTask) : rollback(batch, closeTask))
+						.map(session -> (session != null) ? new DistributableWebSession(this.manager, session, batch, closeTask) : close(batch::resumeWithContext, closeTask))
 						.doOnError(DistributableWebSessionManager::log)
-						.doOnError(e -> rollback(batch, closeTask));
+						.doOnError(e -> rollback(batch::resumeWithContext, closeTask));
 			}
 		});
 	}
@@ -111,11 +112,21 @@ public class DistributableWebSessionManager implements WebSessionManager, AutoCl
 		}
 	}
 
-	private static <T> T rollback(SuspendedBatch suspendedBatch, Runnable closeTask) {
-		try (Batch batch = suspendedBatch.resume()) {
-			batch.discard();
+	private static <T> T close(Supplier<Context<Batch>> batchContextProvider, Runnable closeTask) {
+		return close(batchContextProvider, Consumer.empty(), closeTask);
+	}
+
+	private static <T> T rollback(Supplier<Context<Batch>> batchContextProvider, Runnable closeTask) {
+		return close(batchContextProvider, Batch::discard, closeTask);
+	}
+
+	private static <T> T close(Supplier<Context<Batch>> batchContextProvider, Consumer<Batch> batchTask, Runnable closeTask) {
+		try (Context<Batch> context = batchContextProvider.get()) {
+			try (Batch batch = context.get()) {
+				batchTask.accept(batch);
+			}
 		} catch (RuntimeException | Error e) {
-			log(e);
+			LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 		} finally {
 			closeTask.run();
 		}
