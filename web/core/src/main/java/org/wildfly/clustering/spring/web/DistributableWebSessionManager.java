@@ -89,13 +89,11 @@ public class DistributableWebSessionManager implements WebSessionManager, AutoCl
 
 	private Mono<SpringWebSession> getSessionPublisher(Supplier<CompletionStage<Session<Void>>> factory) {
 		return Mono.fromSupplier(this::createBatchEntry).subscribeOn(Schedulers.boundedElastic()).flatMap(entry -> {
-			SuspendedBatch batch = entry.getKey();
-			Runnable closeTask = entry.getValue();
-			try (Context<Batch> context = batch.resumeWithContext()) {
+			try (Context<Batch> context = entry.getKey().resumeWithContext()) {
 				return Mono.fromCompletionStage(factory.get())
-						.map(session -> (session != null) ? new DistributableWebSession(this.manager, session, batch, closeTask) : close(batch::resumeWithContext, closeTask))
+						.map(session -> (session != null) ? new DistributableWebSession(this.manager, session, entry) : close(entry))
 						.doOnError(DistributableWebSessionManager::log)
-						.doOnError(e -> rollback(batch::resumeWithContext, closeTask));
+						.doOnError(e -> rollback(entry));
 			}
 		});
 	}
@@ -112,23 +110,23 @@ public class DistributableWebSessionManager implements WebSessionManager, AutoCl
 		}
 	}
 
-	private static <T> T close(Supplier<Context<Batch>> batchContextProvider, Runnable closeTask) {
-		return close(batchContextProvider, Consumer.empty(), closeTask);
+	private static <T> T close(Map.Entry<SuspendedBatch, Runnable> entry) {
+		return close(entry, Consumer.empty());
 	}
 
-	private static <T> T rollback(Supplier<Context<Batch>> batchContextProvider, Runnable closeTask) {
-		return close(batchContextProvider, Batch::discard, closeTask);
+	private static <T> T rollback(Map.Entry<SuspendedBatch, Runnable> entry) {
+		return close(entry, Batch::discard);
 	}
 
-	private static <T> T close(Supplier<Context<Batch>> batchContextProvider, Consumer<Batch> batchTask, Runnable closeTask) {
-		try (Context<Batch> context = batchContextProvider.get()) {
+	private static <T> T close(Map.Entry<SuspendedBatch, Runnable> entry, Consumer<Batch> batchTask) {
+		try (Context<Batch> context = entry.getKey().resumeWithContext()) {
 			try (Batch batch = context.get()) {
 				batchTask.accept(batch);
 			}
 		} catch (RuntimeException | Error e) {
 			LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
 		} finally {
-			closeTask.run();
+			entry.getValue().run();
 		}
 		return null;
 	}

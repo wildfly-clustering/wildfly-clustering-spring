@@ -39,12 +39,12 @@ public class DistributableWebSession implements SpringWebSession, Function<Strin
 	private volatile boolean started;
 	private volatile Session<Void> session;
 
-	public DistributableWebSession(SessionManager<Void> manager, Session<Void> session, SuspendedBatch batch, Runnable closeTask) {
+	public DistributableWebSession(SessionManager<Void> manager, Session<Void> session, Map.Entry<SuspendedBatch, Runnable> entry) {
 		this.manager = manager;
 		this.session = session;
 		this.started = session.isValid() && !session.getMetaData().isNew();
-		this.batch = batch;
-		this.closeTask = new AtomicReference<>(closeTask);
+		this.batch = entry.getKey();
+		this.closeTask = new AtomicReference<>(entry.getValue());
 		this.startTime = session.isValid() && session.getMetaData().isNew() ? session.getMetaData().getCreationTime() : Instant.now();
 	}
 
