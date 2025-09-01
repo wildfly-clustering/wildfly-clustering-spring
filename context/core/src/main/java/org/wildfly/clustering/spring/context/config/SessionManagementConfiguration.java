@@ -80,7 +80,7 @@ public abstract class SessionManagementConfiguration<C> implements SessionManage
 	@Override
 	public Supplier<String> getIdentifierFactory() {
 		Supplier<UUID> factory = this.generator::generateId;
-		return factory.map(UUID::toString);
+		return factory.thenApply(UUID::toString);
 	}
 
 	@Override
