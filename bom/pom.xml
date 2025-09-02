@@ -10,12 +10,12 @@
 		<groupId>org.jboss</groupId>
 		<artifactId>jboss-parent</artifactId>
 		<version>50</version>
-		<relativePath/>
+		<relativePath />
 	</parent>
 
 	<groupId>org.wildfly.clustering.spring</groupId>
 	<artifactId>wildfly-clustering-spring-bom</artifactId>
-	<version>17.0.0.Final-SNAPSHOT</version>
+	<version>17.0.0.Final</version>
 	<packaging>pom</packaging>
 
 	<name>WildFly Clustering: Spring: BOM</name>
@@ -36,7 +36,7 @@
 		<connection>scm:git:git://github.com:wildfly-clustering/wildfly-clustering-spring.git</connection>
 		<developerConnection>scm:git:git@github.com:wildfly-clustering/wildfly-clustering-spring.git</developerConnection>
 		<url>https://github.com/wildfly-clustering/wildfly-clustering-spring</url>
-		<tag>HEAD</tag>
+		<tag>17.0.0.Final</tag>
 	</scm>
 
 	<dependencyManagement>
