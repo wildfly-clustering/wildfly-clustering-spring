@@ -238,6 +238,30 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<annotationProcessorPaths>
+						<annotationProcessorPath>
+							<groupId>org.kohsuke.metainf-services</groupId>
+							<artifactId>metainf-services</artifactId>
+						</annotationProcessorPath>
+					</annotationProcessorPaths>
+				</configuration>
+				<executions>
+					<execution>
+						<id>default-testCompile</id>
+						<phase>test-compile</phase>
+						<goals>
+							<goal>testCompile</goal>
+						</goals>
+						<configuration>
+							<parameters>true</parameters>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<configuration>
 					<artifactItems>
@@ -247,18 +271,6 @@
 							<version>${project.version}</version>
 						</artifactItem>
 					</artifactItems>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<annotationProcessorPaths>
-						<annotationProcessorPath>
-							<groupId>org.kohsuke.metainf-services</groupId>
-							<artifactId>metainf-services</artifactId>
-						</annotationProcessorPath>
-					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
 			<plugin>
