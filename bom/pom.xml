@@ -15,7 +15,7 @@
 
 	<groupId>org.wildfly.clustering.spring</groupId>
 	<artifactId>wildfly-clustering-spring-bom</artifactId>
-	<version>17.0.0.Final</version>
+	<version>18.0.0.Final-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>WildFly Clustering: Spring: BOM</name>
@@ -36,7 +36,7 @@
 		<connection>scm:git:git://github.com:wildfly-clustering/wildfly-clustering-spring.git</connection>
 		<developerConnection>scm:git:git@github.com:wildfly-clustering/wildfly-clustering-spring.git</developerConnection>
 		<url>https://github.com/wildfly-clustering/wildfly-clustering-spring</url>
-		<tag>17.0.0.Final</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<dependencyManagement>
