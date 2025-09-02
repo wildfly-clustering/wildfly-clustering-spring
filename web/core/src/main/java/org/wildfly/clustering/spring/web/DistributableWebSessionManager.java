@@ -6,12 +6,10 @@
 package org.wildfly.clustering.spring.web;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.StampedLock;
-import java.util.function.Predicate;
 
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebSession;
@@ -22,9 +20,12 @@ import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
+import org.wildfly.clustering.function.Predicate;
 import org.wildfly.clustering.function.Supplier;
+import org.wildfly.clustering.server.expiration.ExpirationMetaData;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
+import org.wildfly.clustering.session.SessionMetaData;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -39,6 +40,9 @@ import reactor.core.scheduler.Schedulers;
 public class DistributableWebSessionManager implements WebSessionManager, AutoCloseable {
 	private static final System.Logger LOGGER = System.getLogger(DistributableWebSessionManager.class.getPackageName());
 	private static final AtomicInteger COUNTER = new AtomicInteger(0);
+	private static final Function<Session<Void>, SessionMetaData> META_DATA = Session::getMetaData;
+	private static final Predicate<Session<Void>> IS_VALID = Session::isValid;
+	private static final Predicate<Session<Void>> IS_ACTIVE = Predicate.<SessionMetaData>not(ExpirationMetaData::isExpired).compose(META_DATA);
 
 	private static void log(Throwable exception) {
 		LOGGER.log(System.Logger.Level.ERROR, exception.getLocalizedMessage(), exception);
@@ -58,9 +62,6 @@ public class DistributableWebSessionManager implements WebSessionManager, AutoCl
 	public Mono<WebSession> getSession(ServerWebExchange exchange) {
 		return Flux.fromIterable(this.identifierResolver.resolveSessionIds(exchange))
 				.flatMapSequential(this::findSessionPublisher)
-				.filter(Objects::nonNull)
-				.filter(SpringWebSession::isValid)
-				.filter(Predicate.not(SpringWebSession::isExpired))
 				.next()
 				.switchIfEmpty(Mono.defer(this::createSessionPublisher))
 				.doOnNext(session -> exchange.getResponse().beforeCommit(Supplier.of(Mono.fromRunnable(() -> {
@@ -80,19 +81,24 @@ public class DistributableWebSessionManager implements WebSessionManager, AutoCl
 	}
 
 	private Mono<SpringWebSession> createSessionPublisher() {
-		return this.getSessionPublisher(this.manager.getIdentifierFactory().map(this.manager::createSessionAsync));
+		return this.getSessionPublisher(this.manager.getIdentifierFactory().thenApply(this.manager::createSessionAsync));
 	}
 
 	private Mono<SpringWebSession> findSessionPublisher(String id) {
-		return this.getSessionPublisher(Supplier.of(id).map(this.manager::findSessionAsync));
+		return this.getSessionPublisher(Supplier.of(id).thenApply(this.manager::findSessionAsync));
 	}
 
 	private Mono<SpringWebSession> getSessionPublisher(Supplier<CompletionStage<Session<Void>>> factory) {
 		return Mono.fromSupplier(this::createBatchEntry).subscribeOn(Schedulers.boundedElastic()).flatMap(entry -> {
 			try (Context<Batch> context = entry.getKey().resumeWithContext()) {
 				return Mono.fromCompletionStage(factory.get())
-						.map(session -> (session != null) ? new DistributableWebSession(this.manager, session, entry) : close(entry))
-						.doOnError(DistributableWebSessionManager::log)
+						.filter(IS_VALID)
+						.filter(IS_ACTIVE)
+						.map(session -> new DistributableWebSession(this.manager, session, entry))
+						.switchIfEmpty(Mono.defer(() -> {
+							close(entry, Consumer.empty());
+							return Mono.empty();
+						}))
 						.doOnError(e -> rollback(entry));
 			}
 		});
@@ -110,15 +116,11 @@ public class DistributableWebSessionManager implements WebSessionManager, AutoCl
 		}
 	}
 
-	private static <T> T close(Map.Entry<SuspendedBatch, Runnable> entry) {
-		return close(entry, Consumer.empty());
+	private static void rollback(Map.Entry<SuspendedBatch, Runnable> entry) {
+		close(entry, Batch::discard);
 	}
 
-	private static <T> T rollback(Map.Entry<SuspendedBatch, Runnable> entry) {
-		return close(entry, Batch::discard);
-	}
-
-	private static <T> T close(Map.Entry<SuspendedBatch, Runnable> entry, Consumer<Batch> batchTask) {
+	private static void close(Map.Entry<SuspendedBatch, Runnable> entry, Consumer<Batch> batchTask) {
 		try (Context<Batch> context = entry.getKey().resumeWithContext()) {
 			try (Batch batch = context.get()) {
 				batchTask.accept(batch);
@@ -128,7 +130,6 @@ public class DistributableWebSessionManager implements WebSessionManager, AutoCl
 		} finally {
 			entry.getValue().run();
 		}
-		return null;
 	}
 
 	private Map.Entry<SuspendedBatch, Runnable> createBatchEntry() {

@@ -62,7 +62,7 @@ public class DistributableSessionRepository implements FindByIndexNameSessionRep
 
 	@Override
 	public SpringSession createSession() {
-		DistributableSession session = this.getSession(this.manager.getIdentifierFactory().map(this.manager::createSession));
+		DistributableSession session = this.getSession(this.manager.getIdentifierFactory().thenApply(this.manager::createSession));
 		this.publisher.publishEvent(new SessionCreatedEvent(this, session));
 		CURRENT_SESSION.set(session);
 		return session;
@@ -76,7 +76,7 @@ public class DistributableSessionRepository implements FindByIndexNameSessionRep
 		if ((current != null) && current.getId().equals(id)) {
 			return current;
 		}
-		DistributableSession session = this.getSession(Supplier.of(id).map(this.manager::findSession));
+		DistributableSession session = this.getSession(Supplier.of(id).thenApply(this.manager::findSession));
 		if (session != null) {
 			CURRENT_SESSION.set(session);
 		}
@@ -90,11 +90,13 @@ public class DistributableSessionRepository implements FindByIndexNameSessionRep
 		try (Context<Batch> context = suspendedBatch.resumeWithContext()) {
 			Session<Void> session = factory.get();
 			if ((session == null) || !session.isValid() || session.getMetaData().isExpired()) {
-				return close(context, closeTask);
+				return close(context, Consumer.empty(), closeTask);
 			}
 			return new DistributableSession(this.manager, session, suspendedBatch, closeTask, this.indexing, this.destroyAction);
 		} catch (RuntimeException | Error e) {
-			rollback(suspendedBatch::resume, closeTask);
+			try (Context<Batch> context = suspendedBatch.resumeWithContext()) {
+				close(context, Batch::discard, closeTask);
+			}
 			throw e;
 		}
 	}
@@ -160,15 +162,7 @@ public class DistributableSessionRepository implements FindByIndexNameSessionRep
 		}
 	}
 
-	private static DistributableSession close(Supplier<Batch> batchProvider, Runnable closeTask) {
-		return close(batchProvider, Consumer.empty(), closeTask);
-	}
-
-	private static DistributableSession rollback(Supplier<Batch> batchProvider, Runnable closeTask) {
-		return close(batchProvider, Batch::discard, closeTask);
-	}
-
-	private static DistributableSession close(Supplier<Batch> batchProvider, Consumer<Batch> batchTask, Runnable closeTask) {
+	private static DistributableSession close(java.util.function.Supplier<Batch> batchProvider, Consumer<Batch> batchTask, Runnable closeTask) {
 		try (Batch batch = batchProvider.get()) {
 			batchTask.accept(batch);
 		} catch (RuntimeException | Error e) {
