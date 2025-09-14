@@ -34,8 +34,7 @@
 		<version.org.springframework>6.2.10</version.org.springframework>
 		<version.org.springframework.security>6.5.3</version.org.springframework.security>
 		<version.org.springframework.session>3.5.2</version.org.springframework.session>
-		<version.org.wildfly.clustering>7.0.10.Final</version.org.wildfly.clustering>
-		<version.org.wildfly.clustering>7.0.12.Final</version.org.wildfly.clustering>
+		<version.org.wildfly.clustering>7.0.13.Final</version.org.wildfly.clustering>
 
 		<!-- Runtime dependency versions -->
 		<version.org.slf4j>2.0.17</version.org.slf4j>
