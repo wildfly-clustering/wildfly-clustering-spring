@@ -11,6 +11,7 @@ import java.util.function.Predicate;
 
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.util.StringValueResolver;
+import org.wildfly.clustering.spring.context.infinispan.remote.HotRodConfiguration;
 import org.wildfly.clustering.spring.context.infinispan.remote.MutableHotRodConfiguration;
 
 /**
@@ -21,17 +22,7 @@ public class HotRodConfigurationBean implements MutableHotRodConfiguration {
 	private URI uri;
 	private Properties properties = new Properties();
 	private String templateName = null;
-	private String configuration = """
-{
-	"distributed-cache" : {
-		"mode" : "SYNC",
-		"statistics" : "true",
-		"transaction" : {
-			"mode" : "BATCH",
-			"locking" : "PESSIMISTIC"
-		}
-	}
-}""";
+	private String configuration = HotRodConfiguration.DEFAULT_CONFIGURATION;
 
 	private StringValueResolver resolver = value -> value;
 

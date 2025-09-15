@@ -10,10 +10,12 @@ import java.util.TreeMap;
 
 import jakarta.servlet.ServletContext;
 
+import org.infinispan.client.hotrod.DataFormat;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheContainer;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
+import org.infinispan.commons.dataconversion.MediaType;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.session.IndexResolver;
 import org.springframework.session.Session;
@@ -71,10 +73,16 @@ public class UserConfigurationBean extends AutoDestroyBean implements UserConfig
 				}
 			});
 
+			RemoteCache<?, ?> cache = container.getCache(cacheName);
+
+			cache.start();
+			this.accept(cache::stop);
+
 			RemoteCacheConfiguration cacheConfiguration = new RemoteCacheConfiguration() {
+				@SuppressWarnings("unchecked")
 				@Override
 				public <CK, CV> RemoteCache<CK, CV> getCache() {
-					return container.getCache(cacheName);
+					return (RemoteCache<CK, CV>) cache.withDataFormat(DataFormat.builder().keyType(MediaType.APPLICATION_OBJECT).keyMarshaller(container.getMarshaller()).valueType(MediaType.APPLICATION_OBJECT).valueMarshaller(container.getMarshaller()).build());
 				}
 			};
 			UserManagerFactory<Void, String, String> userManagerFactory = new HotRodUserManagerFactory<>(cacheConfiguration);
