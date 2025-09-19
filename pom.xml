@@ -41,7 +41,7 @@
 
 		<!-- Test dependency versions -->
 		<version.org.apache.tomcat>10.1.45</version.org.apache.tomcat>
-		<version.org.assertj>3.27.4</version.org.assertj>
+		<version.org.assertj>3.27.5</version.org.assertj>
 		<version.org.jboss.arquillian>1.10.0.Final</version.org.jboss.arquillian>
 		<version.org.jboss.arquillian.container.tomcat>1.1.0.Final</version.org.jboss.arquillian.container.tomcat>
 		<version.org.jboss.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap>
