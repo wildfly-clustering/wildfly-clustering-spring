@@ -6,7 +6,7 @@
 	<context:property-placeholder location="classpath:application.properties"/>
 
 	<bean class="org.wildfly.clustering.spring.web.infinispan.remote.config.HotRodWebSessionConfiguration">
-		<property name="uri" value="hotrod://${infinispan.server.username}:${infinispan.server.password}@${infinispan.server.host}:${infinispan.server.port}?client_intelligence=${infinispan.server.intelligence}"/>
+		<property name="uri" value="hotrod://${infinispan.server.username}:${infinispan.server.password}@${infinispan.server.host}:${infinispan.server.port}"/>
 		<property name="configuration" value="${infinispan.server.configuration}"/>
 		<property name="properties">
 			<props>

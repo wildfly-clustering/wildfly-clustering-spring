@@ -34,20 +34,19 @@
 		<version.org.springframework>6.2.11</version.org.springframework>
 		<version.org.springframework.security>6.5.3</version.org.springframework.security>
 		<version.org.springframework.session>3.5.2</version.org.springframework.session>
-		<version.org.wildfly.clustering>7.0.10.Final</version.org.wildfly.clustering>
-		<version.org.wildfly.clustering>7.0.12.Final</version.org.wildfly.clustering>
+		<version.org.wildfly.clustering>7.0.13.Final</version.org.wildfly.clustering>
 
 		<!-- Runtime dependency versions -->
 		<version.org.slf4j>2.0.17</version.org.slf4j>
 
 		<!-- Test dependency versions -->
 		<version.org.apache.tomcat>10.1.46</version.org.apache.tomcat>
-		<version.org.assertj>3.27.4</version.org.assertj>
+		<version.org.assertj>3.27.5</version.org.assertj>
 		<version.org.jboss.arquillian>1.10.0.Final</version.org.jboss.arquillian>
 		<version.org.jboss.arquillian.container.tomcat>1.1.0.Final</version.org.jboss.arquillian.container.tomcat>
 		<version.org.jboss.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap>
 		<version.org.junit>5.13.4</version.org.junit>
-		<version.org.mockito>5.19.0</version.org.mockito>
+		<version.org.mockito>5.20.0</version.org.mockito>
 		<version.org.testcontainers>1.21.3</version.org.testcontainers>
 	</properties>
 

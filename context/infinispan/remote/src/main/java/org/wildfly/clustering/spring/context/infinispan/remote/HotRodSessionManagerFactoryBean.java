@@ -7,10 +7,12 @@ package org.wildfly.clustering.spring.context.infinispan.remote;
 
 import java.util.OptionalInt;
 
+import org.infinispan.client.hotrod.DataFormat;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheContainer;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
+import org.infinispan.commons.dataconversion.MediaType;
 import org.springframework.beans.factory.InitializingBean;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
 import org.wildfly.clustering.session.SessionManager;
@@ -72,7 +74,7 @@ public class HotRodSessionManagerFactoryBean<S, C, L> extends AutoDestroyBean im
 			@SuppressWarnings("unchecked")
 			@Override
 			public <CK, CV> RemoteCache<CK, CV> getCache() {
-				return (RemoteCache<CK, CV>) cache;
+				return (RemoteCache<CK, CV>) cache.withDataFormat(DataFormat.builder().keyType(MediaType.APPLICATION_OBJECT).keyMarshaller(container.getMarshaller()).valueType(MediaType.APPLICATION_OBJECT).valueMarshaller(container.getMarshaller()).build());
 			}
 		};
 
