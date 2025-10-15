@@ -20,6 +20,12 @@ public class AutoDestroyBean implements DisposableBean, Consumer<Runnable> {
 	private final System.Logger logger = System.getLogger(this.getClass().getPackageName());
 	private final List<Runnable> tasks = new LinkedList<>();
 
+	/**
+	 * Creates an auto-destroyable bean.
+	 */
+	protected AutoDestroyBean() {
+	}
+
 	@Override
 	public void accept(Runnable task) {
 		// Use LIFO ordering.

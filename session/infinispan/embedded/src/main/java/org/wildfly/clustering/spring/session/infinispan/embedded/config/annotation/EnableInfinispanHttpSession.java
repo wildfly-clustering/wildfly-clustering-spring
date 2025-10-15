@@ -17,6 +17,7 @@ import org.wildfly.clustering.spring.context.infinispan.embedded.config.annotati
 import org.wildfly.clustering.spring.session.infinispan.embedded.config.InfinispanHttpSessionConfiguration;
 
 /**
+ * Annotation defining the configuration of a Spring Session repository.
  * @author Paul Ferraro
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -25,6 +26,15 @@ import org.wildfly.clustering.spring.session.infinispan.embedded.config.Infinisp
 @Import(InfinispanHttpSessionConfiguration.class)
 @Configuration(proxyBeanMethods = false)
 public @interface EnableInfinispanHttpSession {
+	/**
+	 * Returns the Infinispan configuration.
+	 * @return the Infinispan configuration.
+	 */
 	Infinispan config();
+
+	/**
+	 * Returns the session manager configuration.
+	 * @return the session manager configuration.
+	 */
 	SessionManager manager();
 }

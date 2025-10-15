@@ -10,47 +10,48 @@ import java.util.List;
 import org.springframework.security.core.GrantedAuthority;
 
 /**
+ * Encapsulates an authentication token configuration
  * @author Paul Ferraro
  */
-public class AuthenticationTokenConfiguration {
+class AuthenticationTokenConfiguration {
 
 	private Object principal = null;
 	private Object credentials = "";
 	private final List<GrantedAuthority> authorities = new LinkedList<>();
 	private Object details = null;
 
-	public Object getPrincipal() {
+	Object getPrincipal() {
 		return this.principal;
 	}
 
-	public AuthenticationTokenConfiguration setPrincipal(Object principal) {
+	AuthenticationTokenConfiguration setPrincipal(Object principal) {
 		this.principal = principal;
 		return this;
 	}
 
-	public Object getCredentials() {
+	Object getCredentials() {
 		return this.credentials;
 	}
 
-	public AuthenticationTokenConfiguration setCredentials(Object credentials) {
+	AuthenticationTokenConfiguration setCredentials(Object credentials) {
 		this.credentials = credentials;
 		return this;
 	}
 
-	public List<GrantedAuthority> getAuthorities() {
+	List<GrantedAuthority> getAuthorities() {
 		return this.authorities;
 	}
 
-	public AuthenticationTokenConfiguration addAuthority(GrantedAuthority authority) {
+	AuthenticationTokenConfiguration addAuthority(GrantedAuthority authority) {
 		this.authorities.add(authority);
 		return this;
 	}
 
-	public Object getDetails() {
+	Object getDetails() {
 		return this.details;
 	}
 
-	public AuthenticationTokenConfiguration setDetails(Object details) {
+	AuthenticationTokenConfiguration setDetails(Object details) {
 		this.details = details;
 		return this;
 	}

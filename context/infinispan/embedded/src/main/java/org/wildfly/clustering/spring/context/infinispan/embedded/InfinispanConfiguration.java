@@ -6,11 +6,22 @@
 package org.wildfly.clustering.spring.context.infinispan.embedded;
 
 /**
+ * Encapsulates the Infinispan configuration
  * @author Paul Ferraro
  */
 public interface InfinispanConfiguration {
+	/** The default configuration resource path */
 	String DEFAULT_CONFIGURATION_RESOURCE = "/WEB-INF/infinispan.xml";
 
-	String getConfigurationResource();
-	String getTemplateName();
+	/**
+	 * Returns the path of the configuration resource.
+	 * @return the path of the configuration resource.
+	 */
+	String getResource();
+
+	/**
+	 * Returns the name of a cache configuration.
+	 * @return the name of a cache configuration.
+	 */
+	String getTemplate();
 }

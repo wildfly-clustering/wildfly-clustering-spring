@@ -11,9 +11,11 @@ import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.wildfly.clustering.server.immutable.Immutability;
 
 /**
+ * Returns the immutability test for Spring Security objects.
  * @author Paul Ferraro
  */
 public enum SpringSecurityImmutability implements Immutability {
+	/** Singleton instance */
 	INSTANCE;
 
 	// SecurityContextImpl is technically mutable, but Spring treats it as immutable

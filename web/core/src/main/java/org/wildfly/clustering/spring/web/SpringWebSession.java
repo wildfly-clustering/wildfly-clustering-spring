@@ -8,6 +8,7 @@ package org.wildfly.clustering.spring.web;
 import org.springframework.web.server.WebSession;
 
 /**
+ * A Spring web session with a lifecycle.
  * @author Paul Ferraro
  */
 public interface SpringWebSession extends WebSession, AutoCloseable {

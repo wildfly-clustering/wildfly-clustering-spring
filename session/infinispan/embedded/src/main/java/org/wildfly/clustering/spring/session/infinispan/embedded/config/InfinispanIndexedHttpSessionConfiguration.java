@@ -20,16 +20,24 @@ import org.wildfly.clustering.spring.session.infinispan.embedded.UserConfigurati
 import org.wildfly.clustering.spring.session.infinispan.embedded.config.annotation.EnableInfinispanIndexedHttpSession;
 
 /**
+ * A Spring bean that configures and produces an indexing Spring Session repository.
  * @author Paul Ferraro
  */
 @Configuration(proxyBeanMethods = false)
 @Import(SpringHttpSessionConfiguration.class)
 public class InfinispanIndexedHttpSessionConfiguration extends AbstractInfinispanHttpSessionConfiguration {
-
+	/**
+	 * Creates an indexed session configuration.
+	 */
 	public InfinispanIndexedHttpSessionConfiguration() {
 		super(EnableInfinispanIndexedHttpSession.class, DEFAULT_SPRING_SECURITY_INDEXES, DEFAULT_SPRING_SECURITY_INDEX_RESOLVER);
 	}
 
+	/**
+	 * Produces a user configuration.
+	 * @param configuration a cache container configuration
+	 * @return a user configuration.
+	 */
 	@Bean
 	public UserConfiguration userConfiguration(EmbeddedCacheContainerConfiguration configuration) {
 		return new UserConfigurationBean(this, this, this, configuration);

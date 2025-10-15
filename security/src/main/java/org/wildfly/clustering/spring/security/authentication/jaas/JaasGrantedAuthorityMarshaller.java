@@ -14,9 +14,12 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
+ * A ProtoStream marshaller for a JAAS granted authority
  * @author Paul Ferraro
  */
-public class JaasGrantedAuthorityMarshaller implements ProtoStreamMarshaller<JaasGrantedAuthority> {
+public enum JaasGrantedAuthorityMarshaller implements ProtoStreamMarshaller<JaasGrantedAuthority> {
+	/** Singleton instance */
+	INSTANCE;
 
 	private static final int ROLE_INDEX = 1;
 	private static final int PRINCIPAL_INDEX = 2;

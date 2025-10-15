@@ -15,7 +15,11 @@
 	<artifactId>wildfly-clustering-spring-context-infinispan</artifactId>
 	<packaging>pom</packaging>
 
-	<name>WildFly Clustering: Spring Context: Infinispan modules</name>
+	<name>${project.spring.context.infinispan}: Modules</name>
+
+	<properties>
+		<project.spring.context.infinispan>${project.spring.context}: Infinispan</project.spring.context.infinispan>
+	</properties>
 
 	<modules>
 		<module>embedded</module>

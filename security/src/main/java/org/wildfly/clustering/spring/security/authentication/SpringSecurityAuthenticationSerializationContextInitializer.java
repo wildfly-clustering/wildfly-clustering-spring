@@ -13,11 +13,14 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 
 /**
+ * The serialization context initializer for the {@link org.springframework.security.authentication} package.
  * @author Paul Ferraro
  */
 @MetaInfServices(SerializationContextInitializer.class)
 public class SpringSecurityAuthenticationSerializationContextInitializer extends AbstractSerializationContextInitializer {
-
+	/**
+	 * Creates a new serialization context initializer.
+	 */
 	public SpringSecurityAuthenticationSerializationContextInitializer() {
 		super(UsernamePasswordAuthenticationToken.class.getPackage());
 	}

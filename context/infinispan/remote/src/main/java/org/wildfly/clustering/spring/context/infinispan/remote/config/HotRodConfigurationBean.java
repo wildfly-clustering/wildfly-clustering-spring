@@ -15,6 +15,7 @@ import org.wildfly.clustering.spring.context.infinispan.remote.HotRodConfigurati
 import org.wildfly.clustering.spring.context.infinispan.remote.MutableHotRodConfiguration;
 
 /**
+ * A Spring bean that configures and provides a HotRod configuration.
  * @author Paul Ferraro
  */
 public class HotRodConfigurationBean implements MutableHotRodConfiguration {
@@ -25,6 +26,12 @@ public class HotRodConfigurationBean implements MutableHotRodConfiguration {
 	private String configuration = HotRodConfiguration.DEFAULT_CONFIGURATION;
 
 	private StringValueResolver resolver = value -> value;
+
+	/**
+	 * Creates a HotRod configuration bean.
+	 */
+	public HotRodConfigurationBean() {
+	}
 
 	@Override
 	public void setEmbeddedValueResolver(StringValueResolver resolver) {
@@ -42,7 +49,7 @@ public class HotRodConfigurationBean implements MutableHotRodConfiguration {
 	}
 
 	@Override
-	public String getTemplateName() {
+	public String getTemplate() {
 		return this.templateName;
 	}
 

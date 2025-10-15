@@ -13,11 +13,17 @@ import org.springframework.web.context.support.XmlWebApplicationContext;
  * @author Paul Ferraro
  */
 public class ContextLoaderListener extends org.springframework.web.context.ContextLoaderListener {
-
+	/**
+	 * Creates a context loader listener using an XML web application context.
+	 */
 	public ContextLoaderListener() {
 		super(new XmlWebApplicationContext());
 	}
 
+	/**
+	 * Creates a context loader listener using an annotation web application context for the specified component classes.
+	 * @param componentClasses a number of component classes
+	 */
 	public ContextLoaderListener(Class<?>... componentClasses) {
 		super(createWebApplicationContext(componentClasses));
 	}

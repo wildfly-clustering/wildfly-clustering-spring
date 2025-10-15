@@ -29,7 +29,7 @@ import org.wildfly.clustering.session.user.User;
 import org.wildfly.clustering.session.user.UserManager;
 
 /**
- * A session repository implementation based on a {@link SessionManager}.
+ * A Spring Session repository facade for a {@link SessionManager}.
  * Additionally indexes sessions using a set of {@link UserManager} instances.
  * @author Paul Ferraro
  */
@@ -44,6 +44,10 @@ public class DistributableSessionRepository implements FindByIndexNameSessionRep
 	private final UserConfiguration indexing;
 	private final StampedLock lifecycleLock = new StampedLock();
 
+	/**
+	 * Create a session repository from the specified configuration.
+	 * @param configuration a session repository configuration
+	 */
 	public DistributableSessionRepository(DistributableSessionRepositoryConfiguration configuration) {
 		this.manager = configuration.getSessionManager();
 		this.publisher = configuration.getEventPublisher();

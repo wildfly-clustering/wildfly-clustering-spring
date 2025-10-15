@@ -35,6 +35,7 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilde
 import org.wildfly.clustering.spring.context.AutoDestroyBean;
 
 /**
+ * A Spring bean that configures and provides a remote cache container.
  * @author Paul Ferraro
  */
 public class RemoteCacheContainerProviderBean extends AutoDestroyBean implements RemoteCacheContainerProvider, InitializingBean, ResourceLoaderAware {
@@ -51,6 +52,10 @@ public class RemoteCacheContainerProviderBean extends AutoDestroyBean implements
 	private RemoteCacheContainer container;
 	private ClassLoader loader;
 
+	/**
+	 * Creates a remote cache container provider bean.
+	 * @param configuration a HotRod configuration
+	 */
 	public RemoteCacheContainerProviderBean(HotRodConfiguration configuration) {
 		this.configuration = configuration;
 	}

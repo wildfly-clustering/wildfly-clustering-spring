@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-spring-context-core</artifactId>
 	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: Spring Context: Core implementation</name>
+	<name>${project.spring.context}: Core</name>
 
 	<dependencies>
 		<dependency>

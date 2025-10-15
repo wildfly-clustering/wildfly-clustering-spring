@@ -23,6 +23,12 @@ import org.wildfly.clustering.session.user.User;
 import org.wildfly.clustering.session.user.UserManager;
 
 /**
+ * A session destroy action that performs the following:
+ * <ol>
+ * <li>Publishes an application event</li>
+ * <li>Emits {@link HttpSessionBindingEvent}s
+ * <li>Removes associated indexes</li>
+ * </ol>
  * @author Paul Ferraro
  * @param <B> batch type
  */
@@ -33,6 +39,13 @@ public class ImmutableSessionDestroyAction<B extends Batch> implements BiConsume
 	private final SessionSpecificationProvider<HttpSession, ServletContext> provider;
 	private final UserConfiguration indexing;
 
+	/**
+	 * Creates a session destroy action.
+	 * @param publisher an application event publisher
+	 * @param context the servlet context
+	 * @param provider the session specification provider
+	 * @param indexing the user configuration
+	 */
 	public ImmutableSessionDestroyAction(ApplicationEventPublisher publisher, ServletContext context, SessionSpecificationProvider<HttpSession, ServletContext> provider, UserConfiguration indexing) {
 		this.publisher = publisher;
 		this.context = context;
@@ -61,9 +74,9 @@ public class ImmutableSessionDestroyAction<B extends Batch> implements BiConsume
 			UserManager<Void, Void, String, String> manager = this.indexing.getUserManagers().get(entry.getKey());
 			if (manager != null) {
 				try (Batch batch = manager.getBatchFactory().get()) {
-					User<Void, Void, String, String> sso = manager.findUser(entry.getValue());
-					if (sso != null) {
-						sso.invalidate();
+					User<Void, Void, String, String> user = manager.findUser(entry.getValue());
+					if (user != null) {
+						user.invalidate();
 					}
 				}
 			}

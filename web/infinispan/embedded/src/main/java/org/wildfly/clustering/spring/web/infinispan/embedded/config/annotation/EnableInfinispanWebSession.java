@@ -17,6 +17,7 @@ import org.wildfly.clustering.spring.context.infinispan.embedded.config.annotati
 import org.wildfly.clustering.spring.web.infinispan.embedded.config.InfinispanWebSessionConfiguration;
 
 /**
+ * Annotation defining the configuration of a Spring Web session manager.
  * @author Paul Ferraro
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -25,6 +26,15 @@ import org.wildfly.clustering.spring.web.infinispan.embedded.config.InfinispanWe
 @Import(InfinispanWebSessionConfiguration.class)
 @Configuration(proxyBeanMethods = false)
 public @interface EnableInfinispanWebSession {
+	/**
+	 * Returns the Infinispan configuration.
+	 * @return the Infinispan configuration.
+	 */
 	Infinispan config();
+
+	/**
+	 * Returns the session manager configuration.
+	 * @return the session manager configuration.
+	 */
 	SessionManager manager();
 }

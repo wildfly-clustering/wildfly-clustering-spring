@@ -23,26 +23,39 @@ import org.wildfly.clustering.spring.context.infinispan.remote.MutableHotRodConf
 import org.wildfly.clustering.spring.context.infinispan.remote.RemoteCacheContainerProvider;
 import org.wildfly.clustering.spring.context.infinispan.remote.RemoteCacheContainerProviderBean;
 import org.wildfly.clustering.spring.context.infinispan.remote.config.HotRodConfigurationBean;
-import org.wildfly.clustering.spring.web.config.WebSessionConfiguration;
+import org.wildfly.clustering.spring.web.config.WebSessionManagerConfiguration;
 import org.wildfly.clustering.spring.web.infinispan.remote.config.annotation.EnableHotRodWebSession;
 
 /**
+ * A Spring bean that configures and produces a Spring Web session manager.
  * @author Paul Ferraro
  */
 @Configuration(proxyBeanMethods = false)
-public class HotRodWebSessionConfiguration extends WebSessionConfiguration implements MutableHotRodConfiguration {
+public class HotRodWebSessionConfiguration extends WebSessionManagerConfiguration implements MutableHotRodConfiguration {
 
 	private final MutableHotRodConfiguration configuration = new HotRodConfigurationBean();
 
+	/**
+	 * Creates a web session configuration.
+	 */
 	public HotRodWebSessionConfiguration() {
 		super(EnableHotRodWebSession.class);
 	}
 
+	/**
+	 * Produces a remote cache container provider.
+	 * @return a remote cache container provider.
+	 */
 	@Bean
 	public RemoteCacheContainerProvider remoteCacheManagerProvider() {
 		return new RemoteCacheContainerProviderBean(this);
 	}
 
+	/**
+	 * Produces a session manager factory.
+	 * @param provider a remote cache container provider
+	 * @return the session manager factory.
+	 */
 	@Bean
 	public SessionManagerFactory<ServletContext, Void> sessionManagerFactory(RemoteCacheContainerProvider provider) {
 		return new HotRodSessionManagerFactoryBean<>(this, HttpSessionProvider.INSTANCE, HttpSessionActivationListenerProvider.INSTANCE, this.configuration, provider);
@@ -64,8 +77,8 @@ public class HotRodWebSessionConfiguration extends WebSessionConfiguration imple
 	}
 
 	@Override
-	public String getTemplateName() {
-		return this.configuration.getTemplateName();
+	public String getTemplate() {
+		return this.configuration.getTemplate();
 	}
 
 	@Override

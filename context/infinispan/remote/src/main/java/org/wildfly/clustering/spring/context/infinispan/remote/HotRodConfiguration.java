@@ -9,9 +9,11 @@ import java.net.URI;
 import java.util.Properties;
 
 /**
+ * A HotRod client configuration.
  * @author Paul Ferraro
  */
 public interface HotRodConfiguration {
+	/** The default cache configuration */
 	String DEFAULT_CONFIGURATION = """
 {
 	"distributed-cache" : {
@@ -32,8 +34,27 @@ public interface HotRodConfiguration {
 	}
 }""";
 
+	/**
+	 * Returns the HotRod client URI.
+	 * @return the HotRod client URI.
+	 */
 	URI getUri();
+
+	/**
+	 * Returns the configuration properties of the HotRod client.
+	 * @return the configuration properties of the HotRod client.
+	 */
 	Properties getProperties();
-	String getTemplateName();
+
+	/**
+	 * Returns the name of a cache template.
+	 * @return the name of a cache template.
+	 */
+	String getTemplate();
+
+	/**
+	 * Returns the cache configuration.
+	 * @return the cache configuration.
+	 */
 	String getConfiguration();
 }

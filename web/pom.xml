@@ -15,7 +15,11 @@
 	<artifactId>wildfly-clustering-spring-web</artifactId>
 	<packaging>pom</packaging>
 
-	<name>WildFly Clustering: Spring Web: Modules</name>
+	<name>${project.spring.web}: Modules</name>
+
+	<properties>
+		<project.spring.web>${project.repository.name} Web</project.spring.web>
+	</properties>
 
 	<modules>
 		<module>core</module>

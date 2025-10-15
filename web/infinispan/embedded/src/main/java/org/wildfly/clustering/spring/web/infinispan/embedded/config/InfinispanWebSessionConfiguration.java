@@ -20,29 +20,42 @@ import org.wildfly.clustering.spring.context.infinispan.embedded.EmbeddedCacheMa
 import org.wildfly.clustering.spring.context.infinispan.embedded.InfinispanSessionManagerFactoryBean;
 import org.wildfly.clustering.spring.context.infinispan.embedded.MutableInfinispanConfiguration;
 import org.wildfly.clustering.spring.context.infinispan.embedded.config.InfinispanConfigurationBean;
-import org.wildfly.clustering.spring.web.config.WebSessionConfiguration;
+import org.wildfly.clustering.spring.web.config.WebSessionManagerConfiguration;
 import org.wildfly.clustering.spring.web.infinispan.embedded.config.annotation.EnableInfinispanWebSession;
 
 /**
+ * A Spring bean that configures and produces a Spring Web session manager.
  * @author Paul Ferraro
  */
 @Configuration(proxyBeanMethods = false)
-public class InfinispanWebSessionConfiguration extends WebSessionConfiguration implements MutableInfinispanConfiguration {
+public class InfinispanWebSessionConfiguration extends WebSessionManagerConfiguration implements MutableInfinispanConfiguration {
 
 	private final MutableInfinispanConfiguration configuration = new InfinispanConfigurationBean();
 
+	/**
+	 * Creates a web session configuration.
+	 */
 	public InfinispanWebSessionConfiguration() {
 		super(EnableInfinispanWebSession.class);
 	}
 
+	/**
+	 * Produces a command dispatcher factory configuration.
+	 * @return a command dispatcher factory configuration.
+	 */
 	@Bean
-	public ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration embeddedCacheManagerConfiguration() {
+	public ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration commandDispatcherFactoryConfiguration() {
 		return new EmbeddedCacheManagerBean(this);
 	}
 
+	/**
+	 * Produces a session manager factory.
+	 * @param configuration a command dispatcher factory configuration
+	 * @return a session manager factory
+	 */
 	@Bean
-	public SessionManagerFactory<ServletContext, Void> sessionManagerFactory(ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration embeddedCacheManagerConfiguration) {
-		return new InfinispanSessionManagerFactoryBean<>(this, HttpSessionProvider.INSTANCE, HttpSessionActivationListenerProvider.INSTANCE, this.configuration, embeddedCacheManagerConfiguration);
+	public SessionManagerFactory<ServletContext, Void> sessionManagerFactory(ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration configuration) {
+		return new InfinispanSessionManagerFactoryBean<>(this, HttpSessionProvider.INSTANCE, HttpSessionActivationListenerProvider.INSTANCE, this.configuration, configuration);
 	}
 
 	@Override
@@ -63,13 +76,13 @@ public class InfinispanWebSessionConfiguration extends WebSessionConfiguration i
 	}
 
 	@Override
-	public String getConfigurationResource() {
-		return this.configuration.getConfigurationResource();
+	public String getResource() {
+		return this.configuration.getResource();
 	}
 
 	@Override
-	public String getTemplateName() {
-		return this.configuration.getTemplateName();
+	public String getTemplate() {
+		return this.configuration.getTemplate();
 	}
 
 	@Override

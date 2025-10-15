@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-spring-web-core</artifactId>
 	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: Spring Web: Core implementation</name>
+	<name>${project.spring.web}: Core</name>
 
 	<dependencies>
 		<dependency>

@@ -15,9 +15,13 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
+ * A ProtoStream marshaller for a {@link SavedCookie}.
  * @author Paul Ferraro
  */
-public class SavedCookieMarshaller implements ProtoStreamMarshaller<SavedCookie> {
+public enum SavedCookieMarshaller implements ProtoStreamMarshaller<SavedCookie> {
+	/**	Singleton instance */
+	INSTANCE;
+
 	private static final int NAME_INDEX = 1;
 	private static final int SECURE_NAME_INDEX = 2;
 	private static final int VALUE_INDEX = 3;

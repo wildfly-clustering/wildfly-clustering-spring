@@ -17,6 +17,7 @@ import org.wildfly.clustering.spring.context.infinispan.remote.config.annotation
 import org.wildfly.clustering.spring.web.infinispan.remote.config.HotRodWebSessionConfiguration;
 
 /**
+ * Annotation defining the configuration of a Spring Web session manager.
  * @author Paul Ferraro
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -25,6 +26,15 @@ import org.wildfly.clustering.spring.web.infinispan.remote.config.HotRodWebSessi
 @Import(HotRodWebSessionConfiguration.class)
 @Configuration(proxyBeanMethods = false)
 public @interface EnableHotRodWebSession {
+	/**
+	 * Returns the HotRod configuration.
+	 * @return the HotRod configuration.
+	 */
 	HotRod config();
+
+	/**
+	 * Returns the session manager configuration.
+	 * @return the session manager configuration.
+	 */
 	SessionManager manager();
 }

@@ -16,12 +16,17 @@ import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionStatistics;
 
 /**
+ * A Spring bean decorator for a session manager.
  * @author Paul Ferraro
  */
 public class SessionManagerBean extends AutoDestroyBean implements SessionManager<Void>, InitializingBean {
 
 	private final SessionManager<Void> manager;
 
+	/**
+	 * Creates a new session manager bean.
+	 * @param manager the decorated session manager.
+	 */
 	public SessionManagerBean(SessionManager<Void> manager) {
 		this.manager = manager;
 	}

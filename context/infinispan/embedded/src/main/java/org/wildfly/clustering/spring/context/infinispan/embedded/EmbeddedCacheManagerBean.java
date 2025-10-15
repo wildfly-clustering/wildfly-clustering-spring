@@ -56,10 +56,10 @@ import org.wildfly.clustering.server.group.GroupCommandDispatcherFactory;
 import org.wildfly.clustering.server.infinispan.dispatcher.ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration;
 import org.wildfly.clustering.server.jgroups.ChannelGroupMember;
 import org.wildfly.clustering.server.jgroups.dispatcher.JChannelCommandDispatcherFactory;
-import org.wildfly.clustering.server.jgroups.dispatcher.JChannelCommandDispatcherFactoryConfiguration;
 import org.wildfly.clustering.spring.context.AutoDestroyBean;
 
 /**
+ * A Spring bean that configures and provides an embedded cache manager.
  * @author Paul Ferraro
  */
 public class EmbeddedCacheManagerBean extends AutoDestroyBean implements ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration, InitializingBean, ResourceLoaderAware, EnvironmentAware {
@@ -74,6 +74,10 @@ public class EmbeddedCacheManagerBean extends AutoDestroyBean implements Channel
 	private EmbeddedCacheManager container;
 	private JChannelCommandDispatcherFactory commandDispatcherFactory;
 
+	/**
+	 * Creates an embedded cache manager bean from the specified configuration.
+	 * @param configuration Infinispan configuration.
+	 */
 	public EmbeddedCacheManagerBean(InfinispanConfiguration configuration) {
 		this.configuration = configuration;
 	}
@@ -100,7 +104,7 @@ public class EmbeddedCacheManagerBean extends AutoDestroyBean implements Channel
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		String resourceName = this.configuration.getConfigurationResource();
+		String resourceName = this.configuration.getResource();
 
 		COUNTER.incrementAndGet();
 		this.accept(() -> {
@@ -146,7 +150,7 @@ public class EmbeddedCacheManagerBean extends AutoDestroyBean implements Channel
 			global.transport().withProperties(properties);
 		}
 
-		this.commandDispatcherFactory = (channel != null) ? new JChannelCommandDispatcherFactory(new JChannelCommandDispatcherFactoryConfiguration() {
+		this.commandDispatcherFactory = (channel != null) ? new JChannelCommandDispatcherFactory(new JChannelCommandDispatcherFactory.Configuration() {
 			@Override
 			public JChannel getChannel() {
 				return channel;

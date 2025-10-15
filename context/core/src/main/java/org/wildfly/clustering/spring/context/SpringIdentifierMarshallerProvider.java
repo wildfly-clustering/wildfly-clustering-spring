@@ -12,10 +12,16 @@ import org.wildfly.clustering.session.IdentifierMarshaller;
 import org.wildfly.clustering.session.IdentifierMarshallerProvider;
 
 /**
+ * Provides the identifier marshaller for Spring contexts.
  * @author Paul Ferraro
  */
 @MetaInfServices(IdentifierMarshallerProvider.class)
-public class SpringIdentifierSerializerProvider implements IdentifierMarshallerProvider {
+public class SpringIdentifierMarshallerProvider implements IdentifierMarshallerProvider {
+	/**
+	 * Creates a marshaller provider.
+	 */
+	public SpringIdentifierMarshallerProvider() {
+	}
 
 	@Override
 	public Marshaller<String, ByteBuffer> getMarshaller() {

@@ -30,7 +30,9 @@ import org.wildfly.clustering.spring.security.Scheme;
  * Marshaller for a {@link DefaultSavedRequest} that avoids marshalling of redundant info, e.g. request URI/URL, GET parameters, etc.
  * @author Paul Ferraro
  */
-public class SavedRequestMarshaller implements ProtoStreamMarshaller<DefaultSavedRequest> {
+public enum SavedRequestMarshaller implements ProtoStreamMarshaller<DefaultSavedRequest> {
+	/** Singleton instance */
+	INSTANCE;
 
 	private static final int METHOD_INDEX = 1;
 	private static final int SCHEME_INDEX = 2;

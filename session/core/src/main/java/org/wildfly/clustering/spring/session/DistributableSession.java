@@ -27,7 +27,7 @@ import org.wildfly.clustering.session.user.User;
 import org.wildfly.clustering.session.user.UserManager;
 
 /**
- * Spring Session implementation that delegates to a {@link Session} instance.
+ * A Spring Session facade for an distributable session.
  * @author Paul Ferraro
  */
 public class DistributableSession implements SpringSession {
@@ -35,18 +35,27 @@ public class DistributableSession implements SpringSession {
 	private final SessionManager<Void> manager;
 	private final SuspendedBatch batch;
 	private final Instant startTime;
-	private final UserConfiguration indexing;
+	private final UserConfiguration configuration;
 	private final BiConsumer<ImmutableSession, BiFunction<Object, org.springframework.session.Session, ApplicationEvent>> destroyAction;
 	private final AtomicReference<Runnable> closeTask;
 
 	private volatile Session<Void> session;
 
-	public DistributableSession(SessionManager<Void> manager, Session<Void> session, SuspendedBatch batch, Runnable closeTask, UserConfiguration indexing, BiConsumer<ImmutableSession, BiFunction<Object, org.springframework.session.Session, ApplicationEvent>> destroyAction) {
+	/**
+	 * Creates a Spring Session facade for an distributable session.
+	 * @param manager the associated session manager
+	 * @param session the distributable session
+	 * @param batch the associated batch
+	 * @param closeTask a task to invoke on session close
+	 * @param configuration a user configuration
+	 * @param destroyAction an action to perform on session destroy
+	 */
+	public DistributableSession(SessionManager<Void> manager, Session<Void> session, SuspendedBatch batch, Runnable closeTask, UserConfiguration configuration, BiConsumer<ImmutableSession, BiFunction<Object, org.springframework.session.Session, ApplicationEvent>> destroyAction) {
 		this.manager = manager;
 		this.session = session;
 		this.batch = batch;
 		this.closeTask = new AtomicReference<>(closeTask);
-		this.indexing = indexing;
+		this.configuration = configuration;
 		this.destroyAction = destroyAction;
 		this.startTime = session.getMetaData().isNew() ? session.getMetaData().getCreationTime() : Instant.now();
 	}
@@ -73,9 +82,9 @@ public class DistributableSession implements SpringSession {
 		}
 
 		// Update indexes
-		Map<String, String> indexes = this.indexing.getIndexResolver().resolveIndexesFor(this);
+		Map<String, String> indexes = this.configuration.getIndexResolver().resolveIndexesFor(this);
 		for (Map.Entry<String, String> entry : indexes.entrySet()) {
-			UserManager<Void, Void, String, String> manager = this.indexing.getUserManagers().get(entry.getKey());
+			UserManager<Void, Void, String, String> manager = this.configuration.getUserManagers().get(entry.getKey());
 			if (manager != null) {
 				try (Batch batch = manager.getBatchFactory().get()) {
 					User<Void, Void, String, String> sso = manager.findUser(entry.getValue());
@@ -133,7 +142,7 @@ public class DistributableSession implements SpringSession {
 
 	@Override
 	public void setAttribute(String name, Object value) {
-		Map<String, String> oldIndexes = this.indexing.getIndexResolver().resolveIndexesFor(this);
+		Map<String, String> oldIndexes = this.configuration.getIndexResolver().resolveIndexesFor(this);
 
 		this.session.getAttributes().put(name, value);
 
@@ -141,7 +150,7 @@ public class DistributableSession implements SpringSession {
 		// However, Spring Session violates the servlet specification by not triggering HttpSessionAttributeListener events
 
 		// Update indexes
-		Map<String, String> indexes = this.indexing.getIndexResolver().resolveIndexesFor(this);
+		Map<String, String> indexes = this.configuration.getIndexResolver().resolveIndexesFor(this);
 		if (!oldIndexes.isEmpty() || !indexes.isEmpty()) {
 			Set<String> indexNames = new TreeSet<>();
 			indexNames.addAll(oldIndexes.keySet());
@@ -150,7 +159,7 @@ public class DistributableSession implements SpringSession {
 				String oldIndexValue = oldIndexes.get(indexName);
 				String indexValue = indexes.get(indexName);
 				if (!Objects.equals(indexValue, oldIndexValue)) {
-					UserManager<Void, Void, String, String> manager = this.indexing.getUserManagers().get(indexName);
+					UserManager<Void, Void, String, String> manager = this.configuration.getUserManagers().get(indexName);
 					try (Batch batch = manager.getBatchFactory().get()) {
 						if (oldIndexValue != null) {
 							User<Void, Void, String, String> sso = manager.findUser(oldIndexValue);

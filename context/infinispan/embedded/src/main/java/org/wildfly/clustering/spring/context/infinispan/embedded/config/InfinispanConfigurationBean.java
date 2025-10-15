@@ -13,6 +13,7 @@ import org.springframework.util.StringValueResolver;
 import org.wildfly.clustering.spring.context.infinispan.embedded.MutableInfinispanConfiguration;
 
 /**
+ * A Spring bean that configures and provides an Infinispan configuration.
  * @author Paul Ferraro
  */
 public class InfinispanConfigurationBean implements MutableInfinispanConfiguration {
@@ -21,18 +22,24 @@ public class InfinispanConfigurationBean implements MutableInfinispanConfigurati
 	private String templateName = null;
 	private StringValueResolver resolver = value -> value;
 
+	/**
+	 * Creates an Infinispan configuration bean.
+	 */
+	public InfinispanConfigurationBean() {
+	}
+
 	@Override
 	public void setEmbeddedValueResolver(StringValueResolver resolver) {
 		this.resolver = resolver;
 	}
 
 	@Override
-	public String getConfigurationResource() {
+	public String getResource() {
 		return this.resource;
 	}
 
 	@Override
-	public String getTemplateName() {
+	public String getTemplate() {
 		return this.templateName;
 	}
 

@@ -45,13 +45,17 @@ import org.wildfly.clustering.spring.session.UserConfiguration;
 import org.wildfly.clustering.spring.web.util.SpringWebImmutability;
 
 /**
+ * A Spring bean that configures and produces session configuration.
  * @author Paul Ferraro
  */
 public abstract class HttpSessionConfiguration extends SessionManagementConfiguration<ServletContext> implements ApplicationEventPublisherAware, ServletContextAware, MutableIndexingConfiguration {
-
+	/** The session attribute name containing the Spring Security context */
 	public static final String DEFAULT_SPRING_SECURITY_INDEX_ID = "SPRING_SECURITY_CONTEXT";
+	/** The index name of principal name */
 	public static final String DEFAULT_STRING_SECURITY_INDEX_NAME = "org.springframework.session.FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME";
+	/** The default Spring Security indexes */
 	public static final Map<String, String> DEFAULT_SPRING_SECURITY_INDEXES = Map.of(DEFAULT_SPRING_SECURITY_INDEX_ID, DEFAULT_STRING_SECURITY_INDEX_NAME);
+	/** The default Spring Security index resolver */
 	public static final IndexResolver<Session> DEFAULT_SPRING_SECURITY_INDEX_RESOLVER = new PrincipalNameIndexResolver<>();
 
 	private ServletContext context;
@@ -59,12 +63,24 @@ public abstract class HttpSessionConfiguration extends SessionManagementConfigur
 	private Map<String, String> indexes;
 	private IndexResolver<Session> indexResolver;
 
+	/**
+	 * Creates a session configuration.
+	 * @param annotationClass the configuration annotation class
+	 * @param defaultIndexes the default indexes
+	 * @param defaultIndexResolver the default index resolver.
+	 */
 	protected HttpSessionConfiguration(Class<? extends Annotation> annotationClass, Map<String, String> defaultIndexes, IndexResolver<Session> defaultIndexResolver) {
 		super(annotationClass);
 		this.indexes = defaultIndexes;
 		this.indexResolver = defaultIndexResolver;
 	}
 
+	/**
+	 * Produces a distributable session repository.
+	 * @param manager the distributable session manager
+	 * @param userConfiguration the user configuration
+	 * @return a distributable session repository.
+	 */
 	@Bean
 	public FindByIndexNameSessionRepository<SpringSession> sessionRepository(SessionManager<Void> manager, UserConfiguration userConfiguration) {
 		BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> sessionDestroyAction = new ImmutableSessionDestroyAction<>(this.publisher, this.getContext(), HttpSessionProvider.INSTANCE, userConfiguration);
