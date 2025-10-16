@@ -12,11 +12,14 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 import org.wildfly.clustering.spring.security.authentication.CredentialAuthenticationMarshaller;
 
 /**
+ * The serialization context initializer for the {@link org.springframework.security.web.authentication.preauth} package.
  * @author Paul Ferraro
  */
 @MetaInfServices(SerializationContextInitializer.class)
 public class SpringSecurityWebPreAuthSerializationContextInitializer extends AbstractSerializationContextInitializer {
-
+	/**
+	 * Creates a new serialization context initializer.
+	 */
 	public SpringSecurityWebPreAuthSerializationContextInitializer() {
 		super(PreAuthenticatedAuthenticationToken.class.getPackage());
 	}
@@ -24,6 +27,6 @@ public class SpringSecurityWebPreAuthSerializationContextInitializer extends Abs
 	@Override
 	public void registerMarshallers(SerializationContext context) {
 		context.registerMarshaller(new CredentialAuthenticationMarshaller<>(PreAuthenticatedAuthenticationToken::new, (entry, authorities) -> new PreAuthenticatedAuthenticationToken(entry.getKey(), entry.getValue(), authorities)).asMarshaller(PreAuthenticatedAuthenticationToken.class));
-		context.registerMarshaller(new PreAuthenticatedWebAuthenticationDetailsMarshaller());
+		context.registerMarshaller(PreAuthenticatedWebAuthenticationDetailsMarshaller.INSTANCE);
 	}
 }

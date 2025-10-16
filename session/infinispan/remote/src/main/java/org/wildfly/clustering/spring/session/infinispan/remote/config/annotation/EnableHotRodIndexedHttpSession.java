@@ -18,6 +18,7 @@ import org.wildfly.clustering.spring.session.config.annotation.Indexing;
 import org.wildfly.clustering.spring.session.infinispan.remote.config.HotRodIndexedHttpSessionConfiguration;
 
 /**
+ * Annotation defining the configuration of a Spring Session indexed repository
  * @author Paul Ferraro
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -26,7 +27,21 @@ import org.wildfly.clustering.spring.session.infinispan.remote.config.HotRodInde
 @Import(HotRodIndexedHttpSessionConfiguration.class)
 @Configuration(proxyBeanMethods = false)
 public @interface EnableHotRodIndexedHttpSession {
+	/**
+	 * Returns the HotRod configuration.
+	 * @return the HotRod configuration.
+	 */
 	HotRod config();
+
+	/**
+	 * Returns the session manager configuration.
+	 * @return the session manager configuration.
+	 */
 	SessionManager manager();
+
+	/**
+	 * Returns the indexing configuration.
+	 * @return the indexing configuration.
+	 */
 	Indexing indexing();
 }

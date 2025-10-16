@@ -13,14 +13,16 @@ import org.springframework.web.util.HttpSessionMutexListener;
 import org.wildfly.clustering.server.immutable.Immutability;
 
 /**
+ * The immutability tests for Spring Web objects.
  * @author Paul Ferraro
  */
 public enum SpringWebImmutability implements Immutability {
+	/** An immutability test for a mutex */
 	MUTEX(Immutability.classes(Set.of(createMutex().getClass())));
 
 	static Object createMutex() {
 		try {
-			// Class is private
+			// Mutex class is <sarcasm>conveniently</sarcasm> inaccessible
 			Class<?> mutexClass = HttpSessionMutexListener.class.getClassLoader().loadClass(HttpSessionMutexListener.class.getName() + "$Mutex");
 			Constructor<?> constructor = mutexClass.getDeclaredConstructor();
 			constructor.setAccessible(true);

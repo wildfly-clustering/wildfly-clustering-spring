@@ -11,11 +11,14 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 
 /**
+ * The serialization context initializer for the {@link org.springframework.security.web.authentication} package.
  * @author Paul Ferraro
  */
 @MetaInfServices(SerializationContextInitializer.class)
 public class SpringSecurityWebAuthenticationSerializationContextInitializer extends AbstractSerializationContextInitializer {
-
+	/**
+	 * Creates a new serialization context initializer.
+	 */
 	public SpringSecurityWebAuthenticationSerializationContextInitializer() {
 		super(WebAuthenticationDetails.class.getPackage());
 	}

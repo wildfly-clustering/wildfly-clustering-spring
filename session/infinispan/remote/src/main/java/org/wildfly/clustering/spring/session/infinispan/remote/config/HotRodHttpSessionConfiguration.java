@@ -18,16 +18,23 @@ import org.wildfly.clustering.spring.session.UserConfiguration;
 import org.wildfly.clustering.spring.session.infinispan.remote.config.annotation.EnableHotRodHttpSession;
 
 /**
+ * A Spring bean that configures and produces a non-indexing Spring Session repository.
  * @author Paul Ferraro
  */
 @Configuration(proxyBeanMethods = false)
 @Import(SpringHttpSessionConfiguration.class)
 public class HotRodHttpSessionConfiguration extends AbstractHotRodHttpSessionConfiguration {
-
+	/**
+	 * Creates a HotRod session configuration.
+	 */
 	public HotRodHttpSessionConfiguration() {
 		super(EnableHotRodHttpSession.class, Map.of(), EmptyIndexResolver.INSTANCE);
 	}
 
+	/**
+	 * Returns a user configuration.
+	 * @return a user configuration
+	 */
 	@Bean
 	public UserConfiguration userConfiguration() {
 		return new UserConfiguration() {

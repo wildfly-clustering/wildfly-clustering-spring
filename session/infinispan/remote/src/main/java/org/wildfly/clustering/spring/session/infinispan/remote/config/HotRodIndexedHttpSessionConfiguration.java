@@ -20,16 +20,24 @@ import org.wildfly.clustering.spring.session.infinispan.remote.UserConfiguration
 import org.wildfly.clustering.spring.session.infinispan.remote.config.annotation.EnableHotRodIndexedHttpSession;
 
 /**
+ * A Spring bean that configures and produces an indexing Spring Session repository.
  * @author Paul Ferraro
  */
 @Configuration(proxyBeanMethods = false)
 @Import(SpringHttpSessionConfiguration.class)
 public class HotRodIndexedHttpSessionConfiguration extends AbstractHotRodHttpSessionConfiguration {
-
+	/**
+	 * Creates an indexed session configuration.
+	 */
 	public HotRodIndexedHttpSessionConfiguration() {
 		super(EnableHotRodIndexedHttpSession.class, DEFAULT_SPRING_SECURITY_INDEXES, DEFAULT_SPRING_SECURITY_INDEX_RESOLVER);
 	}
 
+	/**
+	 * Returns a user configuration.
+	 * @param provider a provider of a remote cache container
+	 * @return a user configuration.
+	 */
 	@Bean
 	public UserConfiguration userConfiguration(RemoteCacheContainerProvider provider) {
 		return new UserConfigurationBean(this, this, this, this, provider);

@@ -27,34 +27,50 @@ import org.wildfly.clustering.spring.context.infinispan.embedded.config.Infinisp
 import org.wildfly.clustering.spring.session.config.HttpSessionConfiguration;
 
 /**
+ * A Spring bean that configures and produces a Spring Session repository.
  * @author Paul Ferraro
  */
 public class AbstractInfinispanHttpSessionConfiguration extends HttpSessionConfiguration implements MutableInfinispanConfiguration {
 
 	private final MutableInfinispanConfiguration configuration = new InfinispanConfigurationBean();
 
+	/**
+	 * Creates a session configuration.
+	 * @param annotationClass the configuration annotation class
+	 * @param defaultIndexes the default indexes
+	 * @param defaultIndexResolver the default index resolver
+	 */
 	protected AbstractInfinispanHttpSessionConfiguration(Class<? extends Annotation> annotationClass, Map<String, String> defaultIndexes, IndexResolver<Session> defaultIndexResolver) {
 		super(annotationClass, defaultIndexes, defaultIndexResolver);
 	}
 
+	/**
+	 * Produces a command dispatcher factory configuration.
+	 * @return a command dispatcher factory configuration.
+	 */
 	@Bean
-	public ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration embeddedCacheManagerConfiguration() {
+	public ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration commandDispatcherFactoryConfiguration() {
 		return new EmbeddedCacheManagerBean(this);
 	}
 
+	/**
+	 * Produces a session manager factory.
+	 * @param configuration a command dispatcher factory configuration
+	 * @return a session manager factory
+	 */
 	@Bean
-	public SessionManagerFactory<ServletContext, Void> sessionManagerFactory(ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration embeddedCacheManagerConfiguration) {
-		return new InfinispanSessionManagerFactoryBean<>(this, HttpSessionProvider.INSTANCE, HttpSessionActivationListenerProvider.INSTANCE, this.configuration, embeddedCacheManagerConfiguration);
+	public SessionManagerFactory<ServletContext, Void> sessionManagerFactory(ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration configuration) {
+		return new InfinispanSessionManagerFactoryBean<>(this, HttpSessionProvider.INSTANCE, HttpSessionActivationListenerProvider.INSTANCE, this.configuration, configuration);
 	}
 
 	@Override
-	public String getConfigurationResource() {
-		return this.configuration.getConfigurationResource();
+	public String getResource() {
+		return this.configuration.getResource();
 	}
 
 	@Override
-	public String getTemplateName() {
-		return this.configuration.getTemplateName();
+	public String getTemplate() {
+		return this.configuration.getTemplate();
 	}
 
 	@Override

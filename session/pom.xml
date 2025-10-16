@@ -15,7 +15,11 @@
 	<artifactId>wildfly-clustering-spring-session</artifactId>
 	<packaging>pom</packaging>
 
-	<name>WildFly Clustering: Spring Session: Modules</name>
+	<name>${project.spring.session}: Modules</name>
+
+	<properties>
+		<project.spring.session>${project.repository.name} Session</project.spring.session>
+	</properties>
 
 	<modules>
 		<module>core</module>

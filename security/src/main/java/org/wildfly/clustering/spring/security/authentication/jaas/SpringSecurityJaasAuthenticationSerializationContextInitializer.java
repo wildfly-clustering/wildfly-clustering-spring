@@ -12,18 +12,21 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContextInitia
 import org.wildfly.clustering.spring.security.authentication.CredentialAuthenticationMarshaller;
 
 /**
+ * The serialization context initializer for the {@link org.springframework.security.authentication.jaas} package.
  * @author Paul Ferraro
  */
 @MetaInfServices(SerializationContextInitializer.class)
 public class SpringSecurityJaasAuthenticationSerializationContextInitializer extends AbstractSerializationContextInitializer {
-
+	/**
+	 * Creates a new serialization context initializer.
+	 */
 	public SpringSecurityJaasAuthenticationSerializationContextInitializer() {
 		super(JaasAuthenticationToken.class.getPackage());
 	}
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		context.registerMarshaller(new JaasGrantedAuthorityMarshaller());
+		context.registerMarshaller(JaasGrantedAuthorityMarshaller.INSTANCE);
 		context.registerMarshaller(new CredentialAuthenticationMarshaller<>((principal, credentials) -> new JaasAuthenticationToken(principal, credentials, null), (entry, authorities) -> new JaasAuthenticationToken(entry.getKey(), entry.getValue(), authorities, null)).asMarshaller(JaasAuthenticationToken.class));
 	}
 }

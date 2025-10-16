@@ -32,7 +32,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 /**
- * A distributable {@link WebSessionManager} implementation.
+ * A Spring Web session manager facade for a distributable session manager.
  * The avoidance of {@link org.springframework.web.server.session.DefaultWebSessionManager} with SpringSessionWebSessionStore is intentional,
  * since that implementation is unsafe for modification by multiple threads.
  * @author Paul Ferraro
@@ -52,6 +52,10 @@ public class DistributableWebSessionManager implements WebSessionManager, AutoCl
 	private final WebSessionIdResolver identifierResolver;
 	private final StampedLock lifecycleLock = new StampedLock();
 
+	/**
+	 * Creates a Spring Web session manager from the specified configuration.
+	 * @param configuration a session manager configuration
+	 */
 	public DistributableWebSessionManager(DistributableWebSessionManagerConfiguration configuration) {
 		this.manager = configuration.getSessionManager();
 		this.identifierResolver = configuration.getSessionIdentifierResolver();
@@ -94,7 +98,7 @@ public class DistributableWebSessionManager implements WebSessionManager, AutoCl
 				return Mono.fromCompletionStage(factory.get())
 						.filter(IS_VALID)
 						.filter(IS_ACTIVE)
-						.map(session -> new DistributableWebSession(this.manager, session, entry))
+						.map(session -> new DistributableWebSession(this.manager, session, entry.getKey(), entry.getValue()))
 						.switchIfEmpty(Mono.defer(() -> {
 							close(entry, Consumer.empty());
 							return Mono.empty();

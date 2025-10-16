@@ -15,9 +15,11 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
+ * A marshaller of the fields of a {@link HttpServletRequest}.
  * @author Paul Ferraro
  */
 public enum HttpServletRequestMarshaller implements FieldSetMarshaller.Supplied<HttpServletRequest, HttpServletRequestBuilder> {
+	/** Singleton instance */
 	INSTANCE;
 
 	private static final int REMOTE_ADDRESS_INDEX = 0;

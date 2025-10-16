@@ -11,13 +11,17 @@ import java.util.Set;
 import org.wildfly.clustering.session.ImmutableSession;
 
 /**
- * Immutable session implementation for use by {@link org.springframework.session.FindByIndexNameSessionRepository#findByIndexNameAndIndexValue(String, String)}.
+ * A Spring Session facade for an immutable session.
  * @author Paul Ferraro
  */
 public class DistributableImmutableSession implements SpringSession {
 
 	private final ImmutableSession session;
 
+	/**
+	 * Creates a Spring Session facade for an immutable session.
+	 * @param session an immutable session
+	 */
 	public DistributableImmutableSession(ImmutableSession session) {
 		this.session = session;
 	}

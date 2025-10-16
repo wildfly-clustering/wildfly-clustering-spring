@@ -43,6 +43,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 
 /**
+ * A configurator for a JGroups channel.
  * @author Paul Ferraro
  */
 public class JChannelConfigurator implements JGroupsChannelConfigurator {
@@ -53,6 +54,12 @@ public class JChannelConfigurator implements JGroupsChannelConfigurator {
 	private final String name;
 	private final ProtocolStackConfigurator configurator;
 
+	/**
+	 * A JGroups channel configurator.
+	 * @param transport a transport configuration
+	 * @param loader a resource loader
+	 * @throws IOException if the JGroups configuration resource could not be located or read
+	 */
 	public JChannelConfigurator(TransportConfiguration transport, ResourceLoader loader) throws IOException {
 		this.name = transport.stack();
 		this.configurator = getProtocolStackConfigurator(transport, loader);

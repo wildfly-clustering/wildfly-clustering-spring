@@ -15,6 +15,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
+ * A ProtoStreaam marshaller of an {@link Authentication} object.
  * @author Paul Ferraro
  * @param <A> authentication type
  */

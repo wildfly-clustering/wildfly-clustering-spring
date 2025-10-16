@@ -14,11 +14,16 @@ import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 
 /**
+ * A ProtoStream marshaller for an authentication token.
  * @author Paul Ferraro
  * @param <T> token type
  */
 public class CredentialAuthenticationMarshaller<T extends AbstractAuthenticationToken> extends AuthenticationMarshaller<T> {
-
+	/**
+	 * Creates a credential authentication marshaller.
+	 * @param unauthenticatedFactory the factory for creating an unauthenticated object
+	 * @param authenticatedFactory the factory for creating an authenticated object
+	 */
 	public CredentialAuthenticationMarshaller(BiFunction<Object, Object, T> unauthenticatedFactory, BiFunction<Map.Entry<Object, Object>, List<GrantedAuthority>, T> authenticatedFactory) {
 		super(new Function<>() {
 			@Override

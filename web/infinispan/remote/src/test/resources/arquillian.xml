@@ -9,24 +9,24 @@
 			<configuration>
 				<property name="catalinaHome">${project.build.directory}/tomcat-1</property>
 
-				<property name="jmxPort">8089</property>
-				<property name="bindHttpPort">8080</property>
-				<property name="javaVmArguments">${jdk.runtime.args} -Dtomcat.management.port=8005 -Dtomcat.http.port=8080 -Dtomcat.https.port=8443 -Dcom.sun.management.jmxremote.port=8089 -Dcom.sun.management.jmxremote.rmi.port=8089 -Djgroups.bind.address=localhost -Djgroups.bind.port=7801</property>
+				<property name="jmxPort">${tomcat1.jmx.port}</property>
+				<property name="bindHttpPort">${tomcat1.http.port}</property>
+				<property name="javaVmArguments">${tomcat1.runtime.parameters}</property>
 
-				<property name="user">admin</property>
-				<property name="pass">admin</property>
+				<property name="user">${tomcat.admin.username}</property>
+				<property name="pass">${tomcat.admin.password}</property>
 			</configuration>
 		</container>
 		<container qualifier="tomcat-2" mode="class">
 			<configuration>
 				<property name="catalinaHome">${project.build.directory}/tomcat-2</property>
 
-				<property name="jmxPort">8189</property>
-				<property name="bindHttpPort">8180</property>
-				<property name="javaVmArguments">${jdk.runtime.args} -Dtomcat.management.port=8105 -Dtomcat.http.port=8180 -Dtomcat.https.port=8543 -Dcom.sun.management.jmxremote.port=8189 -Dcom.sun.management.jmxremote.rmi.port=8189 -Djgroups.bind.address=localhost -Djgroups.bind.port=7802</property>
+				<property name="jmxPort">${tomcat2.jmx.port}</property>
+				<property name="bindHttpPort">${tomcat2.http.port}</property>
+				<property name="javaVmArguments">${tomcat2.runtime.parameters}</property>
 
-				<property name="user">admin</property>
-				<property name="pass">admin</property>
+				<property name="user">${tomcat.admin.username}</property>
+				<property name="pass">${tomcat.admin.password}</property>
 			</configuration>
 		</container>
 	</group>

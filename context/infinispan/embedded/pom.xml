@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-spring-context-infinispan-embedded</artifactId>
 	<packaging>jar</packaging>
 
-	<name>WildFly Clustering: Spring Context: Infinispan: Embedded implementation</name>
+	<name>${project.spring.context.infinispan}: Embedded</name>
 
 	<dependencies>
 		<dependency>

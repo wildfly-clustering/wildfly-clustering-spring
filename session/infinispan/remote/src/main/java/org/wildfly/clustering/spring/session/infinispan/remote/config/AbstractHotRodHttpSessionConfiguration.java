@@ -29,21 +29,31 @@ import org.wildfly.clustering.spring.context.infinispan.remote.config.HotRodConf
 import org.wildfly.clustering.spring.session.config.HttpSessionConfiguration;
 
 /**
+ * A Spring bean that configures and produces a Spring Session repository.
  * @author Paul Ferraro
  */
 public class AbstractHotRodHttpSessionConfiguration extends HttpSessionConfiguration implements MutableHotRodConfiguration {
 
 	private final MutableHotRodConfiguration configuration = new HotRodConfigurationBean();
 
-	protected AbstractHotRodHttpSessionConfiguration(Class<? extends Annotation> annotationClass, Map<String, String> defaultIndexes, IndexResolver<Session> defaultIndexResolver) {
+	AbstractHotRodHttpSessionConfiguration(Class<? extends Annotation> annotationClass, Map<String, String> defaultIndexes, IndexResolver<Session> defaultIndexResolver) {
 		super(annotationClass, defaultIndexes, defaultIndexResolver);
 	}
 
+	/**
+	 * Produces the remote cache container provider.
+	 * @return the remote cache container provider.
+	 */
 	@Bean
 	public RemoteCacheContainerProvider remoteCacheManagerProvider() {
 		return new RemoteCacheContainerProviderBean(this);
 	}
 
+	/**
+	 * Produces a session manager factory.
+	 * @param provider a remote cache container provider
+	 * @return the session manager factory.
+	 */
 	@Bean
 	public SessionManagerFactory<ServletContext, Void> sessionManagerFactory(RemoteCacheContainerProvider provider) {
 		return new HotRodSessionManagerFactoryBean<>(this, HttpSessionProvider.INSTANCE, HttpSessionActivationListenerProvider.INSTANCE, this.configuration, provider);
@@ -65,8 +75,8 @@ public class AbstractHotRodHttpSessionConfiguration extends HttpSessionConfigura
 	}
 
 	@Override
-	public String getTemplateName() {
-		return this.configuration.getTemplateName();
+	public String getTemplate() {
+		return this.configuration.getTemplate();
 	}
 
 	@Override

@@ -34,8 +34,15 @@ public @interface SessionManager {
 	SessionPersistenceGranularity granularity() default SessionPersistenceGranularity.SESSION;
 
 	/**
-	 * The maximum number of sessions to retain in memory.  Default is limitless.
-	 * @return the number of session to retain in memory.
+	 * Defines the maximum number of sessions to retain in memory.
+	 * Default is limitless.
+	 * @return the maximum number of sessions to retain in memory.
 	 */
-	int maxActiveSessions() default -1;
+	int maxActiveSessions() default Integer.MAX_VALUE;
+
+	/**
+	 * Defines the duration of time, expressed in ISO-8601 format, after which an idle session should passivate.
+	 * @return the duration of time, expressed in ISO-8601 format, after which an idle session should passivate.
+	 */
+	String idleTimeout() default "PT0S";
 }

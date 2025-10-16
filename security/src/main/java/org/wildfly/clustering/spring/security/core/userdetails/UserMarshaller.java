@@ -17,9 +17,12 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
+ * A ProtoStream marshaller for A {@link User}.
  * @author Paul Ferraro
  */
-public class UserDetailsMarshaller implements ProtoStreamMarshaller<User> {
+public enum UserMarshaller implements ProtoStreamMarshaller<User> {
+	/** Singleton instance */
+	INSTANCE;
 
 	private static final int USERNAME_INDEX = 1;
 	private static final int PASSWORD_INDEX = 2;

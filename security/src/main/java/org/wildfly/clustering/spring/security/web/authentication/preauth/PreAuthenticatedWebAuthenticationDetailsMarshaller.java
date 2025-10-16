@@ -20,9 +20,12 @@ import org.wildfly.clustering.spring.security.web.authentication.HttpServletRequ
 import org.wildfly.clustering.spring.security.web.authentication.MockHttpServletRequest;
 
 /**
+ * A ProtoStream marshaller for {@link PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails}.
  * @author Paul Ferraro
  */
-public class PreAuthenticatedWebAuthenticationDetailsMarshaller implements ProtoStreamMarshaller<PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails> {
+public enum PreAuthenticatedWebAuthenticationDetailsMarshaller implements ProtoStreamMarshaller<PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails> {
+	/** Singleton instance */
+	INSTANCE;
 
 	private static final int HTTP_SERVLET_REQUEST_INDEX = 1;
 	private static final int AUTHORITIY_INDEX = HTTP_SERVLET_REQUEST_INDEX + HttpServletRequestMarshaller.INSTANCE.getFields();

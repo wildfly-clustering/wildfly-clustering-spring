@@ -16,38 +16,25 @@
 	<artifactId>wildfly-clustering-spring</artifactId>
 	<packaging>pom</packaging>
 
-	<name>WildFly Clustering: Spring: Modules</name>
+	<name>${project.repository.name}: Modules</name>
 
 	<properties>
-		<jdk.runtime.args>-Dorg.jboss.logging.provider=jdk --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED</jdk.runtime.args>
-		<maven.compiler.release>17</maven.compiler.release>
-		<!-- Skip redundant source packaging -->
-		<skipReleaseAssembly>true</skipReleaseAssembly>
+		<maven.surefire.parameters>${java.runtime.parameters} -javaagent:${project.build.directory}/agent/mockito-core.jar</maven.surefire.parameters>
 
-		<!-- Provided dependency versions -->
-		<version.jakarta.servlet>6.0.0</version.jakarta.servlet>
-		<version.net.jcip.annotations>1.0</version.net.jcip.annotations>
-		<version.org.kohsuke.metainf-services>1.11</version.org.kohsuke.metainf-services>
+		<version.org.apache.tomcat>10.1.47</version.org.apache.tomcat>
 
-		<!-- Runtime dependency versions -->
-		<version.io.projectreactor>2024.0.10</version.io.projectreactor>
-		<version.org.springframework>6.2.11</version.org.springframework>
-		<version.org.springframework.security>6.5.5</version.org.springframework.security>
-		<version.org.springframework.session>3.5.2</version.org.springframework.session>
-		<version.org.wildfly.clustering>7.0.13.Final</version.org.wildfly.clustering>
-
-		<!-- Runtime dependency versions -->
-		<version.org.slf4j>2.0.17</version.org.slf4j>
-
-		<!-- Test dependency versions -->
-		<version.org.apache.tomcat>10.1.46</version.org.apache.tomcat>
-		<version.org.assertj>3.27.6</version.org.assertj>
-		<version.org.jboss.arquillian>1.10.0.Final</version.org.jboss.arquillian>
-		<version.org.jboss.arquillian.container.tomcat>1.1.0.Final</version.org.jboss.arquillian.container.tomcat>
-		<version.org.jboss.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap>
-		<version.org.junit>5.13.4</version.org.junit>
-		<version.org.mockito>5.20.0</version.org.mockito>
-		<version.org.testcontainers>1.21.3</version.org.testcontainers>
+		<tomcat1.http.port>8080</tomcat1.http.port>
+		<tomcat2.http.port>8180</tomcat2.http.port>
+		<tomcat3.http.port>8280</tomcat3.http.port>
+		<tomcat1.jmx.port>8089</tomcat1.jmx.port>
+		<tomcat2.jmx.port>8189</tomcat2.jmx.port>
+		<tomcat3.jmx.port>8289</tomcat3.jmx.port>
+		<tomcat.admin.username>admin</tomcat.admin.username>
+		<tomcat.admin.password>admin</tomcat.admin.password>
+		<tomcat.runtime.parameters>${java.runtime.parameters} -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -Djgroups.bind.address=localhost</tomcat.runtime.parameters>
+		<tomcat1.runtime.parameters>${tomcat.runtime.parameters} -Dtomcat.management.port=8005 -Dtomcat.http.port=${tomcat1.http.port} -Dtomcat.https.port=8443 -Dcom.sun.management.jmxremote.port=${tomcat1.jmx.port} -Dcom.sun.management.jmxremote.rmi.port=${tomcat1.jmx.port} -Djgroups.bind.port=7800</tomcat1.runtime.parameters>
+		<tomcat2.runtime.parameters>${tomcat.runtime.parameters} -Dtomcat.management.port=8105 -Dtomcat.http.port=${tomcat2.http.port} -Dtomcat.https.port=8543 -Dcom.sun.management.jmxremote.port=${tomcat2.jmx.port} -Dcom.sun.management.jmxremote.rmi.port=${tomcat2.jmx.port} -Djgroups.bind.port=7810</tomcat2.runtime.parameters>
+		<tomcat3.runtime.parameters>${tomcat.runtime.parameters} -Dtomcat.management.port=8205 -Dtomcat.http.port=${tomcat3.http.port} -Dtomcat.https.port=8643 -Dcom.sun.management.jmxremote.port=${tomcat3.jmx.port} -Dcom.sun.management.jmxremote.rmi.port=${tomcat3.jmx.port} -Djgroups.bind.port=7820</tomcat3.runtime.parameters>
 	</properties>
 
 	<modules>
@@ -64,56 +51,49 @@
 			<dependency>
 				<groupId>jakarta.servlet</groupId>
 				<artifactId>jakarta.servlet-api</artifactId>
-				<version>${version.jakarta.servlet}</version>
+				<version>6.0.0</version>
 			</dependency>
 
 			<!-- BOM dependencies -->
 			<dependency>
 				<groupId>io.projectreactor</groupId>
 				<artifactId>reactor-bom</artifactId>
-				<version>${version.io.projectreactor}</version>
+				<version>2024.0.10</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.assertj</groupId>
 				<artifactId>assertj-bom</artifactId>
-				<version>${version.org.assertj}</version>
+				<version>3.27.6</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-bom</artifactId>
-				<version>${version.org.slf4j}</version>
+				<version>2.0.17</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-framework-bom</artifactId>
-				<version>${version.org.springframework}</version>
+				<version>6.2.11</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.security</groupId>
 				<artifactId>spring-security-bom</artifactId>
-				<version>${version.org.springframework.security}</version>
+				<version>6.5.5</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.session</groupId>
 				<artifactId>spring-session-bom</artifactId>
-				<version>${version.org.springframework.session}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.wildfly.clustering</groupId>
-				<artifactId>wildfly-clustering-bom</artifactId>
-				<version>${version.org.wildfly.clustering}</version>
+				<version>3.5.2</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -122,42 +102,42 @@
 			<dependency>
 				<groupId>org.kohsuke.metainf-services</groupId>
 				<artifactId>metainf-services</artifactId>
-				<version>${version.org.kohsuke.metainf-services}</version>
+				<version>1.11</version>
 			</dependency>
 
 			<!-- Test BOM dependencies -->
 			<dependency>
 				<groupId>org.jboss.arquillian</groupId>
 				<artifactId>arquillian-bom</artifactId>
-				<version>${version.org.jboss.arquillian}</version>
+				<version>1.10.0.Final</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.shrinkwrap</groupId>
 				<artifactId>shrinkwrap-bom</artifactId>
-				<version>${version.org.jboss.shrinkwrap}</version>
+				<version>1.2.6</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.junit</groupId>
 				<artifactId>junit-bom</artifactId>
-				<version>${version.org.junit}</version>
+				<version>6.0.0</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-bom</artifactId>
-				<version>${version.org.mockito}</version>
+				<version>5.20.0</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.testcontainers</groupId>
 				<artifactId>testcontainers-bom</artifactId>
-				<version>${version.org.testcontainers}</version>
+				<version>1.21.3</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -171,7 +151,7 @@
 			<dependency>
 				<groupId>org.jboss.arquillian.container</groupId>
 				<artifactId>arquillian-tomcat-managed-8</artifactId>
-				<version>${version.org.jboss.arquillian.container.tomcat}</version>
+				<version>1.1.0.Final</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -209,34 +189,6 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-checkstyle-plugin</artifactId>
-				<configuration>
-					<configLocation>checkstyle.xml</configLocation>
-					<logViolationsToConsole>true</logViolationsToConsole>
-					<sourceDirectories>
-						<sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
-						<sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
-					</sourceDirectories>
-				</configuration>
-				<executions>
-					<execution>
-						<id>check-sources</id>
-						<phase>process-sources</phase>
-						<goals>
-							<goal>check</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>check-test-sources</id>
-						<phase>process-test-sources</phase>
-						<goals>
-							<goal>check</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
 					<annotationProcessorPaths>
@@ -246,18 +198,6 @@
 						</annotationProcessorPath>
 					</annotationProcessorPaths>
 				</configuration>
-				<executions>
-					<execution>
-						<id>default-testCompile</id>
-						<phase>test-compile</phase>
-						<goals>
-							<goal>testCompile</goal>
-						</goals>
-						<configuration>
-							<parameters>true</parameters>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -271,50 +211,19 @@
 						</artifactItem>
 					</artifactItems>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-failsafe-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>integration-test</id>
-						<phase>integration-test</phase>
+						<id>copy-java-agent</id>
+						<phase>process-test-classes</phase>
 						<goals>
-							<goal>integration-test</goal>
-							<goal>verify</goal>
+							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
-							<trimStackTrace>false</trimStackTrace>
-							<argLine>${jdk.runtime.args}</argLine>
+							<includeGroupIds>org.mockito</includeGroupIds>
+							<includeArtifactIds>mockito-core</includeArtifactIds>
+							<stripVersion>true</stripVersion>
+							<outputDirectory>${project.build.directory}/agent</outputDirectory>
 						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>test-jar</goal>
-						</goals>
-						<configuration>
-							<skipIfEmpty>true</skipIfEmpty>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>package-javadoc</id>
-						<phase>package</phase>
-						<goals>
-							<goal>jar</goal>
-							<goal>test-jar</goal>
-						</goals>
 					</execution>
 				</executions>
 			</plugin>
@@ -325,46 +234,12 @@
 					<overwrite>true</overwrite>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>package-source</id>
-						<phase>package</phase>
-						<goals>
-							<goal>test-jar-no-fork</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<argLine>${jdk.runtime.args}</argLine>
-				</configuration>
-			</plugin>
 		</plugins>
 	</build>
 
 	<profiles>
 		<profile>
-			<id>quickly</id>
-			<properties>
-				<checkstyle.skip>true</checkstyle.skip>
-				<maven.javadoc.skip>true</maven.javadoc.skip>
-				<skipTests>true</skipTests>
-				<skipITs>true</skipITs>
-			</properties>
-		</profile>
-		<profile>
-			<id>jboss-release</id>
-			<properties>
-				<checkstyle.skip>true</checkstyle.skip>
-				<skipTests>true</skipTests>
-				<skipITs>true</skipITs>
-			</properties>
+			<id>release</id>
 			<build>
 				<plugins>
 					<plugin>

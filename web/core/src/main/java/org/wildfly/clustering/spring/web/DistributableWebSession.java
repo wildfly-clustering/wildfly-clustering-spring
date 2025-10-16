@@ -22,6 +22,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 /**
+ * A Spring Web session facade for a distributable session.
  * @author Paul Ferraro
  */
 public class DistributableWebSession implements SpringWebSession, Function<String, Void> {
@@ -39,12 +40,19 @@ public class DistributableWebSession implements SpringWebSession, Function<Strin
 	private volatile boolean started;
 	private volatile Session<Void> session;
 
-	public DistributableWebSession(SessionManager<Void> manager, Session<Void> session, Map.Entry<SuspendedBatch, Runnable> entry) {
+	/**
+	 * Creates a distributable Spring Web session.
+	 * @param manager the session manager associated with this session
+	 * @param session the distributable session
+	 * @param batch the batch associated with this session
+	 * @param closeTask a task to run on session close.
+	 */
+	public DistributableWebSession(SessionManager<Void> manager, Session<Void> session, SuspendedBatch batch, Runnable closeTask) {
 		this.manager = manager;
 		this.session = session;
 		this.started = session.isValid() && !session.getMetaData().isNew();
-		this.batch = entry.getKey();
-		this.closeTask = new AtomicReference<>(entry.getValue());
+		this.batch = batch;
+		this.closeTask = new AtomicReference<>(closeTask);
 		this.startTime = session.isValid() && session.getMetaData().isNew() ? session.getMetaData().getCreationTime() : Instant.now();
 	}
 

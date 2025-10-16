@@ -25,18 +25,28 @@ import org.wildfly.clustering.spring.web.DistributableWebSessionManager;
 import org.wildfly.clustering.spring.web.DistributableWebSessionManagerConfiguration;
 
 /**
+ * A Spring bean that configures and produces a Spring Web session manager.
  * @author Paul Ferraro
  */
-public abstract class WebSessionConfiguration extends SessionManagementConfiguration<ServletContext> implements ServletContextAware {
+public abstract class WebSessionManagerConfiguration extends SessionManagementConfiguration<ServletContext> implements ServletContextAware {
 
 	private WebSessionIdResolver resolver = new CookieWebSessionIdResolver();
 
 	private ServletContext context;
 
-	protected WebSessionConfiguration(Class<? extends Annotation> annotationClass) {
+	/**
+	 * Creates a session manager configuration bean.
+	 * @param annotationClass the configuration annotation class
+	 */
+	protected WebSessionManagerConfiguration(Class<? extends Annotation> annotationClass) {
 		super(annotationClass);
 	}
 
+	/**
+	 * Returns the Spring Web session manager produced by this bean.
+	 * @param manager a distributed session manager
+	 * @return the Spring Web session manager produced by this bean.
+	 */
 	@Bean(WebHttpHandlerBuilder.WEB_SESSION_MANAGER_BEAN_NAME)
 	public WebSessionManager webSessionManager(SessionManager<Void> manager) {
 		WebSessionIdResolver resolver = this.resolver;
@@ -64,6 +74,10 @@ public abstract class WebSessionConfiguration extends SessionManagementConfigura
 		return this.context.getVirtualServerName() + this.context.getContextPath();
 	}
 
+	/**
+	 * Specifies the session identifier resolver.
+	 * @param resolver a session identifier resolver.
+	 */
 	@Autowired(required = false)
 	public void setSessionIdentifierResolver(WebSessionIdResolver resolver) {
 		this.resolver = resolver;

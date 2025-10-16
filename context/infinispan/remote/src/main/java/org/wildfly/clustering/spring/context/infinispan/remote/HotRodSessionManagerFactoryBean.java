@@ -25,10 +25,11 @@ import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 import org.wildfly.clustering.spring.context.AutoDestroyBean;
 
 /**
+ * A Spring bean that configures and provides a remote Infinispan session manager.
  * @author Paul Ferraro
- * @param <S> session type
- * @param <C> session manager context type
- * @param <L> session passivation listener type
+ * @param <S> the session specification type
+ * @param <C> the deployment context type
+ * @param <L> the session event listener specification type
  */
 public class HotRodSessionManagerFactoryBean<S, C, L> extends AutoDestroyBean implements SessionManagerFactory<C, Void>, InitializingBean {
 
@@ -40,6 +41,14 @@ public class HotRodSessionManagerFactoryBean<S, C, L> extends AutoDestroyBean im
 
 	private SessionManagerFactory<C, Void> sessionManagerFactory;
 
+	/**
+	 * Creates an Infinispan session manager bean.
+	 * @param configuration the session manager factory configuration
+	 * @param sessionProvider the session specification provider
+	 * @param listenerProvider the session event listener specification provider
+	 * @param hotrod a HotRod configuration
+	 * @param provider a remote cache container provider
+	 */
 	public HotRodSessionManagerFactoryBean(SessionManagerFactoryConfiguration<Void> configuration, SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider, HotRodConfiguration hotrod, RemoteCacheContainerProvider provider) {
 		this.hotrod = hotrod;
 		this.sessionProvider = sessionProvider;
@@ -52,12 +61,12 @@ public class HotRodSessionManagerFactoryBean<S, C, L> extends AutoDestroyBean im
 	public void afterPropertiesSet() throws Exception {
 		RemoteCacheContainer container = this.provider.getRemoteCacheContainer();
 		String deploymentName = this.configuration.getDeploymentName();
-		String templateName = this.hotrod.getTemplateName();
+		String templateName = this.hotrod.getTemplate();
 		String configuration = this.hotrod.getConfiguration();
-		OptionalInt maxActiveSessions = this.configuration.getMaxActiveSessions();
+		OptionalInt maxSize = this.configuration.getMaxSize();
 
 		container.getConfiguration().addRemoteCache(deploymentName, builder -> {
-			builder.forceReturnValues(false).nearCacheMode(maxActiveSessions.isEmpty() ? NearCacheMode.DISABLED : NearCacheMode.INVALIDATED).transactionMode(TransactionMode.NONE);
+			builder.forceReturnValues(false).nearCacheMode(maxSize.isEmpty() ? NearCacheMode.DISABLED : NearCacheMode.INVALIDATED).transactionMode(TransactionMode.NONE);
 			if (templateName != null) {
 				builder.templateName(templateName);
 			} else {
@@ -70,15 +79,35 @@ public class HotRodSessionManagerFactoryBean<S, C, L> extends AutoDestroyBean im
 		cache.start();
 		this.accept(cache::stop);
 
-		RemoteCacheConfiguration hotrodConfiguration = new RemoteCacheConfiguration() {
+		RemoteCacheConfiguration cacheConfiguration = new RemoteCacheConfiguration() {
 			@SuppressWarnings("unchecked")
 			@Override
 			public <CK, CV> RemoteCache<CK, CV> getCache() {
-				return (RemoteCache<CK, CV>) cache.withDataFormat(DataFormat.builder().keyType(MediaType.APPLICATION_OBJECT).keyMarshaller(container.getMarshaller()).valueType(MediaType.APPLICATION_OBJECT).valueMarshaller(container.getMarshaller()).build());
+				return (RemoteCache<CK, CV>) container.getCache(deploymentName).withDataFormat(DataFormat.builder().keyType(MediaType.APPLICATION_OBJECT).keyMarshaller(container.getMarshaller()).valueType(MediaType.APPLICATION_OBJECT).valueMarshaller(container.getMarshaller()).build());
 			}
 		};
 
-		this.sessionManagerFactory = new HotRodSessionManagerFactory<>(this.configuration, this.sessionProvider, this.listenerProvider, hotrodConfiguration);
+		this.sessionManagerFactory = new HotRodSessionManagerFactory<>(new HotRodSessionManagerFactory.Configuration<S, C, Void, L>() {
+			@Override
+			public SessionManagerFactoryConfiguration<Void> getSessionManagerFactoryConfiguration() {
+				return HotRodSessionManagerFactoryBean.this.configuration;
+			}
+
+			@Override
+			public SessionSpecificationProvider<S, C> getSessionSpecificationProvider() {
+				return HotRodSessionManagerFactoryBean.this.sessionProvider;
+			}
+
+			@Override
+			public SessionEventListenerSpecificationProvider<S, L> getSessionEventListenerSpecificationProvider() {
+				return HotRodSessionManagerFactoryBean.this.listenerProvider;
+			}
+
+			@Override
+			public RemoteCacheConfiguration getCacheConfiguration() {
+				return cacheConfiguration;
+			}
+		});
 		this.accept(this::close);
 	}
 

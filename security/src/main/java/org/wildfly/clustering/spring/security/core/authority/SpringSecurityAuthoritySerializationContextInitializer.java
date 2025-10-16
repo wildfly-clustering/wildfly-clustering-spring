@@ -12,11 +12,14 @@ import org.wildfly.clustering.marshalling.protostream.SerializationContext;
 import org.wildfly.clustering.marshalling.protostream.SerializationContextInitializer;
 
 /**
+ * The serialization context initializer for the {@link org.springframework.security.core.authority} package.
  * @author Paul Ferraro
  */
 @MetaInfServices(SerializationContextInitializer.class)
 public class SpringSecurityAuthoritySerializationContextInitializer extends AbstractSerializationContextInitializer {
-
+	/**
+	 * Creates a new serialization context initializer.
+	 */
 	public SpringSecurityAuthoritySerializationContextInitializer() {
 		super(SimpleGrantedAuthority.class.getPackage());
 	}

@@ -22,6 +22,7 @@ import org.wildfly.clustering.marshalling.protostream.ProtoStreamReader;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamWriter;
 
 /**
+ * A ProtoStream marshaller for a hash authentication token.
  * @author Paul Ferraro
  * @param <T> token type
  */
@@ -35,7 +36,7 @@ public class HashAuthenticationTokenMarshaller<T extends AbstractAuthenticationT
 	private final Class<T> tokenClass;
 	private final ToIntFunction<T> hash;
 
-	public HashAuthenticationTokenMarshaller(Class<T> tokenClass, ToIntFunction<T> hash) {
+	HashAuthenticationTokenMarshaller(Class<T> tokenClass, ToIntFunction<T> hash) {
 		this.tokenClass = tokenClass;
 		this.hash = hash;
 	}

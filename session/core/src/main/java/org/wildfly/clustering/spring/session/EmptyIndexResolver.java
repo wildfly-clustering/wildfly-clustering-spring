@@ -15,6 +15,7 @@ import org.springframework.session.Session;
  * @author Paul Ferraro
  */
 public enum EmptyIndexResolver implements IndexResolver<Session> {
+	/** Singleton instance */
 	INSTANCE;
 
 	@Override

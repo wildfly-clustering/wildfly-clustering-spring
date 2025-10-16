@@ -35,6 +35,7 @@ import org.wildfly.clustering.spring.session.IndexingConfiguration;
 import org.wildfly.clustering.spring.session.UserConfiguration;
 
 /**
+ * A Spring bean that configures and produces user configuration.
  * @author Paul Ferraro
  */
 public class UserConfigurationBean extends AutoDestroyBean implements UserConfiguration, InitializingBean {
@@ -46,6 +47,14 @@ public class UserConfigurationBean extends AutoDestroyBean implements UserConfig
 	private final HotRodConfiguration hotrod;
 	private final RemoteCacheContainerProvider provider;
 
+	/**
+	 * Creates a user configuration bean.
+	 * @param managerFactoryConfiguration a session manager factory configuration
+	 * @param managerConfiguration a session manager configuration
+	 * @param indexing the indexing configuration
+	 * @param hotrod the HotRod configuration
+	 * @param provider the remote cache container provider
+	 */
 	public UserConfigurationBean(SessionManagerFactoryConfiguration<Void> managerFactoryConfiguration, SessionManagerConfiguration<ServletContext> managerConfiguration, IndexingConfiguration indexing, HotRodConfiguration hotrod, RemoteCacheContainerProvider provider) {
 		this.managerFactoryConfiguration = managerFactoryConfiguration;
 		this.managerConfiguration = managerConfiguration;
@@ -58,7 +67,7 @@ public class UserConfigurationBean extends AutoDestroyBean implements UserConfig
 	public void afterPropertiesSet() throws Exception {
 		RemoteCacheContainer container = this.provider.getRemoteCacheContainer();
 		String applicationName = this.managerFactoryConfiguration.getDeploymentName();
-		String templateName = this.hotrod.getTemplateName();
+		String templateName = this.hotrod.getTemplate();
 		String configuration = this.hotrod.getConfiguration();
 		for (Map.Entry<String, String> entry : this.indexing.getIndexes().entrySet()) {
 			String cacheName = String.format("%s/%s", applicationName, entry.getKey());

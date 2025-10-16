@@ -18,16 +18,23 @@ import org.wildfly.clustering.spring.session.UserConfiguration;
 import org.wildfly.clustering.spring.session.infinispan.embedded.config.annotation.EnableInfinispanHttpSession;
 
 /**
+ * A Spring bean that configures and produces a non-indexing Spring Session repository.
  * @author Paul Ferraro
  */
 @Configuration(proxyBeanMethods = false)
 @Import(SpringHttpSessionConfiguration.class)
 public class InfinispanHttpSessionConfiguration extends AbstractInfinispanHttpSessionConfiguration {
-
+	/**
+	 * Creates a session configuration
+	 */
 	public InfinispanHttpSessionConfiguration() {
 		super(EnableInfinispanHttpSession.class, Map.of(), EmptyIndexResolver.INSTANCE);
 	}
 
+	/**
+	 * Produces a user configuration
+	 * @return a user configuration
+	 */
 	@Bean
 	public UserConfiguration userConfiguration() {
 		return new UserConfiguration() {

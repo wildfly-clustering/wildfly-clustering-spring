@@ -31,6 +31,7 @@ import org.wildfly.clustering.spring.session.IndexingConfiguration;
 import org.wildfly.clustering.spring.session.UserConfiguration;
 
 /**
+ * A Spring bean that configures and produces a user configuration.
  * @author Paul Ferraro
  */
 public class UserConfigurationBean extends AutoDestroyBean implements UserConfiguration, InitializingBean {
@@ -41,6 +42,13 @@ public class UserConfigurationBean extends AutoDestroyBean implements UserConfig
 	private final IndexingConfiguration indexing;
 	private final EmbeddedCacheContainerConfiguration infinispan;
 
+	/**
+	 * Creates a user configuration bean
+	 * @param managerFactoryConfiguration the session manager factory configuration
+	 * @param managerConfiguration the session manager configuration
+	 * @param indexing the indexing configuration
+	 * @param infinispan the cache container configuration
+	 */
 	public UserConfigurationBean(SessionManagerFactoryConfiguration<Void> managerFactoryConfiguration, SessionManagerConfiguration<ServletContext> managerConfiguration, IndexingConfiguration indexing, EmbeddedCacheContainerConfiguration infinispan) {
 		this.sessionManagerFactoryConfiguration = managerFactoryConfiguration;
 		this.sessionManagerConfiguration = managerConfiguration;

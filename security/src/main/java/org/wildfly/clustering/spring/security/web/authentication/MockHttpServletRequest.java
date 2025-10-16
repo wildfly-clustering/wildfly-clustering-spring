@@ -31,17 +31,35 @@ import jakarta.servlet.http.Part;
 
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
+/**
+ * A mock servlet request.
+ * @author Paul Ferraro
+ */
 public class MockHttpServletRequest implements HttpServletRequest {
 	private final String remoteAddress;
 	private final HttpSession session;
 
+	/**
+	 * Creates a mock servlet request using the specified authentication details.
+	 * @param details authentication details
+	 */
 	public MockHttpServletRequest(WebAuthenticationDetails details) {
 		this(details.getRemoteAddress(), details.getSessionId());
 	}
 
+	/**
+	 * Creates a mock servlet request using the specified remote address and session identifier.
+	 * @param remoteAddress the value to be returned via {@link #getRemoteAddr()}.
+	 * @param sessionId the identifier of the session to be returned via {@link #getSession()}.
+	 */
 	public MockHttpServletRequest(String remoteAddress, String sessionId) {
 		this.remoteAddress = remoteAddress;
 		this.session = (sessionId != null) ? new MockHttpSession(sessionId) : null;
+	}
+
+	@Override
+	public HttpSession getSession() {
+		return this.session;
 	}
 
 	@Override
@@ -318,11 +336,6 @@ public class MockHttpServletRequest implements HttpServletRequest {
 
 	@Override
 	public String getServletPath() {
-		return null;
-	}
-
-	@Override
-	public HttpSession getSession() {
 		return null;
 	}
 
