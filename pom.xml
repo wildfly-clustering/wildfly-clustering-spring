@@ -21,7 +21,7 @@
 	<properties>
 		<maven.surefire.parameters>${java.runtime.parameters} -javaagent:${project.build.directory}/agent/mockito-core.jar</maven.surefire.parameters>
 
-		<version.org.apache.tomcat>10.1.47</version.org.apache.tomcat>
+		<version.org.apache.tomcat>10.1.48</version.org.apache.tomcat>
 
 		<tomcat1.http.port>8080</tomcat1.http.port>
 		<tomcat2.http.port>8180</tomcat2.http.port>
