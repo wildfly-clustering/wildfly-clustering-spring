@@ -32,9 +32,9 @@
 		<tomcat.admin.username>admin</tomcat.admin.username>
 		<tomcat.admin.password>admin</tomcat.admin.password>
 		<tomcat.runtime.parameters>${java.runtime.parameters} -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -Djgroups.bind.address=localhost</tomcat.runtime.parameters>
-		<tomcat1.runtime.parameters>${tomcat.runtime.parameters} -Dtomcat.management.port=8005 -Dtomcat.http.port=${tomcat1.http.port} -Dtomcat.https.port=8443 -Dcom.sun.management.jmxremote.port=${tomcat1.jmx.port} -Dcom.sun.management.jmxremote.rmi.port=${tomcat1.jmx.port} -Djgroups.bind.port=7800</tomcat1.runtime.parameters>
-		<tomcat2.runtime.parameters>${tomcat.runtime.parameters} -Dtomcat.management.port=8105 -Dtomcat.http.port=${tomcat2.http.port} -Dtomcat.https.port=8543 -Dcom.sun.management.jmxremote.port=${tomcat2.jmx.port} -Dcom.sun.management.jmxremote.rmi.port=${tomcat2.jmx.port} -Djgroups.bind.port=7810</tomcat2.runtime.parameters>
-		<tomcat3.runtime.parameters>${tomcat.runtime.parameters} -Dtomcat.management.port=8205 -Dtomcat.http.port=${tomcat3.http.port} -Dtomcat.https.port=8643 -Dcom.sun.management.jmxremote.port=${tomcat3.jmx.port} -Dcom.sun.management.jmxremote.rmi.port=${tomcat3.jmx.port} -Djgroups.bind.port=7820</tomcat3.runtime.parameters>
+		<tomcat1.runtime.parameters>${tomcat.runtime.parameters} -Dtomcat.jvmRoute=tomcat-1 -Dtomcat.management.port=8005 -Dtomcat.http.port=${tomcat1.http.port} -Dtomcat.https.port=8443 -Dcom.sun.management.jmxremote.port=${tomcat1.jmx.port} -Dcom.sun.management.jmxremote.rmi.port=${tomcat1.jmx.port} -Djgroups.bind.port=7800</tomcat1.runtime.parameters>
+		<tomcat2.runtime.parameters>${tomcat.runtime.parameters} -Dtomcat.jvmRoute=tomcat-2 -Dtomcat.management.port=8105 -Dtomcat.http.port=${tomcat2.http.port} -Dtomcat.https.port=8543 -Dcom.sun.management.jmxremote.port=${tomcat2.jmx.port} -Dcom.sun.management.jmxremote.rmi.port=${tomcat2.jmx.port} -Djgroups.bind.port=7810</tomcat2.runtime.parameters>
+		<tomcat3.runtime.parameters>${tomcat.runtime.parameters} -Dtomcat.jvmRoute=tomcat-3 -Dtomcat.management.port=8205 -Dtomcat.http.port=${tomcat3.http.port} -Dtomcat.https.port=8643 -Dcom.sun.management.jmxremote.port=${tomcat3.jmx.port} -Dcom.sun.management.jmxremote.rmi.port=${tomcat3.jmx.port} -Djgroups.bind.port=7820</tomcat3.runtime.parameters>
 	</properties>
 
 	<modules>
