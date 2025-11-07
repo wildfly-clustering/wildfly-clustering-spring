@@ -129,13 +129,6 @@ public class InfinispanSessionManagerFactoryBean<S, C, L> extends AutoDestroyBea
 		cache.start();
 		this.accept(cache::stop);
 
-		EmbeddedCacheConfiguration cacheConfiguration = new EmbeddedCacheConfiguration() {
-			@Override
-			public <K, V> Cache<K, V> getCache() {
-				return container.getCache(applicationName);
-			}
-		};
-
 		this.sessionManagerFactory = new InfinispanSessionManagerFactory<>(new InfinispanSessionManagerFactory.Configuration<S, C, Void, L>() {
 			@Override
 			public SessionManagerFactoryConfiguration<Void> getSessionManagerFactoryConfiguration() {
@@ -154,7 +147,7 @@ public class InfinispanSessionManagerFactoryBean<S, C, L> extends AutoDestroyBea
 
 			@Override
 			public EmbeddedCacheConfiguration getCacheConfiguration() {
-				return cacheConfiguration;
+				return EmbeddedCacheConfiguration.of(cache);
 			}
 
 			@Override

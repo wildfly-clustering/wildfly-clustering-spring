@@ -11,6 +11,7 @@ import java.util.function.Predicate;
 
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.util.StringValueResolver;
+import org.wildfly.clustering.function.UnaryOperator;
 import org.wildfly.clustering.spring.context.infinispan.remote.HotRodConfiguration;
 import org.wildfly.clustering.spring.context.infinispan.remote.MutableHotRodConfiguration;
 
@@ -25,7 +26,7 @@ public class HotRodConfigurationBean implements MutableHotRodConfiguration {
 	private String templateName = null;
 	private String configuration = HotRodConfiguration.DEFAULT_CONFIGURATION;
 
-	private StringValueResolver resolver = value -> value;
+	private StringValueResolver resolver = UnaryOperator.<String>identity()::apply;
 
 	/**
 	 * Creates a HotRod configuration bean.

@@ -18,7 +18,7 @@
 
 		<Connector port="${tomcat.http.port}" protocol="org.apache.coyote.http11.Http11Nio2Protocol" connectionTimeout="20000" redirectPort="${tomcat.https.port}" maxParameterCount="1000"/>
 
-		<Engine name="Catalina" defaultHost="localhost">
+		<Engine name="Catalina" defaultHost="localhost" jvmRoute="${tomcat.jvmRoute}">
 
 			<Realm className="org.apache.catalina.realm.LockOutRealm">
 				<Realm className="org.apache.catalina.realm.UserDatabaseRealm" resourceName="UserDatabase"/>

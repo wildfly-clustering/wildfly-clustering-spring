@@ -19,8 +19,6 @@
 	<name>${project.repository.name}: Modules</name>
 
 	<properties>
-		<maven.surefire.parameters>${java.runtime.parameters} -javaagent:${project.build.directory}/agent/mockito-core.jar</maven.surefire.parameters>
-
 		<version.org.apache.tomcat>10.1.47</version.org.apache.tomcat>
 
 		<tomcat1.http.port>8080</tomcat1.http.port>
@@ -32,9 +30,9 @@
 		<tomcat.admin.username>admin</tomcat.admin.username>
 		<tomcat.admin.password>admin</tomcat.admin.password>
 		<tomcat.runtime.parameters>${java.runtime.parameters} -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -Djgroups.bind.address=localhost</tomcat.runtime.parameters>
-		<tomcat1.runtime.parameters>${tomcat.runtime.parameters} -Dtomcat.management.port=8005 -Dtomcat.http.port=${tomcat1.http.port} -Dtomcat.https.port=8443 -Dcom.sun.management.jmxremote.port=${tomcat1.jmx.port} -Dcom.sun.management.jmxremote.rmi.port=${tomcat1.jmx.port} -Djgroups.bind.port=7800</tomcat1.runtime.parameters>
-		<tomcat2.runtime.parameters>${tomcat.runtime.parameters} -Dtomcat.management.port=8105 -Dtomcat.http.port=${tomcat2.http.port} -Dtomcat.https.port=8543 -Dcom.sun.management.jmxremote.port=${tomcat2.jmx.port} -Dcom.sun.management.jmxremote.rmi.port=${tomcat2.jmx.port} -Djgroups.bind.port=7810</tomcat2.runtime.parameters>
-		<tomcat3.runtime.parameters>${tomcat.runtime.parameters} -Dtomcat.management.port=8205 -Dtomcat.http.port=${tomcat3.http.port} -Dtomcat.https.port=8643 -Dcom.sun.management.jmxremote.port=${tomcat3.jmx.port} -Dcom.sun.management.jmxremote.rmi.port=${tomcat3.jmx.port} -Djgroups.bind.port=7820</tomcat3.runtime.parameters>
+		<tomcat1.runtime.parameters>${tomcat.runtime.parameters} -Dtomcat.jvmRoute=tomcat-1 -Dtomcat.management.port=8005 -Dtomcat.http.port=${tomcat1.http.port} -Dtomcat.https.port=8443 -Dcom.sun.management.jmxremote.port=${tomcat1.jmx.port} -Dcom.sun.management.jmxremote.rmi.port=${tomcat1.jmx.port} -Djgroups.bind.port=7800</tomcat1.runtime.parameters>
+		<tomcat2.runtime.parameters>${tomcat.runtime.parameters} -Dtomcat.jvmRoute=tomcat-2 -Dtomcat.management.port=8105 -Dtomcat.http.port=${tomcat2.http.port} -Dtomcat.https.port=8543 -Dcom.sun.management.jmxremote.port=${tomcat2.jmx.port} -Dcom.sun.management.jmxremote.rmi.port=${tomcat2.jmx.port} -Djgroups.bind.port=7810</tomcat2.runtime.parameters>
+		<tomcat3.runtime.parameters>${tomcat.runtime.parameters} -Dtomcat.jvmRoute=tomcat-3 -Dtomcat.management.port=8205 -Dtomcat.http.port=${tomcat3.http.port} -Dtomcat.https.port=8643 -Dcom.sun.management.jmxremote.port=${tomcat3.jmx.port} -Dcom.sun.management.jmxremote.rmi.port=${tomcat3.jmx.port} -Djgroups.bind.port=7820</tomcat3.runtime.parameters>
 	</properties>
 
 	<modules>
@@ -47,13 +45,6 @@
 
 	<dependencyManagement>
 		<dependencies>
-			<!-- Provided dependencies -->
-			<dependency>
-				<groupId>jakarta.servlet</groupId>
-				<artifactId>jakarta.servlet-api</artifactId>
-				<version>6.0.0</version>
-			</dependency>
-
 			<!-- BOM dependencies -->
 			<dependency>
 				<groupId>io.projectreactor</groupId>
@@ -66,6 +57,34 @@
 				<groupId>org.assertj</groupId>
 				<artifactId>assertj-bom</artifactId>
 				<version>3.27.6</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.jboss.arquillian</groupId>
+				<artifactId>arquillian-bom</artifactId>
+				<version>1.10.0.Final</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.jboss.shrinkwrap</groupId>
+				<artifactId>shrinkwrap-bom</artifactId>
+				<version>1.2.6</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.junit</groupId>
+				<artifactId>junit-bom</artifactId>
+				<version>6.0.1</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.mockito</groupId>
+				<artifactId>mockito-bom</artifactId>
+				<version>5.20.0</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -97,43 +116,6 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-
-			<!-- External compile dependencies -->
-			<dependency>
-				<groupId>org.kohsuke.metainf-services</groupId>
-				<artifactId>metainf-services</artifactId>
-				<version>1.11</version>
-			</dependency>
-
-			<!-- Test BOM dependencies -->
-			<dependency>
-				<groupId>org.jboss.arquillian</groupId>
-				<artifactId>arquillian-bom</artifactId>
-				<version>1.10.0.Final</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.shrinkwrap</groupId>
-				<artifactId>shrinkwrap-bom</artifactId>
-				<version>1.2.6</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.junit</groupId>
-				<artifactId>junit-bom</artifactId>
-				<version>6.0.0</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.mockito</groupId>
-				<artifactId>mockito-bom</artifactId>
-				<version>5.20.0</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
 			<dependency>
 				<groupId>org.testcontainers</groupId>
 				<artifactId>testcontainers-bom</artifactId>
@@ -141,8 +123,20 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+			<dependency>
+				<groupId>org.wildfly.clustering</groupId>
+				<artifactId>wildfly-clustering-bom</artifactId>
+				<version>8.0.3.Final</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
 
-			<!-- Test dependencies -->
+			<!-- Bom-less dependencies -->
+			<dependency>
+				<groupId>jakarta.servlet</groupId>
+				<artifactId>jakarta.servlet-api</artifactId>
+				<version>6.0.0</version>
+			</dependency>
 			<dependency>
 				<groupId>org.apache.tomcat</groupId>
 				<artifactId>tomcat-catalina</artifactId>
@@ -152,6 +146,11 @@
 				<groupId>org.jboss.arquillian.container</groupId>
 				<artifactId>arquillian-tomcat-managed-8</artifactId>
 				<version>1.1.0.Final</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kohsuke.metainf-services</groupId>
+				<artifactId>metainf-services</artifactId>
+				<version>1.11</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -213,50 +212,35 @@
 				</configuration>
 				<executions>
 					<execution>
-						<id>copy-java-agent</id>
-						<phase>process-test-classes</phase>
+						<id>default</id>
+						<!-- Running this too early messes with javadoc aggregation -->
+						<phase>process-test-resources</phase>
 						<goals>
-							<goal>copy-dependencies</goal>
+							<goal>properties</goal>
 						</goals>
-						<configuration>
-							<includeGroupIds>org.mockito</includeGroupIds>
-							<includeArtifactIds>mockito-core</includeArtifactIds>
-							<stripVersion>true</stripVersion>
-							<outputDirectory>${project.build.directory}/agent</outputDirectory>
-						</configuration>
 					</execution>
 				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-resources-plugin</artifactId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>javadoc-aggregate</id>
+						<inherited>false</inherited>
+						<goals>
+							<goal>aggregate-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
-					<overwrite>true</overwrite>
+					<argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
-
-	<profiles>
-		<profile>
-			<id>release</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-javadoc-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>javadoc-aggregate</id>
-								<inherited>false</inherited>
-								<goals>
-									<goal>aggregate-jar</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 </project>
