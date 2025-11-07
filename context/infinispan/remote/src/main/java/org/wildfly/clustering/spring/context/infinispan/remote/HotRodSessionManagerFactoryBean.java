@@ -79,14 +79,6 @@ public class HotRodSessionManagerFactoryBean<S, C, L> extends AutoDestroyBean im
 		cache.start();
 		this.accept(cache::stop);
 
-		RemoteCacheConfiguration cacheConfiguration = new RemoteCacheConfiguration() {
-			@SuppressWarnings("unchecked")
-			@Override
-			public <CK, CV> RemoteCache<CK, CV> getCache() {
-				return (RemoteCache<CK, CV>) container.getCache(deploymentName).withDataFormat(DataFormat.builder().keyType(MediaType.APPLICATION_OBJECT).keyMarshaller(container.getMarshaller()).valueType(MediaType.APPLICATION_OBJECT).valueMarshaller(container.getMarshaller()).build());
-			}
-		};
-
 		this.sessionManagerFactory = new HotRodSessionManagerFactory<>(new HotRodSessionManagerFactory.Configuration<S, C, Void, L>() {
 			@Override
 			public SessionManagerFactoryConfiguration<Void> getSessionManagerFactoryConfiguration() {
@@ -105,7 +97,7 @@ public class HotRodSessionManagerFactoryBean<S, C, L> extends AutoDestroyBean im
 
 			@Override
 			public RemoteCacheConfiguration getCacheConfiguration() {
-				return cacheConfiguration;
+				return RemoteCacheConfiguration.of(cache.withDataFormat(DataFormat.builder().keyType(MediaType.APPLICATION_OBJECT).keyMarshaller(container.getMarshaller()).valueType(MediaType.APPLICATION_OBJECT).valueMarshaller(container.getMarshaller()).build()));
 			}
 		});
 		this.accept(this::close);

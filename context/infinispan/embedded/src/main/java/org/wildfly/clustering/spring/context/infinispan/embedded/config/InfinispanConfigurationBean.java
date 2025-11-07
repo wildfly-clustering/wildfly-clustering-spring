@@ -10,6 +10,7 @@ import java.util.function.Predicate;
 
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.util.StringValueResolver;
+import org.wildfly.clustering.function.UnaryOperator;
 import org.wildfly.clustering.spring.context.infinispan.embedded.MutableInfinispanConfiguration;
 
 /**
@@ -20,7 +21,7 @@ public class InfinispanConfigurationBean implements MutableInfinispanConfigurati
 
 	private String resource = DEFAULT_CONFIGURATION_RESOURCE;
 	private String templateName = null;
-	private StringValueResolver resolver = value -> value;
+	private StringValueResolver resolver = UnaryOperator.<String>identity()::apply;
 
 	/**
 	 * Creates an Infinispan configuration bean.

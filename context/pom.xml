@@ -15,7 +15,7 @@
 	<artifactId>wildfly-clustering-spring-context</artifactId>
 	<packaging>pom</packaging>
 
-	<name>${project.prefix.context}: Modules</name>
+	<name>${project.spring.context}: Modules</name>
 
 	<properties>
 		<project.spring.context>${project.repository.name} Context</project.spring.context>
