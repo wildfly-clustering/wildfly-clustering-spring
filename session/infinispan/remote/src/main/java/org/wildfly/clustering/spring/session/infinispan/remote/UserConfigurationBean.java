@@ -64,7 +64,7 @@ public class UserConfigurationBean extends AutoDestroyBean implements UserConfig
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		RemoteCacheContainer container = this.provider.getRemoteCacheContainer();
 		String applicationName = this.managerFactoryConfiguration.getDeploymentName();
 		String templateName = this.hotrod.getTemplate();

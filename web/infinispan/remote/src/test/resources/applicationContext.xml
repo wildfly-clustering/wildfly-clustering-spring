@@ -14,10 +14,10 @@
 			</props>
 		</property>
 		<property name="granularity">
-			<value type="org.wildfly.clustering.spring.context.SessionPersistenceGranularity">SESSION</value>
+			<value type="org.wildfly.clustering.spring.context.SessionPersistenceGranularity">${session.granularity}</value>
 		</property>
 		<property name="marshaller">
-			<value type="org.wildfly.clustering.spring.context.SessionAttributeMarshaller">JBOSS</value>
+			<value type="org.wildfly.clustering.spring.context.SessionAttributeMarshaller">${session.marshaller}</value>
 		</property>
 	</bean>
 

@@ -32,7 +32,7 @@ public class SessionManagerBean extends AutoDestroyBean implements SessionManage
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		this.manager.start();
 		this.accept(this.manager::stop);
 	}

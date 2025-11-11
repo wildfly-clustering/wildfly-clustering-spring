@@ -126,7 +126,7 @@
 			<dependency>
 				<groupId>org.wildfly.clustering</groupId>
 				<artifactId>wildfly-clustering-bom</artifactId>
-				<version>8.0.3.Final</version>
+				<version>8.0.4.Final</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -197,23 +197,6 @@
 						</annotationProcessorPath>
 					</annotationProcessorPaths>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<configuration>
-					<artifact>${project.groupId}:${project.artifactId}:${project.version}</artifact>
-				</configuration>
-				<executions>
-					<execution>
-						<id>default</id>
-						<!-- Running this too early messes with javadoc aggregation -->
-						<phase>process-test-resources</phase>
-						<goals>
-							<goal>properties</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

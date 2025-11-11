@@ -24,7 +24,7 @@ public class InfinispanSessionManagementArgumentsProvider implements ArgumentsPr
 	private final Set<String> templates = Set.of("dist-tx", "repl-tx");
 
 	@Override
-	public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+	public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
 		Stream.Builder<Arguments> builder = Stream.builder();
 		for (String template : this.templates) {
 			for (SessionPersistenceGranularity strategy : EnumSet.allOf(SessionPersistenceGranularity.class)) {

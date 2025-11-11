@@ -71,7 +71,7 @@ public class RemoteCacheContainerProviderBean extends AutoDestroyBean implements
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		COUNTER.incrementAndGet();
 		this.accept(() -> {
 			// Stop RxJava schedulers when no longer in use

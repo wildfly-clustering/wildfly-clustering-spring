@@ -25,8 +25,8 @@ import reactor.core.scheduler.Schedulers;
  * A Spring Web session facade for a distributable session.
  * @author Paul Ferraro
  */
-public class DistributableWebSession implements SpringWebSession, Function<String, Void> {
-	private static final System.Logger LOGGER = System.getLogger(DistributableWebSession.class.getPackageName());
+public class StartedWebSession implements SpringWebSession, Function<String, Void> {
+	private static final System.Logger LOGGER = System.getLogger(StartedWebSession.class.getPackageName());
 
 	private static void log(Throwable exception) {
 		LOGGER.log(System.Logger.Level.WARNING, exception.getLocalizedMessage(), exception);
@@ -37,7 +37,6 @@ public class DistributableWebSession implements SpringWebSession, Function<Strin
 	private final AtomicReference<Runnable> closeTask;
 	private final Instant startTime;
 
-	private volatile boolean started;
 	private volatile Session<Void> session;
 
 	/**
@@ -47,10 +46,9 @@ public class DistributableWebSession implements SpringWebSession, Function<Strin
 	 * @param batch the batch associated with this session
 	 * @param closeTask a task to run on session close.
 	 */
-	public DistributableWebSession(SessionManager<Void> manager, Session<Void> session, SuspendedBatch batch, Runnable closeTask) {
+	public StartedWebSession(SessionManager<Void> manager, Session<Void> session, SuspendedBatch batch, Runnable closeTask) {
 		this.manager = manager;
 		this.session = session;
-		this.started = session.isValid() && !session.getMetaData().isNew();
 		this.batch = batch;
 		this.closeTask = new AtomicReference<>(closeTask);
 		this.startTime = session.isValid() && session.getMetaData().isNew() ? session.getMetaData().getCreationTime() : Instant.now();
@@ -68,17 +66,12 @@ public class DistributableWebSession implements SpringWebSession, Function<Strin
 
 	@Override
 	public void start() {
-		this.started = true;
+		// Already started
 	}
 
 	@Override
 	public boolean isStarted() {
-		return this.started;
-	}
-
-	@Override
-	public boolean isNew() {
-		return this.session.getMetaData().isNew();
+		return true;
 	}
 
 	@Override
@@ -89,7 +82,7 @@ public class DistributableWebSession implements SpringWebSession, Function<Strin
 	@Override
 	public Mono<Void> changeSessionId() {
 		Mono<String> identifier = Mono.fromSupplier(this.manager.getIdentifierFactory()).publishOn(Schedulers.boundedElastic());
-		return identifier.map(this).doOnError(DistributableWebSession::log);
+		return identifier.map(this).doOnError(StartedWebSession::log);
 	}
 
 	@Override
@@ -125,21 +118,21 @@ public class DistributableWebSession implements SpringWebSession, Function<Strin
 	}
 
 	@Override
-	public void close() {
-		if (this.started) {
+	public Mono<Void> save() {
+		// N.B. Poor interface design - this method should not be visible to the application
+		// Fire-and-forget close
+		return Mono.<Void>fromRunnable(() -> Mono.fromRunnable(this::closeSync)
+				.doOnError(StartedWebSession::log)
+				.subscribeOn(Schedulers.boundedElastic())
+				.subscribe()).publishOn(Schedulers.boundedElastic());
+	}
+
+	void closeSync() {
+		if (this.isValid()) {
 			// According to §7.6 of the servlet specification:
 			// The session is considered to be accessed when a request that is part of the session is first handled by the servlet container.
 			this.close(session -> session.getMetaData().setLastAccess(this.startTime, Instant.now()));
-		} else {
-			// Invalidate if session was never "started".
-			this.invalidateSync();
 		}
-	}
-
-	@Override
-	public Mono<Void> save() {
-		// This behavior is implemented via close(), to prevent applications from manipulating session lifecycle
-		return Mono.empty();
 	}
 
 	@Override

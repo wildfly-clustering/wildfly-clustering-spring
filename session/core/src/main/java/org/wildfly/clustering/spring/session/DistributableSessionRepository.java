@@ -13,6 +13,7 @@ import java.util.concurrent.locks.StampedLock;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.session.FindByIndexNameSessionRepository;
@@ -33,7 +34,7 @@ import org.wildfly.clustering.session.user.UserManager;
  * Additionally indexes sessions using a set of {@link UserManager} instances.
  * @author Paul Ferraro
  */
-public class DistributableSessionRepository implements FindByIndexNameSessionRepository<SpringSession>, AutoCloseable {
+public class DistributableSessionRepository implements FindByIndexNameSessionRepository<SpringSession>, DisposableBean {
 	private static final System.Logger LOGGER = System.getLogger(DistributableSessionRepository.class.getPackageName());
 	// Handle redundant calls to findById(...)
 	private static final ThreadLocal<SpringSession> CURRENT_SESSION = new ThreadLocal<>();
@@ -56,7 +57,7 @@ public class DistributableSessionRepository implements FindByIndexNameSessionRep
 	}
 
 	@Override
-	public void close() {
+	public void destroy() {
 		try {
 			this.lifecycleLock.writeLockInterruptibly();
 		} catch (InterruptedException e) {
@@ -93,7 +94,7 @@ public class DistributableSessionRepository implements FindByIndexNameSessionRep
 		Runnable closeTask = entry.getValue();
 		try (Context<Batch> context = suspendedBatch.resumeWithContext()) {
 			Session<Void> session = factory.get();
-			if ((session == null) || !session.isValid() || session.getMetaData().isExpired()) {
+			if ((session == null) || !session.isValid()) {
 				return close(context, Consumer.empty(), closeTask);
 			}
 			return new DistributableSession(this.manager, session, suspendedBatch, closeTask, this.indexing, this.destroyAction);
