@@ -33,7 +33,7 @@ public class AutoDestroyBean implements DisposableBean, Consumer<Runnable> {
 	}
 
 	@Override
-	public void destroy() throws Exception {
+	public void destroy() {
 		Iterator<Runnable> tasks = this.tasks.iterator();
 		while (tasks.hasNext()) {
 			try {

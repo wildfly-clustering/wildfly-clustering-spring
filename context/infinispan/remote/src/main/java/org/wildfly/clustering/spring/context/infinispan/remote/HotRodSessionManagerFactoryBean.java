@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.spring.context.infinispan.remote;
 
-import java.util.OptionalInt;
-
 import org.infinispan.client.hotrod.DataFormat;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheContainer;
@@ -58,15 +56,14 @@ public class HotRodSessionManagerFactoryBean<S, C, L> extends AutoDestroyBean im
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		RemoteCacheContainer container = this.provider.getRemoteCacheContainer();
 		String deploymentName = this.configuration.getDeploymentName();
 		String templateName = this.hotrod.getTemplate();
 		String configuration = this.hotrod.getConfiguration();
-		OptionalInt maxSize = this.configuration.getMaxSize();
 
 		container.getConfiguration().addRemoteCache(deploymentName, builder -> {
-			builder.forceReturnValues(false).nearCacheMode(maxSize.isEmpty() ? NearCacheMode.DISABLED : NearCacheMode.INVALIDATED).transactionMode(TransactionMode.NONE);
+			builder.forceReturnValues(false).nearCacheMode(NearCacheMode.DISABLED).transactionMode(TransactionMode.NONE);
 			if (templateName != null) {
 				builder.templateName(templateName);
 			} else {
