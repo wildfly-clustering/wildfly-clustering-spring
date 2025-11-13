@@ -70,8 +70,7 @@ public class DistributableWebSessionManager implements WebSessionManager, Dispos
 				.doOnNext(session -> exchange.getResponse().beforeCommit(Supplier.of(Mono.defer(() -> {
 					if (session.isStarted() && session.isValid()) {
 						this.identifierResolver.setSessionId(exchange, session.getId());
-					}
-					if (!session.isStarted() || !session.isValid()) {
+					} else {
 						this.identifierResolver.expireSession(exchange);
 					}
 					return session.save().doOnError(DistributableWebSessionManager::log);
