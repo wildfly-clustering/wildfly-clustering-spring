@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>org.wildfly.clustering.spring</groupId>
 		<artifactId>wildfly-clustering-spring-context</artifactId>
-		<version>18.0.0.Final</version>
+		<version>19.0.0.Final-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>wildfly-clustering-spring-context-infinispan</artifactId>
