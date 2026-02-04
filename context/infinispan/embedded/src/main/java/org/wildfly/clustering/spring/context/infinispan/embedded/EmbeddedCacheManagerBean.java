@@ -128,7 +128,6 @@ public class EmbeddedCacheManagerBean extends AutoDestroyBean implements Channel
 		JChannel channel = (configurator != null) ? configurator.createChannel(null) : null;
 		if (channel != null) {
 			channel.setName(transport.nodeName());
-			channel.setDiscardOwnMessages(true);
 			channel.connect(transport.clusterName());
 			this.accept(channel::close);
 
@@ -187,18 +186,6 @@ public class EmbeddedCacheManagerBean extends AutoDestroyBean implements Channel
 					// Register dummy serialization context initializer, to bypass service loading in org.infinispan.marshall.protostream.impl.SerializationContextRegistryImpl
 					// Otherwise marshaller auto-detection will not work
 					.addContextInitializer(new SerializationContextInitializer() {
-						@Deprecated
-						@Override
-						public String getProtoFile() {
-							return null;
-						}
-
-						@Deprecated
-						@Override
-						public String getProtoFileName() {
-							return null;
-						}
-
 						@Override
 						public void registerMarshallers(SerializationContext context) {
 						}

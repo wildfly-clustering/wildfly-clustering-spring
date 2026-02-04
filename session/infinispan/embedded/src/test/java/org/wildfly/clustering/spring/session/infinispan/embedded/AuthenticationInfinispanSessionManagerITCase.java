@@ -22,8 +22,11 @@ import org.assertj.core.api.Assertions;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.arquillian.Deployment;
+import org.wildfly.clustering.arquillian.Tester;
+import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.session.container.SessionManagementTester;
-import org.wildfly.clustering.session.spec.container.ServletSessionManagementTesterConfiguration;
+import org.wildfly.clustering.session.container.SessionManagementTesterConfiguration;
+import org.wildfly.clustering.session.container.servlet.ServletSessionManagementTesterConfiguration;
 import org.wildfly.clustering.spring.session.authentication.SecurityInitializer;
 import org.wildfly.clustering.spring.session.infinispan.embedded.authentication.Config;
 
@@ -33,22 +36,27 @@ import org.wildfly.clustering.spring.session.infinispan.embedded.authentication.
 public class AuthenticationInfinispanSessionManagerITCase extends AbstractInfinispanSessionManagerITCase {
 
 	public AuthenticationInfinispanSessionManagerITCase() {
-		super(configuration -> new SessionManagementTester(configuration) {
+		super(new Function<>() {
 			@Override
-			public void accept(List<Deployment> deployments) {
-				List<URI> endpoints = deployments.stream().map(configuration::locateEndpoint).toList();
-				try {
-					for (URI endpoint : endpoints) {
-						// Verify that authentication is required
-						HttpResponse<Void> response = HttpClient.newHttpClient().send(HttpRequest.newBuilder(endpoint).method(SessionManagementTester.HttpMethod.HEAD.name(), BodyPublishers.noBody()).build(), BodyHandlers.discarding());
-						Assertions.assertThat(response.statusCode()).isEqualTo(HttpServletResponse.SC_UNAUTHORIZED);
+			public Tester apply(SessionManagementTesterConfiguration configuration) {
+				return new SessionManagementTester(configuration) {
+					@Override
+					public void accept(List<Deployment> deployments) {
+						List<URI> endpoints = deployments.stream().map(configuration::locateEndpoint).toList();
+						try {
+							for (URI endpoint : endpoints) {
+								// Verify that authentication is required
+								HttpResponse<Void> response = HttpClient.newHttpClient().send(HttpRequest.newBuilder(endpoint).method(SessionManagementTester.HttpMethod.HEAD.name(), BodyPublishers.noBody()).build(), BodyHandlers.discarding());
+								Assertions.assertThat(response.statusCode()).isEqualTo(HttpServletResponse.SC_UNAUTHORIZED);
+							}
+							super.accept(deployments);
+						} catch (InterruptedException e) {
+							Thread.currentThread().interrupt();
+						} catch (IOException e) {
+							Assertions.fail(e);
+						}
 					}
-					super.accept(deployments);
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-				} catch (IOException e) {
-					Assertions.fail(e);
-				}
+				};
 			}
 		}, new ServletSessionManagementTesterConfiguration() {
 			@Override

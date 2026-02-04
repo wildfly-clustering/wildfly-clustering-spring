@@ -17,7 +17,9 @@ public interface InfinispanConfiguration {
 	 * Returns the path of the configuration resource.
 	 * @return the path of the configuration resource.
 	 */
-	String getResource();
+	default String getResource() {
+		return DEFAULT_CONFIGURATION_RESOURCE;
+	}
 
 	/**
 	 * Returns the name of a cache configuration.

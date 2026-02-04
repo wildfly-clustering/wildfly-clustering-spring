@@ -29,7 +29,7 @@ public class SecurityConfig {
 	FindByIndexNameSessionRepository<SpringSession> repository;
 
 	@Bean
-	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+	public SecurityFilterChain filterChain(HttpSecurity http) {
 		return http.httpBasic(Customizer.withDefaults())
 				.authorizeHttpRequests(auth -> auth.requestMatchers("/").hasRole("ADMIN").anyRequest().authenticated())
 				.securityContext(context -> context.requireExplicitSave(false).securityContextRepository(new HttpSessionSecurityContextRepository()))

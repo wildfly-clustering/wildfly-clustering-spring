@@ -9,13 +9,17 @@ updates:
     schedule:
       interval: "daily"
     ignore:
-      - dependency-name: jakarta.annotation:jakarta.annotation-api
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
       - dependency-name: org.apache.tomcat:tomcat-catalina
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
       - dependency-name: org.apache.tomcat:tomcat
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
       - dependency-name: org.infinispan:infinispan-bom
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: org.springframework:spring-framework-bom
+        update-types: ["version-update:semver-major"]
+      - dependency-name: org.springframework.security:spring-security-bom
+        update-types: ["version-update:semver-major"]
+      - dependency-name: org.springframework.session:spring-session-bom
+        update-types: ["version-update:semver-major"]
       - dependency-name: org.wildfly.clustering:wildfly-clustering-bom
         update-types: ["version-update:semver-major", "version-update:semver-minor"]

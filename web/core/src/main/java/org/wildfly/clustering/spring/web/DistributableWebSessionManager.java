@@ -22,7 +22,7 @@ import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.function.Predicate;
-import org.wildfly.clustering.function.Runnable;
+import org.wildfly.clustering.function.Runner;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
@@ -135,14 +135,14 @@ public class DistributableWebSessionManager implements WebSessionManager, Dispos
 		}
 	}
 
-	private Runnable getSessionCloseTask() {
+	private Runner getSessionCloseTask() {
 		StampedLock lock = this.lifecycleLock;
 		long stamp = lock.tryReadLock();
 		if (!StampedLock.isReadLockStamp(stamp)) {
 			throw new IllegalStateException();
 		}
 		AtomicLong stampRef = new AtomicLong(stamp);
-		return new Runnable() {
+		return new Runner() {
 			@Override
 			public void run() {
 				// Ensure we only unlock once.

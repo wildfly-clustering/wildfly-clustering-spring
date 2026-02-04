@@ -10,7 +10,5 @@ import org.wildfly.clustering.spring.context.SessionManagementParameters;
 /**
  * @author Paul Ferraro
  */
-public interface InfinispanSessionManagementParameters extends SessionManagementParameters {
-
-	String getTemplate();
+public interface InfinispanSessionManagementParameters extends SessionManagementParameters, InfinispanConfiguration {
 }

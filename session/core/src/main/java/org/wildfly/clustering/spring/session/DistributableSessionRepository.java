@@ -10,8 +10,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.StampedLock;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationEvent;
@@ -21,6 +19,8 @@ import org.springframework.session.events.SessionCreatedEvent;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.context.Context;
+import org.wildfly.clustering.function.BiConsumer;
+import org.wildfly.clustering.function.BiFunction;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.session.ImmutableSession;

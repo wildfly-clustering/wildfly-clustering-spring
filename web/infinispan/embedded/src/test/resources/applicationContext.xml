@@ -32,4 +32,4 @@
 	<bean name="webHandler" class="org.springframework.web.reactive.DispatcherHandler"/>
 	<bean class="org.springframework.web.reactive.result.SimpleHandlerAdapter"/>
 
-</beans> 
+</beans>

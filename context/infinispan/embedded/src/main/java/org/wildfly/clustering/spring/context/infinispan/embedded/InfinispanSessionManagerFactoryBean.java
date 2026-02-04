@@ -33,22 +33,16 @@ import org.wildfly.clustering.session.SessionManagerFactory;
 import org.wildfly.clustering.session.SessionManagerFactoryConfiguration;
 import org.wildfly.clustering.session.infinispan.embedded.InfinispanSessionManagerFactory;
 import org.wildfly.clustering.session.infinispan.embedded.metadata.SessionMetaDataKey;
-import org.wildfly.clustering.session.spec.SessionEventListenerSpecificationProvider;
-import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
 import org.wildfly.clustering.spring.context.AutoDestroyBean;
 
 /**
  * A Spring bean that configures and provides an embedded Infinispan session manager.
  * @author Paul Ferraro
- * @param <S> the session specification type
- * @param <C> the deployment context type
- * @param <L> the session event listener specification type
+ * @param <C> the container context type
  */
-public class InfinispanSessionManagerFactoryBean<S, C, L> extends AutoDestroyBean implements SessionManagerFactory<C, Void>, InitializingBean {
+public class InfinispanSessionManagerFactoryBean<C> extends AutoDestroyBean implements SessionManagerFactory<C, Void>, InitializingBean {
 
 	private final SessionManagerFactoryConfiguration<Void> configuration;
-	private final SessionSpecificationProvider<S, C> sessionProvider;
-	private final SessionEventListenerSpecificationProvider<S, L> listenerProvider;
 	private final InfinispanConfiguration infinispan;
 	private final ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration embeddedCacheManagerConfiguration;
 
@@ -57,15 +51,11 @@ public class InfinispanSessionManagerFactoryBean<S, C, L> extends AutoDestroyBea
 	/**
 	 * Creates an Infinispan session manager bean.
 	 * @param configuration the session manager factory configuration
-	 * @param sessionProvider the session specification provider
-	 * @param listenerProvider the session event listener specification provider
 	 * @param infinispan an Infinispan configuration
 	 * @param embeddedCacheManagerConfiguration a cache manager configuration
 	 */
-	public InfinispanSessionManagerFactoryBean(SessionManagerFactoryConfiguration<Void> configuration, SessionSpecificationProvider<S, C> sessionProvider, SessionEventListenerSpecificationProvider<S, L> listenerProvider, InfinispanConfiguration infinispan, ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration embeddedCacheManagerConfiguration) {
+	public InfinispanSessionManagerFactoryBean(SessionManagerFactoryConfiguration<Void> configuration, InfinispanConfiguration infinispan, ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration embeddedCacheManagerConfiguration) {
 		this.configuration = configuration;
-		this.sessionProvider = sessionProvider;
-		this.listenerProvider = listenerProvider;
 		this.infinispan = infinispan;
 		this.embeddedCacheManagerConfiguration = embeddedCacheManagerConfiguration;
 	}
@@ -88,8 +78,8 @@ public class InfinispanSessionManagerFactoryBean<S, C, L> extends AutoDestroyBea
 		// Disable expiration
 		builder.expiration().lifespan(-1).maxIdle(-1).disableReaper().wakeUpInterval(-1);
 
-		OptionalInt maxSize = this.configuration.getMaxSize();
-		Optional<Duration> maxIdle = this.configuration.getIdleTimeout();
+		OptionalInt maxSize = this.configuration.getSizeThreshold();
+		Optional<Duration> maxIdle = this.configuration.getIdleThreshold();
 		EvictionStrategy eviction = maxSize.isPresent() ? EvictionStrategy.REMOVE : EvictionStrategy.MANUAL;
 		builder.memory().storage(StorageType.HEAP)
 				.whenFull(eviction)
@@ -129,20 +119,10 @@ public class InfinispanSessionManagerFactoryBean<S, C, L> extends AutoDestroyBea
 		cache.start();
 		this.accept(cache::stop);
 
-		this.sessionManagerFactory = new InfinispanSessionManagerFactory<>(new InfinispanSessionManagerFactory.Configuration<S, C, Void, L>() {
+		this.sessionManagerFactory = new InfinispanSessionManagerFactory<>(new InfinispanSessionManagerFactory.Configuration<>() {
 			@Override
 			public SessionManagerFactoryConfiguration<Void> getSessionManagerFactoryConfiguration() {
 				return InfinispanSessionManagerFactoryBean.this.configuration;
-			}
-
-			@Override
-			public SessionSpecificationProvider<S, C> getSessionSpecificationProvider() {
-				return InfinispanSessionManagerFactoryBean.this.sessionProvider;
-			}
-
-			@Override
-			public SessionEventListenerSpecificationProvider<S, L> getSessionEventListenerSpecificationProvider() {
-				return InfinispanSessionManagerFactoryBean.this.listenerProvider;
 			}
 
 			@Override

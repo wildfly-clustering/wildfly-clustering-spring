@@ -7,6 +7,8 @@ package org.wildfly.clustering.spring.web.config;
 
 import java.lang.annotation.Annotation;
 import java.time.Duration;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 import jakarta.servlet.ServletContext;
 
@@ -104,7 +106,7 @@ public abstract class WebSessionManagerConfiguration extends SessionManagementCo
 	}
 
 	@Override
-	public Duration getTimeout() {
-		return Duration.ofMinutes(this.getContext().getSessionTimeout());
+	public Optional<Duration> getMaxIdle() {
+		return Optional.ofNullable(Duration.ofMinutes(this.getContext().getSessionTimeout())).filter(Predicate.not(Duration::isZero).and(Predicate.not(Duration::isNegative)));
 	}
 }

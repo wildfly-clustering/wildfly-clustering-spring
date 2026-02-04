@@ -51,6 +51,7 @@ public enum SavedRequestMarshaller implements ProtoStreamMarshaller<DefaultSaved
 	private static final int COOKIE_INDEX = 15;
 	// This is uncommon
 	private static final int PATH_INFO_INDEX = 16;
+	private static final int MATCHING_REQUEST_PARAMETER_NAME = 17;
 
 	private static final String DEFAULT_METHOD = HttpMethod.GET.name();
 	private static final Scheme DEFAULT_SCHEME = Scheme.HTTPS;
@@ -77,56 +78,24 @@ public enum SavedRequestMarshaller implements ProtoStreamMarshaller<DefaultSaved
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case METHOD_INDEX:
-					builder.setMethod(reader.readString());
-					break;
-				case SCHEME_INDEX:
-					builder.setScheme(reader.readEnum(Scheme.class).getName());
-					break;
-				case SERVER_NAME_INDEX:
-					builder.setServerName(reader.readString());
-					break;
-				case SERVER_PORT_INDEX:
-					builder.setServerPort(reader.readUInt32());
-					break;
-				case CONTEXT_PATH_INDEX:
-					builder.setContextPath(reader.readString());
-					break;
-				case SERVLET_PATH_INDEX:
-					builder.setServletPath(reader.readString());
-					break;
-				case PATH_INFO_INDEX:
-					builder.setPathInfo(reader.readString());
-					break;
-				case QUERY_INDEX:
-					builder.setQueryString(reader.readString());
-					break;
-				case PARAMETER_NAME_INDEX:
-					parameterNames.add(reader.readString());
-					break;
-				case PARAMETER_VALUE_INDEX:
-					parameterValues.add(new String[] { reader.readString() });
-					break;
-				case PARAMETER_VALUES_INDEX:
-					parameterValues.add(reader.readAny(String[].class));
-					break;
-				case HEADER_NAME_INDEX:
-					headerNames.add(reader.readString());
-					break;
-				case HEADER_VALUE_INDEX:
-					headerValues.add(new String[] { reader.readString() });
-					break;
-				case HEADER_VALUES_INDEX:
-					headerValues.add(reader.readAny(String[].class));
-					break;
-				case LOCALE_INDEX:
-					locales.add(reader.readObject(Locale.class));
-					break;
-				case COOKIE_INDEX:
-					cookies.add(reader.readObject(SavedCookie.class));
-					break;
-				default:
-					reader.skipField(tag);
+				case METHOD_INDEX -> builder.setMethod(reader.readString());
+				case SCHEME_INDEX -> builder.setScheme(reader.readEnum(Scheme.class).getName());
+				case SERVER_NAME_INDEX -> builder.setServerName(reader.readString());
+				case SERVER_PORT_INDEX -> builder.setServerPort(reader.readUInt32());
+				case CONTEXT_PATH_INDEX -> builder.setContextPath(reader.readString());
+				case SERVLET_PATH_INDEX -> builder.setServletPath(reader.readString());
+				case PATH_INFO_INDEX -> builder.setPathInfo(reader.readString());
+				case QUERY_INDEX -> builder.setQueryString(reader.readString());
+				case PARAMETER_NAME_INDEX -> parameterNames.add(reader.readString());
+				case PARAMETER_VALUE_INDEX -> parameterValues.add(new String[] { reader.readString() });
+				case PARAMETER_VALUES_INDEX -> parameterValues.add(reader.readAny(String[].class));
+				case HEADER_NAME_INDEX -> headerNames.add(reader.readString());
+				case HEADER_VALUE_INDEX -> headerValues.add(new String[] { reader.readString() });
+				case HEADER_VALUES_INDEX -> headerValues.add(reader.readAny(String[].class));
+				case LOCALE_INDEX -> locales.add(reader.readObject(Locale.class));
+				case COOKIE_INDEX -> cookies.add(reader.readObject(SavedCookie.class));
+				case MATCHING_REQUEST_PARAMETER_NAME -> builder.setMatchingRequestParameterName(reader.readString());
+				default -> reader.skipField(tag);
 			}
 		}
 		if (!parameterNames.isEmpty()) {
@@ -149,6 +118,7 @@ public enum SavedRequestMarshaller implements ProtoStreamMarshaller<DefaultSaved
 		}
 		builder.setLocales(locales);
 		builder.setCookies(cookies);
+		builder.setRequestURI(""); // NPE workaround - Builder API says @Nullable, but DefaultSavedRequest constructor requires it?!?
 
 		DefaultSavedRequest request = builder.build();
 		String query = request.getQueryString();
