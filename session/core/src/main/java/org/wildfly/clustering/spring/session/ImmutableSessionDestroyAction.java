@@ -5,11 +5,10 @@
 package org.wildfly.clustering.spring.session;
 
 import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionActivationListener;
 import jakarta.servlet.http.HttpSessionBindingEvent;
 import jakarta.servlet.http.HttpSessionBindingListener;
 
@@ -17,8 +16,12 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.session.Session;
 import org.wildfly.clustering.cache.batch.Batch;
+import org.wildfly.clustering.function.BiConsumer;
+import org.wildfly.clustering.function.BiFunction;
 import org.wildfly.clustering.session.ImmutableSession;
-import org.wildfly.clustering.session.spec.SessionSpecificationProvider;
+import org.wildfly.clustering.session.SessionManager;
+import org.wildfly.clustering.session.container.ContainerProvider;
+import org.wildfly.clustering.session.container.servlet.ServletContainerProvider;
 import org.wildfly.clustering.session.user.User;
 import org.wildfly.clustering.session.user.UserManager;
 
@@ -30,26 +33,26 @@ import org.wildfly.clustering.session.user.UserManager;
  * <li>Removes associated indexes</li>
  * </ol>
  * @author Paul Ferraro
- * @param <B> batch type
+ * @param <C> the session context type
  */
-public class ImmutableSessionDestroyAction<B extends Batch> implements BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> {
-
+public class ImmutableSessionDestroyAction<C> implements BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> {
+	private final SessionManager<C> manager;
 	private final ApplicationEventPublisher publisher;
 	private final ServletContext context;
-	private final SessionSpecificationProvider<HttpSession, ServletContext> provider;
+	private final ContainerProvider<ServletContext, HttpSession, HttpSessionActivationListener, C> provider = new ServletContainerProvider<>();
 	private final UserConfiguration indexing;
 
 	/**
 	 * Creates a session destroy action.
+	 * @param manager the session manager
 	 * @param publisher an application event publisher
 	 * @param context the servlet context
-	 * @param provider the session specification provider
 	 * @param indexing the user configuration
 	 */
-	public ImmutableSessionDestroyAction(ApplicationEventPublisher publisher, ServletContext context, SessionSpecificationProvider<HttpSession, ServletContext> provider, UserConfiguration indexing) {
+	public ImmutableSessionDestroyAction(SessionManager<C> manager, ApplicationEventPublisher publisher, ServletContext context, UserConfiguration indexing) {
+		this.manager = manager;
 		this.publisher = publisher;
 		this.context = context;
-		this.provider = provider;
 		this.indexing = indexing;
 	}
 
@@ -57,7 +60,7 @@ public class ImmutableSessionDestroyAction<B extends Batch> implements BiConsume
 	public void accept(ImmutableSession session, BiFunction<Object, Session, ApplicationEvent> eventFactory) {
 		ApplicationEvent event = eventFactory.apply(this, new DistributableImmutableSession(session));
 		this.publisher.publishEvent(event);
-		HttpSession httpSession = this.provider.asSession(session, this.context);
+		HttpSession httpSession = this.provider.getDetachableSession(this.manager, session, this.context);
 		for (Map.Entry<String, Object> entry : session.getAttributes().entrySet()) {
 			if (entry.getValue() instanceof HttpSessionBindingListener listener) {
 				try {

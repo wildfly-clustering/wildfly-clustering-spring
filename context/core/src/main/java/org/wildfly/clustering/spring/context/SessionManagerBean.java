@@ -5,6 +5,7 @@
 
 package org.wildfly.clustering.spring.context;
 
+import java.time.Instant;
 import java.util.concurrent.CompletionStage;
 
 import org.springframework.beans.factory.InitializingBean;
@@ -63,8 +64,8 @@ public class SessionManagerBean extends AutoDestroyBean implements SessionManage
 	}
 
 	@Override
-	public CompletionStage<Session<Void>> createSessionAsync(String id) {
-		return this.manager.createSessionAsync(id);
+	public CompletionStage<Session<Void>> createSessionAsync(String id, Instant creationTime) {
+		return this.manager.createSessionAsync(id, creationTime);
 	}
 
 	@Override

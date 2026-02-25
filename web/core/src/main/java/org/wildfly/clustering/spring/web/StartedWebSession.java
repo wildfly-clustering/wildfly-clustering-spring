@@ -51,7 +51,7 @@ public class StartedWebSession implements SpringWebSession, Function<String, Voi
 		this.session = session;
 		this.batch = batch;
 		this.closeTask = new AtomicReference<>(closeTask);
-		this.startTime = session.isValid() && session.getMetaData().isNew() ? session.getMetaData().getCreationTime() : Instant.now();
+		this.startTime = session.isValid() && session.getMetaData().getLastAccessTime().isEmpty() ? session.getMetaData().getCreationTime() : Instant.now();
 	}
 
 	@Override
@@ -94,8 +94,10 @@ public class StartedWebSession implements SpringWebSession, Function<String, Voi
 				for (Map.Entry<String, Object> entry : oldSession.getAttributes().entrySet()) {
 					newSession.getAttributes().put(entry.getKey(), entry.getValue());
 				}
-				newSession.getMetaData().setTimeout(oldSession.getMetaData().getTimeout());
-				newSession.getMetaData().setLastAccess(oldSession.getMetaData().getLastAccessStartTime(), oldSession.getMetaData().getLastAccessTime());
+				oldSession.getMetaData().getMaxIdle().ifPresent(newSession.getMetaData()::setMaxIdle);
+				if (oldSession.getMetaData().getLastAccessTime().isPresent()) {
+					newSession.getMetaData().setLastAccess(oldSession.getMetaData().getLastAccessStartTime().get(), oldSession.getMetaData().getLastAccessTime().get());
+				}
 				oldSession.invalidate();
 				this.session = newSession;
 				oldSession.close();
@@ -147,17 +149,17 @@ public class StartedWebSession implements SpringWebSession, Function<String, Voi
 
 	@Override
 	public Instant getLastAccessTime() {
-		return this.session.getMetaData().getLastAccessTime();
+		return this.session.getMetaData().getLastAccessTime().orElse(this.session.getMetaData().getCreationTime());
 	}
 
 	@Override
 	public void setMaxIdleTime(Duration maxIdleTime) {
-		this.session.getMetaData().setTimeout(maxIdleTime);
+		this.session.getMetaData().setMaxIdle(maxIdleTime);
 	}
 
 	@Override
 	public Duration getMaxIdleTime() {
-		return this.session.getMetaData().getTimeout();
+		return this.session.getMetaData().getMaxIdle().orElse(null);
 	}
 
 	private void close(Consumer<Session<Void>> action) {

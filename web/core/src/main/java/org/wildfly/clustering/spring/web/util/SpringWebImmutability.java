@@ -5,11 +5,8 @@
 
 package org.wildfly.clustering.spring.web.util;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
 
-import org.springframework.web.util.HttpSessionMutexListener;
 import org.wildfly.clustering.server.immutable.Immutability;
 
 /**
@@ -18,19 +15,7 @@ import org.wildfly.clustering.server.immutable.Immutability;
  */
 public enum SpringWebImmutability implements Immutability {
 	/** An immutability test for a mutex */
-	MUTEX(Immutability.classes(Set.of(createMutex().getClass())));
-
-	static Object createMutex() {
-		try {
-			// Mutex class is <sarcasm>conveniently</sarcasm> inaccessible
-			Class<?> mutexClass = HttpSessionMutexListener.class.getClassLoader().loadClass(HttpSessionMutexListener.class.getName() + "$Mutex");
-			Constructor<?> constructor = mutexClass.getDeclaredConstructor();
-			constructor.setAccessible(true);
-			return constructor.newInstance();
-		} catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-			throw new IllegalStateException(e);
-		}
-	}
+	MUTEX(Immutability.classes(Set.of(MutexFactory.INSTANCE.get().getClass())));
 
 	private final Immutability immutability;
 

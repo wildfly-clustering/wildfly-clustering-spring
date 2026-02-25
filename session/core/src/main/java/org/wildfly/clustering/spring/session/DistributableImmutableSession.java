@@ -69,7 +69,7 @@ public class DistributableImmutableSession implements SpringSession {
 
 	@Override
 	public Instant getLastAccessedTime() {
-		return this.session.getMetaData().getLastAccessStartTime();
+		return this.session.getMetaData().getLastAccessStartTime().orElse(this.getCreationTime());
 	}
 
 	@Override
@@ -79,7 +79,7 @@ public class DistributableImmutableSession implements SpringSession {
 
 	@Override
 	public Duration getMaxInactiveInterval() {
-		return this.session.getMetaData().getTimeout();
+		return this.session.getMetaData().getMaxIdle().orElse(null);
 	}
 
 	@Override
@@ -89,7 +89,7 @@ public class DistributableImmutableSession implements SpringSession {
 
 	@Override
 	public boolean isNew() {
-		return this.session.getMetaData().isNew();
+		return this.session.getMetaData().getLastAccessTime().isEmpty();
 	}
 
 	@Override

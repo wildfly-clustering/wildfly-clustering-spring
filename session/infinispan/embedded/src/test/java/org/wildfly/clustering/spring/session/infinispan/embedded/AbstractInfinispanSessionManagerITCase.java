@@ -9,7 +9,7 @@ import java.util.function.Function;
 
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.wildfly.clustering.arquillian.Tester;
-import org.wildfly.clustering.session.spec.container.ServletSessionManagementTesterConfiguration;
+import org.wildfly.clustering.session.container.servlet.ServletSessionManagementTesterConfiguration;
 import org.wildfly.clustering.spring.session.context.SpringSessionFilter;
 
 /**

@@ -20,4 +20,4 @@
 			<value type="org.wildfly.clustering.spring.context.SessionAttributeMarshaller">${session.marshaller}</value>
 		</property>
 	</bean>
-</beans> 
+</beans>

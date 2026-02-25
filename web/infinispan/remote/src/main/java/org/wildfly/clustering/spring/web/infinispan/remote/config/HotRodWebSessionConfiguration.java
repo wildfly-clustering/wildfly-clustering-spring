@@ -16,8 +16,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.util.StringValueResolver;
 import org.wildfly.clustering.session.SessionManagerFactory;
-import org.wildfly.clustering.session.spec.servlet.HttpSessionActivationListenerProvider;
-import org.wildfly.clustering.session.spec.servlet.HttpSessionProvider;
 import org.wildfly.clustering.spring.context.infinispan.remote.HotRodSessionManagerFactoryBean;
 import org.wildfly.clustering.spring.context.infinispan.remote.MutableHotRodConfiguration;
 import org.wildfly.clustering.spring.context.infinispan.remote.RemoteCacheContainerProvider;
@@ -58,7 +56,7 @@ public class HotRodWebSessionConfiguration extends WebSessionManagerConfiguratio
 	 */
 	@Bean
 	public SessionManagerFactory<ServletContext, Void> sessionManagerFactory(RemoteCacheContainerProvider provider) {
-		return new HotRodSessionManagerFactoryBean<>(this, HttpSessionProvider.INSTANCE, HttpSessionActivationListenerProvider.INSTANCE, this.configuration, provider);
+		return new HotRodSessionManagerFactoryBean<>(this, this.configuration, provider);
 	}
 
 	@Override

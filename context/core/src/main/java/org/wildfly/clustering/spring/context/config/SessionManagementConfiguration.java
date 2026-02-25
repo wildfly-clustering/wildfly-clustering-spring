@@ -97,12 +97,12 @@ public abstract class SessionManagementConfiguration<C> implements SessionManage
 	}
 
 	@Override
-	public OptionalInt getMaxSize() {
+	public OptionalInt getSizeThreshold() {
 		return this.maxActiveSessions;
 	}
 
 	@Override
-	public Optional<Duration> getIdleTimeout() {
+	public Optional<Duration> getIdleThreshold() {
 		return this.idleTimeout;
 	}
 

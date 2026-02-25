@@ -11,15 +11,15 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
 
 import org.springframework.context.ApplicationEvent;
 import org.springframework.session.events.SessionDestroyedEvent;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.context.Context;
+import org.wildfly.clustering.function.BiConsumer;
+import org.wildfly.clustering.function.BiFunction;
+import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
@@ -57,7 +57,7 @@ public class DistributableSession implements SpringSession {
 		this.closeTask = new AtomicReference<>(closeTask);
 		this.configuration = configuration;
 		this.destroyAction = destroyAction;
-		this.startTime = session.getMetaData().isNew() ? session.getMetaData().getCreationTime() : Instant.now();
+		this.startTime = session.getMetaData().getLastAccessTime().isEmpty() ? session.getMetaData().getCreationTime() : Instant.now();
 	}
 
 	@Override
@@ -70,8 +70,10 @@ public class DistributableSession implements SpringSession {
 				for (Map.Entry<String, Object> entry : oldSession.getAttributes().entrySet()) {
 					newSession.getAttributes().put(entry.getKey(), entry.getValue());
 				}
-				newSession.getMetaData().setTimeout(oldSession.getMetaData().getTimeout());
-				newSession.getMetaData().setLastAccess(oldSession.getMetaData().getLastAccessStartTime(), oldSession.getMetaData().getLastAccessTime());
+				oldSession.getMetaData().getMaxIdle().ifPresent(newSession.getMetaData()::setMaxIdle);
+				if (oldSession.getMetaData().getLastAccessTime().isPresent()) {
+					newSession.getMetaData().setLastAccess(oldSession.getMetaData().getLastAccessStartTime().get(), oldSession.getMetaData().getLastAccessTime().get());
+				}
 				oldSession.invalidate();
 				this.session = newSession;
 				oldSession.close();
@@ -122,12 +124,12 @@ public class DistributableSession implements SpringSession {
 
 	@Override
 	public Instant getLastAccessedTime() {
-		return this.session.getMetaData().getLastAccessTime();
+		return this.session.getMetaData().getLastAccessStartTime().orElse(this.getCreationTime());
 	}
 
 	@Override
 	public Duration getMaxInactiveInterval() {
-		return this.session.getMetaData().getTimeout();
+		return this.session.getMetaData().getMaxIdle().orElse(null);
 	}
 
 	@Override
@@ -185,12 +187,12 @@ public class DistributableSession implements SpringSession {
 
 	@Override
 	public void setMaxInactiveInterval(Duration duration) {
-		this.session.getMetaData().setTimeout(duration);
+		this.session.getMetaData().setMaxIdle(duration);
 	}
 
 	@Override
 	public boolean isNew() {
-		return this.session.getMetaData().isNew();
+		return this.session.getMetaData().getLastAccessTime().isEmpty();
 	}
 
 	@Override

@@ -19,4 +19,4 @@
 		</property>
 		<property name="template" value="${infinispan.template}"/>
 	</bean>
-</beans> 
+</beans>

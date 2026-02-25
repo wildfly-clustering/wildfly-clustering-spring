@@ -44,10 +44,10 @@ public class Config {
 }
 ```
 ```java
-public class MyHttpSessionApplicationInitializer extends AbstractHttpSessionApplicationInitializer { 
+public class MyHttpSessionApplicationInitializer extends AbstractHttpSessionApplicationInitializer {
 	public MyHttpSessionApplicationInitializer() {
 		// This doesn't work!!!
-		super(Config.class); 
+		super(Config.class);
 	}
 }
 ```
@@ -76,7 +76,7 @@ Consequently, the only *feasible* way to configure Spring Session via annotation
 
 	```java
 	@WebListener
-	public class SpringSessionContextLoaderListener extends org.wildfly.clustering.spring.web.context.ContextLoaderListener { 
+	public class SpringSessionContextLoaderListener extends org.wildfly.clustering.spring.web.context.ContextLoaderListener {
 		public SpringSessionContextLoaderListener() {
 			// Specify spring session repository component class to super implementation
 			super(Config.class);
@@ -146,7 +146,7 @@ The `@Infinispan` annotation defines the following properties:
 |template|The name of the configuration template defined within the configuration XML from which a deployment cache will be created. If undefined, the configuration of the default cache configuration will be used.|
 
 An example Infinispan XML can be found [here](https://github.com/wildfly-clustering/wildfly-clustering-spring-session/blob/master/infinispan/src/test/java/org/wildfly/clustering/web/spring/infinispan/infinispan.xml)
- 
+
 N.B. If the corresponding [@SessionManager](#sessionmanager) defines a value for maxActiveSessions, the Infinispan configuration should include a passivating or persistent cache store, e.g. `<file-store/>`.
 
 ##### @Indexing

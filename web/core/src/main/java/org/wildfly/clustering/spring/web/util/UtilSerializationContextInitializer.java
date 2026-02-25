@@ -24,6 +24,6 @@ public class UtilSerializationContextInitializer extends AbstractSerializationCo
 
 	@Override
 	public void registerMarshallers(SerializationContext context) {
-		context.registerMarshaller(ProtoStreamMarshaller.of(SpringWebImmutability::createMutex));
+		context.registerMarshaller(ProtoStreamMarshaller.of(MutexFactory.INSTANCE));
 	}
 }

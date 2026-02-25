@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.batch.SuspendedBatch;
 import org.wildfly.clustering.context.Context;
-import org.wildfly.clustering.function.Runnable;
+import org.wildfly.clustering.function.Runner;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionMetaData;
@@ -86,7 +86,7 @@ public class LazyWebSession implements SpringWebSession {
 		if (!this.valid.get()) {
 			throw new IllegalStateException();
 		}
-		return Mono.fromRunnable(Runnable.accept(this.id::set, this.manager.getIdentifierFactory()));
+		return Mono.fromRunnable(Runner.accept(this.id::set, this.manager.getIdentifierFactory()));
 	}
 
 	@Override
@@ -113,7 +113,7 @@ public class LazyWebSession implements SpringWebSession {
 								try (Session<Void> session = newSession) {
 									session.getAttributes().putAll(this.attributes);
 									SessionMetaData metaData = session.getMetaData();
-									this.timeout.get().ifPresent(metaData::setTimeout);
+									this.timeout.get().ifPresent(metaData::setMaxIdle);
 									metaData.setLastAccess(metaData.getCreationTime(), Instant.now());
 								}
 							}

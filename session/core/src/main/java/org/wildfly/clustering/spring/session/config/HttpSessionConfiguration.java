@@ -11,10 +11,9 @@ import java.time.Duration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.TreeMap;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
 import jakarta.servlet.ServletContext;
@@ -29,11 +28,13 @@ import org.springframework.session.IndexResolver;
 import org.springframework.session.PrincipalNameIndexResolver;
 import org.springframework.session.Session;
 import org.springframework.web.context.ServletContextAware;
+import org.wildfly.clustering.function.BiConsumer;
+import org.wildfly.clustering.function.BiFunction;
 import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Predicate;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.SessionManager;
-import org.wildfly.clustering.session.spec.servlet.HttpSessionProvider;
 import org.wildfly.clustering.spring.context.config.SessionManagementConfiguration;
 import org.wildfly.clustering.spring.security.SpringSecurityImmutability;
 import org.wildfly.clustering.spring.session.DistributableSessionRepository;
@@ -83,7 +84,7 @@ public abstract class HttpSessionConfiguration extends SessionManagementConfigur
 	 */
 	@Bean
 	public FindByIndexNameSessionRepository<SpringSession> sessionRepository(SessionManager<Void> manager, UserConfiguration userConfiguration) {
-		BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> sessionDestroyAction = new ImmutableSessionDestroyAction<>(this.publisher, this.getContext(), HttpSessionProvider.INSTANCE, userConfiguration);
+		BiConsumer<ImmutableSession, BiFunction<Object, Session, ApplicationEvent>> sessionDestroyAction = new ImmutableSessionDestroyAction<>(manager, this.publisher, this.getContext(), userConfiguration);
 		DistributableSessionRepositoryConfiguration configuration = new DistributableSessionRepositoryConfiguration() {
 			@Override
 			public SessionManager<Void> getSessionManager() {
@@ -164,8 +165,8 @@ public abstract class HttpSessionConfiguration extends SessionManagementConfigur
 	}
 
 	@Override
-	public Duration getTimeout() {
-		return Duration.ofMinutes(this.getContext().getSessionTimeout());
+	public Optional<Duration> getMaxIdle() {
+		return Optional.of(Duration.ofMinutes(this.getContext().getSessionTimeout())).filter(Predicate.not(Duration::isZero).and(Predicate.not(Duration::isNegative)));
 	}
 
 	@Override

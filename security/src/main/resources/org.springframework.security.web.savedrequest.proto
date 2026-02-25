@@ -23,6 +23,7 @@ message DefaultSavedRequest {
 	repeated	java.util.Locale	locale	= 14;
 	repeated	SavedCookie	cookie	= 15;
 	optional	string	pathInfo	= 16;
+	optional	string	matchingRequestParameterName	= 17;
 }
 
 /**

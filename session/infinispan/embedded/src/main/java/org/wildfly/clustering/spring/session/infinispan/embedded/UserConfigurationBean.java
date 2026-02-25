@@ -57,7 +57,7 @@ public class UserConfigurationBean extends AutoDestroyBean implements UserConfig
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		EmbeddedCacheManager container = this.infinispan.getCacheContainer();
 		String applicationName = this.sessionManagerFactoryConfiguration.getDeploymentName();
 		for (Map.Entry<String, String> entry : this.indexing.getIndexes().entrySet()) {
