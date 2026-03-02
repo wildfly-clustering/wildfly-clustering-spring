@@ -35,7 +35,7 @@ import org.wildfly.clustering.function.Predicate;
 import org.wildfly.clustering.server.immutable.Immutability;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.SessionManager;
-import org.wildfly.clustering.spring.context.config.SessionManagementConfiguration;
+import org.wildfly.clustering.spring.context.config.AbstractSessionManagementConfiguration;
 import org.wildfly.clustering.spring.security.SpringSecurityImmutability;
 import org.wildfly.clustering.spring.session.DistributableSessionRepository;
 import org.wildfly.clustering.spring.session.DistributableSessionRepositoryConfiguration;
@@ -49,7 +49,7 @@ import org.wildfly.clustering.spring.web.util.SpringWebImmutability;
  * A Spring bean that configures and produces session configuration.
  * @author Paul Ferraro
  */
-public abstract class HttpSessionConfiguration extends SessionManagementConfiguration<ServletContext> implements ApplicationEventPublisherAware, ServletContextAware, MutableIndexingConfiguration {
+public abstract class AbstractHttpSessionConfiguration extends AbstractSessionManagementConfiguration<ServletContext> implements ApplicationEventPublisherAware, ServletContextAware, MutableIndexingConfiguration {
 	/** The session attribute name containing the Spring Security context */
 	public static final String DEFAULT_SPRING_SECURITY_INDEX_ID = "SPRING_SECURITY_CONTEXT";
 	/** The index name of principal name */
@@ -70,7 +70,7 @@ public abstract class HttpSessionConfiguration extends SessionManagementConfigur
 	 * @param defaultIndexes the default indexes
 	 * @param defaultIndexResolver the default index resolver.
 	 */
-	protected HttpSessionConfiguration(Class<? extends Annotation> annotationClass, Map<String, String> defaultIndexes, IndexResolver<Session> defaultIndexResolver) {
+	protected AbstractHttpSessionConfiguration(Class<? extends Annotation> annotationClass, Map<String, String> defaultIndexes, IndexResolver<Session> defaultIndexResolver) {
 		super(annotationClass);
 		this.indexes = defaultIndexes;
 		this.indexResolver = defaultIndexResolver;
@@ -93,7 +93,7 @@ public abstract class HttpSessionConfiguration extends SessionManagementConfigur
 
 			@Override
 			public ApplicationEventPublisher getEventPublisher() {
-				return HttpSessionConfiguration.this.publisher;
+				return AbstractHttpSessionConfiguration.this.publisher;
 			}
 
 			@Override
@@ -161,7 +161,7 @@ public abstract class HttpSessionConfiguration extends SessionManagementConfigur
 
 	@Override
 	public Consumer<ImmutableSession> getExpirationListener() {
-		return Consumer.empty();
+		return Consumer.of();
 	}
 
 	@Override

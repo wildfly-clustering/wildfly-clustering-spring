@@ -7,7 +7,6 @@ package org.wildfly.clustering.spring.session;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.StampedLock;
 
@@ -95,7 +94,7 @@ public class DistributableSessionRepository implements FindByIndexNameSessionRep
 		try (Context<Batch> context = suspendedBatch.resumeWithContext()) {
 			Session<Void> session = factory.get();
 			if ((session == null) || !session.isValid()) {
-				return close(context, Consumer.empty(), closeTask);
+				return close(context, Consumer.of(), closeTask);
 			}
 			return new DistributableSession(this.manager, session, suspendedBatch, closeTask, this.indexing, this.destroyAction);
 		} catch (RuntimeException | Error e) {
@@ -132,20 +131,20 @@ public class DistributableSessionRepository implements FindByIndexNameSessionRep
 
 	@Override
 	public Map<String, SpringSession> findByIndexNameAndIndexValue(String indexName, String indexValue) {
-		Set<String> sessions = Collections.emptySet();
+		Map<String, String> sessions = Map.of();
 		UserManager<Void, Void, String, String> manager = this.indexing.getUserManagers().get(indexName);
 		if (manager != null) {
 			try (Batch batch = manager.getBatchFactory().get()) {
 				User<Void, Void, String, String> sso = manager.findUser(indexValue);
 				if (sso != null) {
-					sessions = sso.getSessions().getDeployments();
+					sessions = sso.getSessions().getSessions();
 				}
 			}
 		}
 		if (!sessions.isEmpty()) {
 			Map<String, SpringSession> result = new HashMap<>();
 			try (Batch batch = manager.getBatchFactory().get()) {
-				for (String sessionId : sessions) {
+				for (String sessionId : sessions.values()) {
 					ImmutableSession session = this.manager.findImmutableSession(sessionId);
 					if (session != null) {
 						result.put(sessionId, new DistributableImmutableSession(session));

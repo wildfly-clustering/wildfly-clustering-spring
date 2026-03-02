@@ -79,11 +79,6 @@ public class SessionManagerBean extends AutoDestroyBean implements SessionManage
 	}
 
 	@Override
-	public Session<Void> getDetachedSession(String id) {
-		return this.manager.getDetachedSession(id);
-	}
-
-	@Override
 	public SessionStatistics getStatistics() {
 		return this.manager.getStatistics();
 	}

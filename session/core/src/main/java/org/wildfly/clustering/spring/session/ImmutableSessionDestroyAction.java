@@ -60,7 +60,7 @@ public class ImmutableSessionDestroyAction<C> implements BiConsumer<ImmutableSes
 	public void accept(ImmutableSession session, BiFunction<Object, Session, ApplicationEvent> eventFactory) {
 		ApplicationEvent event = eventFactory.apply(this, new DistributableImmutableSession(session));
 		this.publisher.publishEvent(event);
-		HttpSession httpSession = this.provider.getDetachableSession(this.manager, session, this.context);
+		HttpSession httpSession = this.provider.getSession(this.manager, session, this.context);
 		for (Map.Entry<String, Object> entry : session.getAttributes().entrySet()) {
 			if (entry.getValue() instanceof HttpSessionBindingListener listener) {
 				try {

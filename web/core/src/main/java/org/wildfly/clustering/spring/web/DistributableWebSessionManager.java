@@ -42,10 +42,6 @@ public class DistributableWebSessionManager implements WebSessionManager, Dispos
 	private static final AtomicInteger COUNTER = new AtomicInteger(0);
 	private static final Predicate<Session<Void>> IS_VALID = Session::isValid;
 
-	private static void log(Throwable exception) {
-		LOGGER.log(System.Logger.Level.ERROR, exception.getLocalizedMessage(), exception);
-	}
-
 	private final SessionManager<Void> manager;
 	private final WebSessionIdResolver identifierResolver;
 	private final StampedLock lifecycleLock = new StampedLock();
@@ -90,7 +86,7 @@ public class DistributableWebSessionManager implements WebSessionManager, Dispos
 					.filter(IS_VALID)
 					.<SpringWebSession>map(session -> new StartedWebSession(this.manager, session, entry.getKey(), entry.getValue()))
 					.switchIfEmpty(Mono.defer(() -> {
-						close(entry, Consumer.empty());
+						close(entry, Consumer.of());
 						return Mono.empty();
 					}))
 					.doOnError(e -> rollback(entry));
@@ -107,6 +103,10 @@ public class DistributableWebSessionManager implements WebSessionManager, Dispos
 		if (COUNTER.decrementAndGet() == 0) {
 			Schedulers.shutdownNow();
 		}
+	}
+
+	private static void log(Throwable exception) {
+		LOGGER.log(System.Logger.Level.ERROR, exception.getLocalizedMessage(), exception);
 	}
 
 	private static void rollback(Map.Entry<SuspendedBatch, Runnable> entry) {

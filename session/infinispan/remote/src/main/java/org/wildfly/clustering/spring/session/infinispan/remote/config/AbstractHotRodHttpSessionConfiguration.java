@@ -24,13 +24,13 @@ import org.wildfly.clustering.spring.context.infinispan.remote.MutableHotRodConf
 import org.wildfly.clustering.spring.context.infinispan.remote.RemoteCacheContainerProvider;
 import org.wildfly.clustering.spring.context.infinispan.remote.RemoteCacheContainerProviderBean;
 import org.wildfly.clustering.spring.context.infinispan.remote.config.HotRodConfigurationBean;
-import org.wildfly.clustering.spring.session.config.HttpSessionConfiguration;
+import org.wildfly.clustering.spring.session.config.AbstractHttpSessionConfiguration;
 
 /**
  * A Spring bean that configures and produces a Spring Session repository.
  * @author Paul Ferraro
  */
-public class AbstractHotRodHttpSessionConfiguration extends HttpSessionConfiguration implements MutableHotRodConfiguration {
+public abstract class AbstractHotRodHttpSessionConfiguration extends AbstractHttpSessionConfiguration implements MutableHotRodConfiguration {
 
 	private final MutableHotRodConfiguration configuration = new HotRodConfigurationBean();
 

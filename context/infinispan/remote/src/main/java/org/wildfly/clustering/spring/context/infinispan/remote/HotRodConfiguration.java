@@ -14,7 +14,8 @@ import java.util.Properties;
  */
 public interface HotRodConfiguration {
 	/** The default cache configuration */
-	String DEFAULT_CONFIGURATION = """
+	String DEFAULT_CONFIGURATION =
+"""
 {
 	"distributed-cache" : {
 		"mode" : "SYNC",
@@ -32,7 +33,8 @@ public interface HotRodConfiguration {
 			"locking" : "PESSIMISTIC"
 		}
 	}
-}""";
+}
+""";
 
 	/**
 	 * Returns the HotRod client URI.

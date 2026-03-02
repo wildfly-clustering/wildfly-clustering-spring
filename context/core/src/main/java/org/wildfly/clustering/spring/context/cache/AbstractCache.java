@@ -6,7 +6,6 @@
 package org.wildfly.clustering.spring.context.cache;
 
 import java.io.IOException;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 
 import org.infinispan.commons.api.BasicCache;
@@ -14,9 +13,11 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.cache.Cache;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.cache.infinispan.BasicCacheConfiguration;
+import org.wildfly.clustering.function.Callable;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.function.Supplier;
+import org.wildfly.clustering.function.UnaryOperator;
 import org.wildfly.clustering.marshalling.MarshalledValue;
 import org.wildfly.clustering.marshalling.MarshalledValueFactory;
 import org.wildfly.clustering.marshalling.MarshalledValueMarshaller;
@@ -150,10 +151,11 @@ public abstract class AbstractCache<K, V> implements Cache {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> @Nullable T get(Object key, Callable<T> valueLoader) {
-		Supplier<T> valueProvider = Supplier.call(valueLoader, Function.of(Consumer.throwing(exception -> new ValueRetrievalException(key, valueLoader, exception)), Supplier.empty()));
+	public <T> @Nullable T get(Object key, java.util.concurrent.Callable<T> valueLoader) {
+		Function<Exception, ValueRetrievalException> handler = exception -> new ValueRetrievalException(key, valueLoader, exception);
+		Supplier<T> valueProvider = Callable.of(valueLoader, Function.identity()).handle(UnaryOperator.<Exception>identity().thenThrow(handler).thenApply(Function.of(null)));
 		try (Batch batch = this.batchFactory.get()) {
-			V value = this.readWriteCache.computeIfAbsent(this.writeKey(key), Function.of(Consumer.empty(), valueProvider.thenApply(this::writeValue)));
+			V value = this.readWriteCache.computeIfAbsent(this.writeKey(key), Function.of(Consumer.of(), valueProvider.thenApply(this::writeValue)));
 			return (value != null) ? (T) this.read(value) : null;
 		}
 	}

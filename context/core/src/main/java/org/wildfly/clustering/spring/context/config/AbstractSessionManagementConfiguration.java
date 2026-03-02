@@ -40,7 +40,7 @@ import org.wildfly.clustering.spring.context.SessionManagerBean;
  * @author Paul Ferraro
  * @param <C> session manager context type
  */
-public abstract class SessionManagementConfiguration<C> implements SessionManagerFactoryConfiguration<Void>, SessionManagerConfiguration<C>, EnvironmentAware, ImportAware, ResourceLoaderAware, Consumer<AnnotationAttributes> {
+public abstract class AbstractSessionManagementConfiguration<C> implements SessionManagerFactoryConfiguration<Void>, SessionManagerConfiguration<C>, EnvironmentAware, ImportAware, ResourceLoaderAware, Consumer<AnnotationAttributes> {
 
 	private final Class<? extends Annotation> annotationClass;
 
@@ -56,7 +56,7 @@ public abstract class SessionManagementConfiguration<C> implements SessionManage
 	 * Creates a session management configuration bean.
 	 * @param annotationClass the class of the associated configuration annotation
 	 */
-	protected SessionManagementConfiguration(Class<? extends Annotation> annotationClass) {
+	protected AbstractSessionManagementConfiguration(Class<? extends Annotation> annotationClass) {
 		this.annotationClass = annotationClass;
 	}
 

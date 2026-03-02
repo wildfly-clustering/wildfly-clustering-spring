@@ -21,7 +21,7 @@ import org.wildfly.clustering.spring.context.infinispan.remote.MutableHotRodConf
 import org.wildfly.clustering.spring.context.infinispan.remote.RemoteCacheContainerProvider;
 import org.wildfly.clustering.spring.context.infinispan.remote.RemoteCacheContainerProviderBean;
 import org.wildfly.clustering.spring.context.infinispan.remote.config.HotRodConfigurationBean;
-import org.wildfly.clustering.spring.web.config.WebSessionManagerConfiguration;
+import org.wildfly.clustering.spring.web.config.AbstractWebSessionManagerConfiguration;
 import org.wildfly.clustering.spring.web.infinispan.remote.config.annotation.EnableHotRodWebSession;
 
 /**
@@ -29,7 +29,7 @@ import org.wildfly.clustering.spring.web.infinispan.remote.config.annotation.Ena
  * @author Paul Ferraro
  */
 @Configuration(proxyBeanMethods = false)
-public class HotRodWebSessionConfiguration extends WebSessionManagerConfiguration implements MutableHotRodConfiguration {
+public class HotRodWebSessionConfiguration extends AbstractWebSessionManagerConfiguration implements MutableHotRodConfiguration {
 
 	private final MutableHotRodConfiguration configuration = new HotRodConfigurationBean();
 

@@ -28,10 +28,6 @@ import reactor.core.scheduler.Schedulers;
 public class StartedWebSession implements SpringWebSession, Function<String, Void> {
 	private static final System.Logger LOGGER = System.getLogger(StartedWebSession.class.getPackageName());
 
-	private static void log(Throwable exception) {
-		LOGGER.log(System.Logger.Level.WARNING, exception.getLocalizedMessage(), exception);
-	}
-
 	private final SessionManager<Void> manager;
 	private final SuspendedBatch batch;
 	private final AtomicReference<Runnable> closeTask;
@@ -179,5 +175,9 @@ public class StartedWebSession implements SpringWebSession, Function<String, Voi
 				closeTask.run();
 			}
 		}
+	}
+
+	private static void log(Throwable exception) {
+		LOGGER.log(System.Logger.Level.WARNING, exception.getLocalizedMessage(), exception);
 	}
 }

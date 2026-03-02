@@ -61,8 +61,8 @@ public class ClassLoaderThreadFactory implements org.jgroups.util.ThreadFactory 
 	}
 
 	@Override
-	public void renameThread(String base_name, Thread thread) {
-		this.factory.renameThread(base_name, thread);
+	public void renameThread(String baseName, Thread thread) {
+		this.factory.renameThread(baseName, thread);
 	}
 
 	@Override

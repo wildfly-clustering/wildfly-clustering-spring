@@ -43,8 +43,10 @@ public abstract class AbstractHotRodSessionManagerITCase extends AbstractSession
 		properties.setProperty("infinispan.server.password", String.valueOf(container.getPassword()));
 		// Use local cache since our remote cluster has only 1 member
 		// Reduce expiration interval to speed up expiration verification
-		properties.setProperty("infinispan.server.configuration", """
-{ "local-cache" : { "encoding" : { "key" : { "media-type" : "application/octet-stream" }, "value" : { "media-type" : "application/octet-stream" }}, "expiration" : { "interval" : 1000 }, "transaction" : { "mode" : "NON_XA", "locking" : "PESSIMISTIC" }}}""");
+		properties.setProperty("infinispan.server.configuration",
+"""
+{ "local-cache" : { "encoding" : { "key" : { "media-type" : "application/octet-stream" }, "value" : { "media-type" : "application/octet-stream" }}, "expiration" : { "interval" : 1000 }, "transaction" : { "mode" : "NON_XA", "locking" : "PESSIMISTIC" }}}
+""");
 		return properties;
 	}
 }

@@ -14,8 +14,8 @@ import jakarta.servlet.http.HttpServletRequest;
  */
 public class HttpServletRequestBuilder implements Supplier<HttpServletRequest> {
 
-	private String remoteAddress = null;
-	private String sessionId = null;
+	private String remoteAddress;
+	private String sessionId;
 
 	/**
 	 * Creates a builder of a servlet request.
