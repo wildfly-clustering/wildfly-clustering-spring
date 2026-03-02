@@ -49,5 +49,4 @@ public enum SessionAttributeMarshaller implements BiFunction<Environment, Resour
 			return new ProtoStreamByteBufferMarshaller(SerializationContextBuilder.newInstance(ClassLoaderMarshaller.of(classLoader)).load(classLoader).build());
 		}
 	},
-	;
 }

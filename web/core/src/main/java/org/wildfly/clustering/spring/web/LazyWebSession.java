@@ -86,7 +86,7 @@ public class LazyWebSession implements SpringWebSession {
 		if (!this.valid.get()) {
 			throw new IllegalStateException();
 		}
-		return Mono.fromRunnable(Runner.accept(this.id::set, this.manager.getIdentifierFactory()));
+		return Mono.fromRunnable(Runner.of(this.manager.getIdentifierFactory(), this.id::set));
 	}
 
 	@Override

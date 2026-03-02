@@ -23,7 +23,7 @@ public class HotRodConfigurationBean implements MutableHotRodConfiguration {
 
 	private URI uri;
 	private Properties properties = new Properties();
-	private String templateName = null;
+	private String templateName;
 	private String configuration = HotRodConfiguration.DEFAULT_CONFIGURATION;
 
 	private StringValueResolver resolver = UnaryOperator.<String>identity()::apply;

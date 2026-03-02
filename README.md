@@ -50,3 +50,5 @@ In particular, applications using Spring Session or Spring Web should be aware o
 1.	Applications using Spring Session or Spring Web will generally need to rely on Spring Security for authentication and authorization.
 	Many authentication mechanisms store user identity in the `HttpSession` or will need to change the session ID following authentication - a common practice for preventing session fixation attacks.
 	Since the servlet container has no access to sessions created by Spring, most container managed security mechanisms will not work.
+
+1.	Spring Session does not implements HttpSession.getAccessor(...), and thus provides no mechanism for an application to safely access the HttpSession outside the scope of a request.

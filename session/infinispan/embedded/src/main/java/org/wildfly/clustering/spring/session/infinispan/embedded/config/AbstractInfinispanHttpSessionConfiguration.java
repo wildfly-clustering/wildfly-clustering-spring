@@ -22,13 +22,13 @@ import org.wildfly.clustering.spring.context.infinispan.embedded.EmbeddedCacheMa
 import org.wildfly.clustering.spring.context.infinispan.embedded.InfinispanSessionManagerFactoryBean;
 import org.wildfly.clustering.spring.context.infinispan.embedded.MutableInfinispanConfiguration;
 import org.wildfly.clustering.spring.context.infinispan.embedded.config.InfinispanConfigurationBean;
-import org.wildfly.clustering.spring.session.config.HttpSessionConfiguration;
+import org.wildfly.clustering.spring.session.config.AbstractHttpSessionConfiguration;
 
 /**
  * A Spring bean that configures and produces a Spring Session repository.
  * @author Paul Ferraro
  */
-public class AbstractInfinispanHttpSessionConfiguration extends HttpSessionConfiguration implements MutableInfinispanConfiguration {
+public abstract class AbstractInfinispanHttpSessionConfiguration extends AbstractHttpSessionConfiguration implements MutableInfinispanConfiguration {
 
 	private final MutableInfinispanConfiguration configuration = new InfinispanConfigurationBean();
 

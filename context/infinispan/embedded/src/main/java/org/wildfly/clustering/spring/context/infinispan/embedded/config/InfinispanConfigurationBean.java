@@ -20,7 +20,7 @@ import org.wildfly.clustering.spring.context.infinispan.embedded.MutableInfinisp
 public class InfinispanConfigurationBean implements MutableInfinispanConfiguration {
 
 	private String resource = DEFAULT_CONFIGURATION_RESOURCE;
-	private String templateName = null;
+	private String templateName;
 	private StringValueResolver resolver = UnaryOperator.<String>identity()::apply;
 
 	/**

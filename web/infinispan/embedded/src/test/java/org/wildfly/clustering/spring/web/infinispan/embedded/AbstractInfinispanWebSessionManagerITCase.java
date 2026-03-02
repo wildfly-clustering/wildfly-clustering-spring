@@ -14,7 +14,7 @@ import org.wildfly.clustering.spring.web.servlet.DispatcherServlet;
 /**
  * @author Paul Ferraro
  */
-public class AbstractInfinispanWebSessionManagerITCase extends AbstractInfinispanSessionManagerITCase {
+public abstract class AbstractInfinispanWebSessionManagerITCase extends AbstractInfinispanSessionManagerITCase {
 
 	protected AbstractInfinispanWebSessionManagerITCase() {
 		super(new SessionManagementTesterConfiguration() {

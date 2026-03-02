@@ -22,7 +22,7 @@ import org.springframework.web.server.session.WebSessionManager;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.SessionManager;
-import org.wildfly.clustering.spring.context.config.SessionManagementConfiguration;
+import org.wildfly.clustering.spring.context.config.AbstractSessionManagementConfiguration;
 import org.wildfly.clustering.spring.web.DistributableWebSessionManager;
 import org.wildfly.clustering.spring.web.DistributableWebSessionManagerConfiguration;
 
@@ -30,7 +30,7 @@ import org.wildfly.clustering.spring.web.DistributableWebSessionManagerConfigura
  * A Spring bean that configures and produces a Spring Web session manager.
  * @author Paul Ferraro
  */
-public abstract class WebSessionManagerConfiguration extends SessionManagementConfiguration<ServletContext> implements ServletContextAware {
+public abstract class AbstractWebSessionManagerConfiguration extends AbstractSessionManagementConfiguration<ServletContext> implements ServletContextAware {
 
 	private WebSessionIdResolver resolver = new CookieWebSessionIdResolver();
 
@@ -40,7 +40,7 @@ public abstract class WebSessionManagerConfiguration extends SessionManagementCo
 	 * Creates a session manager configuration bean.
 	 * @param annotationClass the configuration annotation class
 	 */
-	protected WebSessionManagerConfiguration(Class<? extends Annotation> annotationClass) {
+	protected AbstractWebSessionManagerConfiguration(Class<? extends Annotation> annotationClass) {
 		super(annotationClass);
 	}
 
@@ -102,7 +102,7 @@ public abstract class WebSessionManagerConfiguration extends SessionManagementCo
 
 	@Override
 	public Consumer<ImmutableSession> getExpirationListener() {
-		return Consumer.empty();
+		return Consumer.of();
 	}
 
 	@Override

@@ -17,7 +17,7 @@ import org.wildfly.clustering.spring.session.context.SpringSessionFilter;
 /**
  * @author Paul Ferraro
  */
-public class AbstractHotRodSessionManagerITCase extends org.wildfly.clustering.spring.context.infinispan.remote.AbstractHotRodSessionManagerITCase {
+public abstract class AbstractHotRodSessionManagerITCase extends org.wildfly.clustering.spring.context.infinispan.remote.AbstractHotRodSessionManagerITCase {
 
 	interface SessionManagementTesterConfiguration extends ServletSessionManagementTesterConfiguration {
 		@Override

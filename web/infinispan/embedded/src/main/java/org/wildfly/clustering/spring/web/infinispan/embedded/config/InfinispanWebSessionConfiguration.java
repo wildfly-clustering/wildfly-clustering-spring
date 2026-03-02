@@ -18,7 +18,7 @@ import org.wildfly.clustering.spring.context.infinispan.embedded.EmbeddedCacheMa
 import org.wildfly.clustering.spring.context.infinispan.embedded.InfinispanSessionManagerFactoryBean;
 import org.wildfly.clustering.spring.context.infinispan.embedded.MutableInfinispanConfiguration;
 import org.wildfly.clustering.spring.context.infinispan.embedded.config.InfinispanConfigurationBean;
-import org.wildfly.clustering.spring.web.config.WebSessionManagerConfiguration;
+import org.wildfly.clustering.spring.web.config.AbstractWebSessionManagerConfiguration;
 import org.wildfly.clustering.spring.web.infinispan.embedded.config.annotation.EnableInfinispanWebSession;
 
 /**
@@ -26,7 +26,7 @@ import org.wildfly.clustering.spring.web.infinispan.embedded.config.annotation.E
  * @author Paul Ferraro
  */
 @Configuration(proxyBeanMethods = false)
-public class InfinispanWebSessionConfiguration extends WebSessionManagerConfiguration implements MutableInfinispanConfiguration {
+public class InfinispanWebSessionConfiguration extends AbstractWebSessionManagerConfiguration implements MutableInfinispanConfiguration {
 
 	private final MutableInfinispanConfiguration configuration = new InfinispanConfigurationBean();
 

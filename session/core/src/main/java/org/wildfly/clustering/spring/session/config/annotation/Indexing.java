@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 
 import org.springframework.session.IndexResolver;
 import org.springframework.session.PrincipalNameIndexResolver;
-import org.wildfly.clustering.spring.session.config.HttpSessionConfiguration;
+import org.wildfly.clustering.spring.session.config.AbstractHttpSessionConfiguration;
 
 /**
  * Configures the indexing characteristics of an indexed session repository.
@@ -26,7 +26,7 @@ public @interface Indexing {
 	 * The indexes recognized by this session repository.  Default indexes only includes the Spring Security principal.
 	 * @return an array of index names
 	 */
-	Index[] indexes() default { @Index(id = HttpSessionConfiguration.DEFAULT_SPRING_SECURITY_INDEX_ID, name = HttpSessionConfiguration.DEFAULT_STRING_SECURITY_INDEX_NAME) };
+	Index[] indexes() default { @Index(id = AbstractHttpSessionConfiguration.DEFAULT_SPRING_SECURITY_INDEX_ID, name = AbstractHttpSessionConfiguration.DEFAULT_STRING_SECURITY_INDEX_NAME) };
 
 	/**
 	 * The index resolver class name.  Default resolver only resolves the Spring Security principal.

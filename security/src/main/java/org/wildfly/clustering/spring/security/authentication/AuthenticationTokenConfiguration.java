@@ -15,10 +15,10 @@ import org.springframework.security.core.GrantedAuthority;
  */
 class AuthenticationTokenConfiguration {
 
-	private Object principal = null;
+	private Object principal;
 	private Object credentials = "";
 	private final List<GrantedAuthority> authorities = new LinkedList<>();
-	private Object details = null;
+	private Object details;
 
 	Object getPrincipal() {
 		return this.principal;

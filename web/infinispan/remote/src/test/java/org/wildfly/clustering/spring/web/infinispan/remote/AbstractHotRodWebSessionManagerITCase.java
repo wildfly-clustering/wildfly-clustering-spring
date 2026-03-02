@@ -16,7 +16,7 @@ import org.wildfly.clustering.spring.web.servlet.DispatcherServlet;
 /**
  * @author Paul Ferraro
  */
-public class AbstractHotRodWebSessionManagerITCase extends org.wildfly.clustering.spring.context.infinispan.remote.AbstractHotRodSessionManagerITCase {
+public abstract class AbstractHotRodWebSessionManagerITCase extends org.wildfly.clustering.spring.context.infinispan.remote.AbstractHotRodSessionManagerITCase {
 
 	protected AbstractHotRodWebSessionManagerITCase() {
 		super(new SessionManagementTesterConfiguration() {
