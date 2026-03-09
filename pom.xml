@@ -126,7 +126,7 @@
 			<dependency>
 				<groupId>org.wildfly.clustering</groupId>
 				<artifactId>wildfly-clustering-bom</artifactId>
-				<version>10.0.0.Beta6</version>
+				<version>10.0.0.CR1</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
