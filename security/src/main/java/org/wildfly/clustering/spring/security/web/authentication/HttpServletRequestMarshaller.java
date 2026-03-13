@@ -33,15 +33,11 @@ public enum HttpServletRequestMarshaller implements FieldSetMarshaller.Supplied<
 
 	@Override
 	public HttpServletRequestBuilder readFrom(ProtoStreamReader reader, int index, WireType type, HttpServletRequestBuilder builder) throws IOException {
-		switch (index) {
-			case REMOTE_ADDRESS_INDEX:
-				return builder.setRemoteAddress(reader.readString());
-			case SESSION_ID_INDEX:
-				return builder.setSessionId(reader.readString());
-			default:
-				reader.skipField(type);
-				return builder;
-		}
+		return switch (index) {
+			case REMOTE_ADDRESS_INDEX -> builder.setRemoteAddress(reader.readString());
+			case SESSION_ID_INDEX -> builder.setSessionId(reader.readString());
+			default -> reader.skipField(type, builder);
+		};
 	}
 
 	@Override

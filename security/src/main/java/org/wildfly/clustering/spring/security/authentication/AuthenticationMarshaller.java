@@ -45,19 +45,13 @@ public class AuthenticationMarshaller<A extends Authentication> implements Field
 
 	@Override
 	public AuthenticationTokenConfiguration readFrom(ProtoStreamReader reader, int index, WireType type, AuthenticationTokenConfiguration config) throws IOException {
-		switch (index) {
-			case PRINCIPAL_INDEX:
-				return config.setPrincipal(reader.readAny());
-			case CREDENTIALS_INDEX:
-				return config.setCredentials(reader.readAny());
-			case GRANTED_AUTHORITY_INDEX:
-				return config.addAuthority(reader.readAny(GrantedAuthority.class));
-			case DETAILS_INDEX:
-				return config.setDetails(reader.readAny());
-			default:
-				reader.skipField(type);
-				return config;
-		}
+		return switch (index) {
+			case PRINCIPAL_INDEX -> config.setPrincipal(reader.readAny());
+			case CREDENTIALS_INDEX -> config.setCredentials(reader.readAny());
+			case GRANTED_AUTHORITY_INDEX -> config.addAuthority(reader.readAny(GrantedAuthority.class));
+			case DETAILS_INDEX -> config.setDetails(reader.readAny());
+			default -> reader.skipField(type, config);
+		};
 	}
 
 	@Override

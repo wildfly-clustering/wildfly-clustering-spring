@@ -31,14 +31,9 @@ public enum JaasGrantedAuthorityMarshaller implements ProtoStreamMarshaller<Jaas
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case ROLE_INDEX:
-					role = reader.readString();
-					break;
-				case PRINCIPAL_INDEX:
-					principal = reader.readAny(Principal.class);
-					break;
-				default:
-					reader.skipField(tag);
+				case ROLE_INDEX -> role = reader.readString();
+				case PRINCIPAL_INDEX -> principal = reader.readAny(Principal.class);
+				default -> reader.skipField(tag);
 			}
 		}
 		return new JaasGrantedAuthority(role, principal);
