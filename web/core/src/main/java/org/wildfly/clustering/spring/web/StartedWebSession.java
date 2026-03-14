@@ -9,14 +9,15 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
-import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.SuspendedBatch;
-import org.wildfly.clustering.context.Context;
+import org.wildfly.clustering.function.Consumer;
+import org.wildfly.clustering.function.Function;
+import org.wildfly.clustering.server.util.BlockingReference;
+import org.wildfly.clustering.session.ImmutableSession;
+import org.wildfly.clustering.session.ImmutableSessionMetaData;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
+import org.wildfly.clustering.session.SessionMetaData;
 
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -29,35 +30,32 @@ public class StartedWebSession implements SpringWebSession, Function<String, Voi
 	private static final System.Logger LOGGER = System.getLogger(StartedWebSession.class.getPackageName());
 
 	private final SessionManager<Void> manager;
-	private final SuspendedBatch batch;
 	private final AtomicReference<Runnable> closeTask;
 	private final Instant startTime;
 
-	private volatile Session<Void> session;
+	private final BlockingReference<Session<Void>> reference;
 
 	/**
 	 * Creates a distributable Spring Web session.
 	 * @param manager the session manager associated with this session
 	 * @param session the distributable session
-	 * @param batch the batch associated with this session
 	 * @param closeTask a task to run on session close.
 	 */
-	public StartedWebSession(SessionManager<Void> manager, Session<Void> session, SuspendedBatch batch, Runnable closeTask) {
+	public StartedWebSession(SessionManager<Void> manager, Session<Void> session, Runnable closeTask) {
 		this.manager = manager;
-		this.session = session;
-		this.batch = batch;
+		this.reference = BlockingReference.of(session);
 		this.closeTask = new AtomicReference<>(closeTask);
 		this.startTime = session.isValid() && session.getMetaData().getLastAccessTime().isEmpty() ? session.getMetaData().getCreationTime() : Instant.now();
 	}
 
 	@Override
 	public String getId() {
-		return this.session.getId();
+		return this.reference.getReader().map(ImmutableSession.IDENTIFIER).get();
 	}
 
 	@Override
 	public Map<String, Object> getAttributes() {
-		return this.session.getAttributes();
+		return this.reference.getReader().map(ImmutableSession.ATTRIBUTES).get();
 	}
 
 	@Override
@@ -72,7 +70,7 @@ public class StartedWebSession implements SpringWebSession, Function<String, Voi
 
 	@Override
 	public boolean isValid() {
-		return this.session.isValid();
+		return this.reference.getReader().map(Session.VALID.thenBox()).get();
 	}
 
 	@Override
@@ -83,25 +81,24 @@ public class StartedWebSession implements SpringWebSession, Function<String, Voi
 
 	@Override
 	public Void apply(String id) {
-		Session<Void> oldSession = this.session;
-		try (Context<Batch> context = this.batch.resumeWithContext()) {
+		this.reference.getWriter().update(currentSession -> {
+			SessionMetaData currentMetaData = currentSession.getMetaData();
+			Map<String, Object> currentAttributes = currentSession.getAttributes();
 			Session<Void> newSession = this.manager.createSession(id);
 			try {
-				for (Map.Entry<String, Object> entry : oldSession.getAttributes().entrySet()) {
-					newSession.getAttributes().put(entry.getKey(), entry.getValue());
-				}
-				oldSession.getMetaData().getMaxIdle().ifPresent(newSession.getMetaData()::setMaxIdle);
-				if (oldSession.getMetaData().getLastAccessTime().isPresent()) {
-					newSession.getMetaData().setLastAccess(oldSession.getMetaData().getLastAccessStartTime().get(), oldSession.getMetaData().getLastAccessTime().get());
-				}
-				oldSession.invalidate();
-				this.session = newSession;
-				oldSession.close();
-			} catch (IllegalStateException e) {
+				newSession.getAttributes().putAll(currentAttributes);
+				SessionMetaData newMetaData = newSession.getMetaData();
+				currentMetaData.getMaxIdle().ifPresent(newMetaData::setMaxIdle);
+				currentMetaData.getLastAccess().ifPresent(newMetaData::setLastAccess);
+				currentSession.invalidate();
+				return newSession;
+			} catch (RuntimeException | Error e) {
 				newSession.invalidate();
 				throw e;
+			} finally {
+				Consumer.close().accept(newSession.isValid() ? currentSession : newSession);
 			}
-		}
+		});
 		return null;
 	}
 
@@ -112,7 +109,18 @@ public class StartedWebSession implements SpringWebSession, Function<String, Voi
 	}
 
 	private void invalidateSync() {
-		this.close(Session::invalidate);
+		Runnable closeTask = this.closeTask.getAndSet(null);
+		if (closeTask != null) {
+			try {
+				this.reference.getReader().read(invalidSession -> {
+					try (Session<Void> session = invalidSession) {
+						invalidSession.invalidate();
+					}
+				});
+			} finally {
+				closeTask.run();
+			}
+		}
 	}
 
 	@Override
@@ -126,55 +134,45 @@ public class StartedWebSession implements SpringWebSession, Function<String, Voi
 	}
 
 	void closeSync() {
-		if (this.isValid()) {
-			// According to §7.6 of the servlet specification:
-			// The session is considered to be accessed when a request that is part of the session is first handled by the servlet container.
-			this.close(session -> session.getMetaData().setLastAccess(this.startTime, Instant.now()));
+		Runnable closeTask = this.closeTask.getAndSet(null);
+		if (closeTask != null) {
+			try {
+				this.reference.getReader().read(completeSession -> {
+					try (Session<Void> session = completeSession) {
+						if (session.isValid()) {
+							session.getMetaData().setLastAccess(this.startTime, Instant.now());
+						}
+					}
+				});
+			} finally {
+				closeTask.run();
+			}
 		}
 	}
 
 	@Override
 	public boolean isExpired() {
-		return this.session.getMetaData().isExpired();
+		return this.reference.getReader().map(ImmutableSession.METADATA).map(ImmutableSessionMetaData::isExpired).get();
 	}
 
 	@Override
 	public Instant getCreationTime() {
-		return this.session.getMetaData().getCreationTime();
+		return this.reference.getReader().map(ImmutableSession.METADATA).map(ImmutableSessionMetaData.CREATION_TIME).get();
 	}
 
 	@Override
 	public Instant getLastAccessTime() {
-		return this.session.getMetaData().getLastAccessTime().orElse(this.session.getMetaData().getCreationTime());
+		return this.reference.getReader().map(ImmutableSession.METADATA).map(ImmutableSessionMetaData.LAST_ACCESS_TIME).get();
 	}
 
 	@Override
-	public void setMaxIdleTime(Duration maxIdleTime) {
-		this.session.getMetaData().setMaxIdle(maxIdleTime);
+	public void setMaxIdleTime(Duration maxIdle) {
+		this.reference.getReader().map(Session.METADATA).read(SessionMetaData.MAX_IDLE.composeUnary(Function.identity(), Function.of(maxIdle)));
 	}
 
 	@Override
 	public Duration getMaxIdleTime() {
-		return this.session.getMetaData().getMaxIdle().orElse(null);
-	}
-
-	private void close(Consumer<Session<Void>> action) {
-		Runnable closeTask = this.closeTask.getAndSet(null);
-		if (closeTask != null) {
-			try (Context<Batch> context = this.batch.resumeWithContext()) {
-				try (Batch batch = context.get()) {
-					try (Session<Void> session = this.session) {
-						if (session.isValid()) {
-							action.accept(session);
-						}
-					}
-				}
-			} catch (RuntimeException | Error e) {
-				log(e);
-			} finally {
-				closeTask.run();
-			}
-		}
+		return this.reference.getReader().map(ImmutableSession.METADATA).map(ImmutableSessionMetaData.MAX_IDLE).get().orElse(Duration.ZERO);
 	}
 
 	private static void log(Throwable exception) {
