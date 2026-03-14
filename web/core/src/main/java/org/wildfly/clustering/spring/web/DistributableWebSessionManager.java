@@ -5,7 +5,6 @@
 
 package org.wildfly.clustering.spring.web;
 
-import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -16,14 +15,11 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebSession;
 import org.springframework.web.server.session.WebSessionIdResolver;
 import org.springframework.web.server.session.WebSessionManager;
-import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.SuspendedBatch;
-import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Function;
-import org.wildfly.clustering.function.Predicate;
 import org.wildfly.clustering.function.Runner;
 import org.wildfly.clustering.function.Supplier;
+import org.wildfly.clustering.function.UnaryOperator;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
 
@@ -40,7 +36,7 @@ import reactor.core.scheduler.Schedulers;
 public class DistributableWebSessionManager implements WebSessionManager, DisposableBean {
 	private static final System.Logger LOGGER = System.getLogger(DistributableWebSessionManager.class.getPackageName());
 	private static final AtomicInteger COUNTER = new AtomicInteger(0);
-	private static final Predicate<Session<Void>> IS_VALID = Session::isValid;
+	private static final UnaryOperator<Session<Void>> VALIDATOR = UnaryOperator.when(Session.VALID, UnaryOperator.identity(), UnaryOperator.of(Session::close, Supplier.of(null)));
 
 	private final SessionManager<Void> manager;
 	private final WebSessionIdResolver identifierResolver;
@@ -80,16 +76,16 @@ public class DistributableWebSessionManager implements WebSessionManager, Dispos
 	}
 
 	private Mono<SpringWebSession> getSessionPublisher(Supplier<CompletionStage<Session<Void>>> factory) {
-		Map.Entry<SuspendedBatch, Runnable> entry = this.createBatchEntry();
-		try (Context<Batch> context = entry.getKey().resumeWithContext()) {
+		Runnable closeTask = this.getSessionCloseTask();
+		try {
 			return Mono.fromCompletionStage(factory.get())
-					.filter(IS_VALID)
-					.<SpringWebSession>map(session -> new StartedWebSession(this.manager, session, entry.getKey(), entry.getValue()))
-					.switchIfEmpty(Mono.defer(() -> {
-						close(entry, Consumer.of());
-						return Mono.empty();
-					}))
-					.doOnError(e -> rollback(entry));
+					.map(VALIDATOR)
+					.<SpringWebSession>map(session -> new StartedWebSession(this.manager, session, closeTask))
+					.switchIfEmpty(Mono.fromRunnable(closeTask))
+					.doOnError(Consumer.of(DistributableWebSessionManager::log, closeTask));
+		} catch (RuntimeException | Error e) {
+			closeTask.run();
+			throw e;
 		}
 	}
 
@@ -107,32 +103,6 @@ public class DistributableWebSessionManager implements WebSessionManager, Dispos
 
 	private static void log(Throwable exception) {
 		LOGGER.log(System.Logger.Level.ERROR, exception.getLocalizedMessage(), exception);
-	}
-
-	private static void rollback(Map.Entry<SuspendedBatch, Runnable> entry) {
-		close(entry, Batch::discard);
-	}
-
-	private static void close(Map.Entry<SuspendedBatch, Runnable> entry, Consumer<Batch> batchTask) {
-		try (Context<Batch> context = entry.getKey().resumeWithContext()) {
-			try (Batch batch = context.get()) {
-				batchTask.accept(batch);
-			}
-		} catch (RuntimeException | Error e) {
-			LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
-		} finally {
-			entry.getValue().run();
-		}
-	}
-
-	private Map.Entry<SuspendedBatch, Runnable> createBatchEntry() {
-		Runnable closeTask = this.getSessionCloseTask();
-		try {
-			return Map.entry(this.manager.getBatchFactory().get().suspend(), closeTask);
-		} catch (RuntimeException | Error e) {
-			closeTask.run();
-			throw e;
-		}
 	}
 
 	private Runner getSessionCloseTask() {

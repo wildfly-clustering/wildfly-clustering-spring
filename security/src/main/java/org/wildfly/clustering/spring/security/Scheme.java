@@ -45,13 +45,10 @@ public enum Scheme {
 	 * @throws IllegalArgumentException if there is no scheme with the specified name
 	 */
 	public static Scheme resolve(String name) {
-		switch (name) {
-			case "http":
-				return HTTP;
-			case "https":
-				return HTTPS;
-			default:
-				throw new IllegalArgumentException(name);
-		}
+		return switch (name) {
+			case "http" -> HTTP;
+			case "https" -> HTTPS;
+			default -> throw new IllegalArgumentException(name);
+		};
 	}
 }

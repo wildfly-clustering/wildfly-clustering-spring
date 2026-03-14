@@ -16,12 +16,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.session.events.SessionCreatedEvent;
 import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.SuspendedBatch;
-import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.function.BiConsumer;
 import org.wildfly.clustering.function.BiFunction;
-import org.wildfly.clustering.function.Consumer;
 import org.wildfly.clustering.function.Supplier;
+import org.wildfly.clustering.server.util.Reference;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
@@ -88,19 +86,19 @@ public class DistributableSessionRepository implements FindByIndexNameSessionRep
 	}
 
 	private DistributableSession getSession(Supplier<Session<Void>> factory) {
-		Map.Entry<SuspendedBatch, Runnable> entry = this.createBatchEntry();
-		SuspendedBatch suspendedBatch = entry.getKey();
-		Runnable closeTask = entry.getValue();
-		try (Context<Batch> context = suspendedBatch.resumeWithContext()) {
+		Runnable closeTask = this.getSessionCloseTask();
+		try {
 			Session<Void> session = factory.get();
 			if ((session == null) || !session.isValid()) {
-				return close(context, Consumer.of(), closeTask);
+				try (Session<Void> invalidSession = session) {
+					return null;
+				} finally {
+					closeTask.run();
+				}
 			}
-			return new DistributableSession(this.manager, session, suspendedBatch, closeTask, this.indexing, this.destroyAction);
+			return new DistributableSession(this.manager, session, closeTask, this.indexing, this.destroyAction);
 		} catch (RuntimeException | Error e) {
-			try (Context<Batch> context = suspendedBatch.resumeWithContext()) {
-				close(context, Batch::discard, closeTask);
-			}
+			closeTask.run();
 			throw e;
 		}
 	}
@@ -147,34 +145,13 @@ public class DistributableSessionRepository implements FindByIndexNameSessionRep
 				for (String sessionId : sessions.values()) {
 					ImmutableSession session = this.manager.findImmutableSession(sessionId);
 					if (session != null) {
-						result.put(sessionId, new DistributableImmutableSession(session));
+						result.put(sessionId, new DistributableImmutableSession<>(Reference.of(session)));
 					}
 				}
 			}
 			return result;
 		}
 		return Collections.emptyMap();
-	}
-
-	private Map.Entry<SuspendedBatch, Runnable> createBatchEntry() {
-		Runnable closeTask = this.getSessionCloseTask();
-		try {
-			return Map.entry(this.manager.getBatchFactory().get().suspend(), closeTask);
-		} catch (RuntimeException | Error e) {
-			closeTask.run();
-			throw e;
-		}
-	}
-
-	private static DistributableSession close(java.util.function.Supplier<Batch> batchProvider, Consumer<Batch> batchTask, Runnable closeTask) {
-		try (Batch batch = batchProvider.get()) {
-			batchTask.accept(batch);
-		} catch (RuntimeException | Error e) {
-			LOGGER.log(System.Logger.Level.WARNING, e.getLocalizedMessage(), e);
-		} finally {
-			closeTask.run();
-		}
-		return null;
 	}
 
 	private Runnable getSessionCloseTask() {
