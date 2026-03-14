@@ -13,9 +13,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.wildfly.clustering.cache.batch.Batch;
-import org.wildfly.clustering.cache.batch.SuspendedBatch;
-import org.wildfly.clustering.context.Context;
 import org.wildfly.clustering.function.Runner;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
@@ -103,27 +100,16 @@ public class LazyWebSession implements SpringWebSession {
 		if (!this.isStarted() || !this.isValid()) {
 			return Mono.fromRunnable(this.closeTask);
 		}
-		SuspendedBatch suspended = this.manager.getBatchFactory().get().suspend();
-		try (Context<Batch> context = suspended.resumeWithContext()) {
-			return Mono.fromCompletionStage(this.manager.createSessionAsync(this.id.get()))
-					.publishOn(Schedulers.boundedElastic())
-					.doOnNext(newSession -> {
-						try (Context<Batch> resumed = suspended.resumeWithContext()) {
-							try (Batch batch = resumed.get()) {
-								try (Session<Void> session = newSession) {
-									session.getAttributes().putAll(this.attributes);
-									SessionMetaData metaData = session.getMetaData();
-									this.timeout.get().ifPresent(metaData::setMaxIdle);
-									metaData.setLastAccess(metaData.getCreationTime(), Instant.now());
-								}
-							}
-						}
-					}).then().doOnError(exception -> {
-						try (Batch resumed = suspended.resume()) {
-							resumed.discard();
-						}
-					}).doAfterTerminate(this.closeTask);
-		}
+		return Mono.fromCompletionStage(this.manager.createSessionAsync(this.id.get()))
+				.publishOn(Schedulers.boundedElastic())
+				.doOnNext(newSession -> {
+					try (Session<Void> session = newSession) {
+						session.getAttributes().putAll(this.attributes);
+						SessionMetaData metaData = session.getMetaData();
+						this.timeout.get().ifPresent(metaData::setMaxIdle);
+						metaData.setLastAccess(metaData.getCreationTime(), Instant.now());
+					}
+				}).then().doAfterTerminate(this.closeTask);
 	}
 
 	@Override
