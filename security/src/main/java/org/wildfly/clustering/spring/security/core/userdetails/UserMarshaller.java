@@ -42,24 +42,17 @@ public enum UserMarshaller implements ProtoStreamMarshaller<User> {
 		while (!reader.isAtEnd()) {
 			int tag = reader.readTag();
 			switch (WireType.getTagFieldNumber(tag)) {
-				case USERNAME_INDEX:
-					builder.username(reader.readString());
-					break;
-				case PASSWORD_INDEX:
-					builder.password(reader.readString());
-					break;
-				case AUTHORITY_INDEX:
-					authorities.add(reader.readAny(GrantedAuthority.class));
-					break;
-				case FLAGS:
+				case USERNAME_INDEX -> builder.username(reader.readString());
+				case PASSWORD_INDEX -> builder.password(reader.readString());
+				case AUTHORITY_INDEX -> authorities.add(reader.readAny(GrantedAuthority.class));
+				case FLAGS -> {
 					BitSet flags = reader.readObject(BitSet.class);
 					builder.disabled(flags.get(DISABLED));
 					builder.accountExpired(flags.get(ACCOUNT_EXPIRED));
 					builder.credentialsExpired(flags.get(CREDENTIALS_EXPIRED));
 					builder.accountLocked(flags.get(ACCOUNT_LOCKED));
-					break;
-				default:
-					reader.skipField(tag);
+				}
+				default -> reader.skipField(tag);
 			}
 		}
 		if (!authorities.isEmpty()) {
