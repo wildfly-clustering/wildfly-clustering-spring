@@ -49,7 +49,7 @@
 			<dependency>
 				<groupId>io.projectreactor</groupId>
 				<artifactId>reactor-bom</artifactId>
-				<version>2025.0.3</version>
+				<version>2025.0.4</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -84,7 +84,7 @@
 			<dependency>
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-bom</artifactId>
-				<version>5.22.0</version>
+				<version>5.23.0</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -98,7 +98,7 @@
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-framework-bom</artifactId>
-				<version>7.0.5</version>
+				<version>7.0.6</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
