@@ -18,6 +18,7 @@ import org.springframework.session.Session;
 import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.function.BiConsumer;
 import org.wildfly.clustering.function.BiFunction;
+import org.wildfly.clustering.server.util.Reference;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.container.ContainerProvider;
@@ -58,7 +59,8 @@ public class ImmutableSessionDestroyAction<C> implements BiConsumer<ImmutableSes
 
 	@Override
 	public void accept(ImmutableSession session, BiFunction<Object, Session, ApplicationEvent> eventFactory) {
-		ApplicationEvent event = eventFactory.apply(this, new DistributableImmutableSession(session));
+		SpringSession immutableSession = new DistributableImmutableSession<>(Reference.of(session));
+		ApplicationEvent event = eventFactory.apply(this, immutableSession);
 		this.publisher.publishEvent(event);
 		HttpSession httpSession = this.provider.getSession(this.manager, session, this.context);
 		for (Map.Entry<String, Object> entry : session.getAttributes().entrySet()) {
@@ -72,7 +74,7 @@ public class ImmutableSessionDestroyAction<C> implements BiConsumer<ImmutableSes
 		}
 
 		// Remove any associated indexes
-		Map<String, String> indexes = this.indexing.getIndexResolver().resolveIndexesFor(new DistributableImmutableSession(session));
+		Map<String, String> indexes = this.indexing.getIndexResolver().resolveIndexesFor(immutableSession);
 		for (Map.Entry<String, String> entry : indexes.entrySet()) {
 			UserManager<Void, Void, String, String> manager = this.indexing.getUserManagers().get(entry.getKey());
 			if (manager != null) {
