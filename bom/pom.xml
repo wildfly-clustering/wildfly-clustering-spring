@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>org.wildfly.clustering</groupId>
 		<artifactId>wildfly-clustering-parent</artifactId>
-		<version>10.0.0.CR3</version>
+		<version>10.0.0.CR4</version>
 		<relativePath />
 	</parent>
 
