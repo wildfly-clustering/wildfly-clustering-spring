@@ -1,0 +1,34 @@
+name: Verify
+run-name: Verify ${{ github.head_ref }} for ${{ github.actor }}
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+jobs:
+  verify:
+    name: Verify
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          java-version: |
+            17
+            21
+            25
+          distribution: temurin
+          cache: maven
+
+      - name: Maven verify
+        run: mvn --batch-mode --no-transfer-progress ${{ case(contains(github.event.pull_request.labels.*.name, vars.VALIDATE_ONLY_LABEL) == true, 'validate', 'verify') }} -P lts
