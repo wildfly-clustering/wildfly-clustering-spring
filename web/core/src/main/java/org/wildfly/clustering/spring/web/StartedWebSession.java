@@ -30,10 +30,9 @@ public class StartedWebSession implements SpringWebSession, Function<String, Voi
 	private static final System.Logger LOGGER = System.getLogger(StartedWebSession.class.getPackageName());
 
 	private final SessionManager<Void> manager;
+	private final BlockingReference<Session<Void>> reference;
 	private final AtomicReference<Runnable> closeTask;
 	private final Instant startTime;
-
-	private final BlockingReference<Session<Void>> reference;
 
 	/**
 	 * Creates a distributable Spring Web session.
@@ -70,7 +69,7 @@ public class StartedWebSession implements SpringWebSession, Function<String, Voi
 
 	@Override
 	public boolean isValid() {
-		return this.reference.getReader().map(Session.VALID.thenBox()).get();
+		return this.reference.getReader().map(ImmutableSession.VALID.thenBox()).get();
 	}
 
 	@Override

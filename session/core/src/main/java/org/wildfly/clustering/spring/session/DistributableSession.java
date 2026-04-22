@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.context.ApplicationEvent;
@@ -33,8 +32,6 @@ import org.wildfly.clustering.session.user.UserManager;
  * @author Paul Ferraro
  */
 public class DistributableSession extends DistributableImmutableSession<Session<Void>> {
-	private static final System.Logger LOGGER = System.getLogger(DistributableSession.class.getName());
-	private static final AtomicInteger ID = new AtomicInteger(0);
 
 	private final SessionManager<Void> manager;
 	private final BlockingReference<Session<Void>> reference;
@@ -42,7 +39,6 @@ public class DistributableSession extends DistributableImmutableSession<Session<
 	private final UserConfiguration configuration;
 	private final BiConsumer<ImmutableSession, BiFunction<Object, org.springframework.session.Session, ApplicationEvent>> destroyAction;
 	private final AtomicReference<Runnable> closeTask;
-	private final int id;
 
 	/**
 	 * Creates a Spring Session facade for an distributable session.
@@ -64,7 +60,6 @@ public class DistributableSession extends DistributableImmutableSession<Session<
 		this.configuration = configuration;
 		this.destroyAction = destroyAction;
 		this.startTime = startTime;
-		this.id = ID.incrementAndGet();
 	}
 
 	@Override

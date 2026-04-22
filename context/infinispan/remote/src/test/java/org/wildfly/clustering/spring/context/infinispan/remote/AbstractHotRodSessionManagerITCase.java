@@ -9,6 +9,7 @@ import java.util.Properties;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
+import org.infinispan.client.hotrod.impl.HotRodURI;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.wildfly.clustering.arquillian.Tester;
@@ -36,17 +37,30 @@ public abstract class AbstractHotRodSessionManagerITCase extends AbstractSession
 
 	@Override
 	public Properties apply(Properties properties) {
-		InfinispanServerContainer container = INFINISPAN.getContainer();
-		properties.setProperty("infinispan.server.host", container.getHost());
-		properties.setProperty("infinispan.server.port", Integer.toString(container.getPort()));
-		properties.setProperty("infinispan.server.username", container.getUsername());
-		properties.setProperty("infinispan.server.password", String.valueOf(container.getPassword()));
+		HotRodURI uri = INFINISPAN.getContainer().get();
+		properties.setProperty("infinispan.server.uri", uri.toString(true));
 		// Use local cache since our remote cluster has only 1 member
 		// Reduce expiration interval to speed up expiration verification
-		properties.setProperty("infinispan.server.configuration",
-"""
-{ "local-cache" : { "encoding" : { "key" : { "media-type" : "application/octet-stream" }, "value" : { "media-type" : "application/octet-stream" }}, "expiration" : { "interval" : 1000 }, "transaction" : { "mode" : "NON_XA", "locking" : "PESSIMISTIC" }}}
-""");
+		properties.setProperty("infinispan.server.configuration", """
+{
+	"local-cache" : {
+		"encoding" : {
+			"key" : {
+				"media-type" : "application/octet-stream"
+			},
+			"value" : {
+				"media-type" : "application/octet-stream"
+			}
+		},
+		"expiration" : {
+			"interval" : 1000
+		},
+		"transaction" : {
+			"mode" : "NON_XA",
+			"locking" : "PESSIMISTIC"
+		}
+	}
+}""");
 		return properties;
 	}
 }

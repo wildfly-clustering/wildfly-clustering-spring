@@ -10,7 +10,6 @@ import java.util.function.BiFunction;
 
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
-import org.wildfly.clustering.cache.batch.Batch;
 import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.SessionManager;
 
@@ -18,9 +17,8 @@ import org.wildfly.clustering.session.SessionManager;
  * Encapsulates the configuration of a session manager.
  * @author Paul Ferraro
  * @param <S> the session type
- * @param <B> the batch type
  */
-public interface DistributableSessionManagerConfiguration<S, B extends Batch> {
+public interface DistributableSessionManagerConfiguration<S> {
 	/**
 	 * Returns the associated session manager.
 	 * @return the associated session manager.

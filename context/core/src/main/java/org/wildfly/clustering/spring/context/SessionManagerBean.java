@@ -82,4 +82,9 @@ public class SessionManagerBean extends AutoDestroyBean implements SessionManage
 	public SessionStatistics getStatistics() {
 		return this.manager.getStatistics();
 	}
+
+	@Override
+	public boolean isDistributed() {
+		return this.manager.isDistributed();
+	}
 }

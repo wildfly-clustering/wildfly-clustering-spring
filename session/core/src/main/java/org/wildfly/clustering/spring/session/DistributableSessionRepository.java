@@ -32,7 +32,6 @@ import org.wildfly.clustering.session.user.UserManager;
  * @author Paul Ferraro
  */
 public class DistributableSessionRepository implements FindByIndexNameSessionRepository<SpringSession>, DisposableBean {
-	private static final System.Logger LOGGER = System.getLogger(DistributableSessionRepository.class.getPackageName());
 	// Handle redundant calls to findById(...)
 	private static final ThreadLocal<SpringSession> CURRENT_SESSION = new ThreadLocal<>();
 
