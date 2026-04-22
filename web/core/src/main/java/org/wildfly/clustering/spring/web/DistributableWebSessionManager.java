@@ -20,6 +20,7 @@ import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.function.Runner;
 import org.wildfly.clustering.function.Supplier;
 import org.wildfly.clustering.function.UnaryOperator;
+import org.wildfly.clustering.session.ImmutableSession;
 import org.wildfly.clustering.session.Session;
 import org.wildfly.clustering.session.SessionManager;
 
@@ -36,7 +37,7 @@ import reactor.core.scheduler.Schedulers;
 public class DistributableWebSessionManager implements WebSessionManager, DisposableBean {
 	private static final System.Logger LOGGER = System.getLogger(DistributableWebSessionManager.class.getPackageName());
 	private static final AtomicInteger COUNTER = new AtomicInteger(0);
-	private static final UnaryOperator<Session<Void>> VALIDATOR = UnaryOperator.when(Session.VALID, UnaryOperator.identity(), UnaryOperator.of(Session::close, Supplier.of(null)));
+	private static final UnaryOperator<Session<Void>> VALIDATOR = UnaryOperator.when(ImmutableSession.VALID, UnaryOperator.identity(), UnaryOperator.of(Session::close, Supplier.of(null)));
 
 	private final SessionManager<Void> manager;
 	private final WebSessionIdResolver identifierResolver;
