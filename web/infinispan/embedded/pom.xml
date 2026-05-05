@@ -71,7 +71,7 @@
 
 		<dependency>
 			<groupId>org.jboss.arquillian.container</groupId>
-			<artifactId>arquillian-tomcat-managed-8</artifactId>
+			<artifactId>arquillian-tomcat-managed-10</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

@@ -19,7 +19,6 @@ public interface HotRodConfiguration {
 {
 	"distributed-cache" : {
 		"mode" : "SYNC",
-		"statistics" : "true",
 		"encoding" : {
 			"key" : {
 				"media-type" : "application/octet-stream"
@@ -27,6 +26,9 @@ public interface HotRodConfiguration {
 			"value" : {
 				"media-type" : "application/octet-stream"
 			}
+		},
+		"locking" : {
+			"isolation" : "REPEATABLE_READ"
 		},
 		"transaction" : {
 			"mode" : "NON_XA",

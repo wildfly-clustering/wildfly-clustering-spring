@@ -87,13 +87,7 @@ public class UserConfigurationBean extends AutoDestroyBean implements UserConfig
 			cache.start();
 			this.accept(cache::stop);
 
-			RemoteCacheConfiguration cacheConfiguration = new RemoteCacheConfiguration() {
-				@SuppressWarnings("unchecked")
-				@Override
-				public <CK, CV> RemoteCache<CK, CV> getCache() {
-					return (RemoteCache<CK, CV>) cache.withDataFormat(DataFormat.builder().keyType(MediaType.APPLICATION_OBJECT).keyMarshaller(container.getMarshaller()).valueType(MediaType.APPLICATION_OBJECT).valueMarshaller(container.getMarshaller()).build());
-				}
-			};
+			RemoteCacheConfiguration cacheConfiguration = RemoteCacheConfiguration.of(cache.withDataFormat(DataFormat.builder().keyType(MediaType.APPLICATION_OBJECT).keyMarshaller(container.getConfiguration().marshaller()).valueType(MediaType.APPLICATION_OBJECT).valueMarshaller(container.getConfiguration().marshaller()).build()));
 			UserManagerFactory<Void, String, String> userManagerFactory = new HotRodUserManagerFactory<>(cacheConfiguration);
 
 			UserManager<Void, Void, String, String> userManager = userManagerFactory.createUserManager(new UserManagerConfiguration<>() {

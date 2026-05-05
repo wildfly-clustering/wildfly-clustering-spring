@@ -10,6 +10,7 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheContainer;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
+import org.infinispan.client.hotrod.transaction.lookup.RemoteTransactionManagerLookup;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.springframework.beans.factory.InitializingBean;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
@@ -53,7 +54,12 @@ public class HotRodSessionManagerFactoryBean<C> extends AutoDestroyBean implemen
 		String configuration = this.hotrod.getConfiguration();
 
 		container.getConfiguration().addRemoteCache(deploymentName, builder -> {
-			builder.forceReturnValues(false).nearCacheMode(NearCacheMode.DISABLED).transactionMode(TransactionMode.NONE);
+			builder.forceReturnValues(false)
+					.marshaller(container.getConfiguration().marshaller())
+					.nearCacheMode(NearCacheMode.DISABLED)
+					.transactionMode(TransactionMode.NON_XA)
+					.transactionManagerLookup(RemoteTransactionManagerLookup.getInstance())
+					;
 			if (templateName != null) {
 				builder.templateName(templateName);
 			} else {
@@ -74,7 +80,7 @@ public class HotRodSessionManagerFactoryBean<C> extends AutoDestroyBean implemen
 
 			@Override
 			public RemoteCacheConfiguration getCacheConfiguration() {
-				return RemoteCacheConfiguration.of(cache.withDataFormat(DataFormat.builder().keyType(MediaType.APPLICATION_OBJECT).keyMarshaller(container.getMarshaller()).valueType(MediaType.APPLICATION_OBJECT).valueMarshaller(container.getMarshaller()).build()));
+				return RemoteCacheConfiguration.of(cache.withDataFormat(DataFormat.builder().keyType(MediaType.APPLICATION_OBJECT).keyMarshaller(cache.getMarshaller()).valueType(MediaType.APPLICATION_OBJECT).valueMarshaller(cache.getMarshaller()).build()));
 			}
 		});
 		this.accept(this::close);
