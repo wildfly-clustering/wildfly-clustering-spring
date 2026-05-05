@@ -5,9 +5,6 @@
 
 package org.wildfly.clustering.spring.web.infinispan.remote;
 
-import java.time.Duration;
-import java.util.Optional;
-
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.wildfly.clustering.session.container.SessionManagementTesterConfiguration;
 import org.wildfly.clustering.spring.web.context.SessionHandler;
@@ -23,11 +20,6 @@ public abstract class AbstractHotRodWebSessionManagerITCase extends org.wildfly.
 			@Override
 			public Class<?> getEndpointClass() {
 				return DispatcherServlet.class;
-			}
-
-			@Override
-			public Optional<Duration> getFailoverGracePeriod() {
-				return Optional.of(Duration.ofSeconds(2));
 			}
 		});
 	}

@@ -10,7 +10,7 @@
 		<groupId>org.wildfly.clustering.spring</groupId>
 		<artifactId>wildfly-clustering-spring-bom</artifactId>
 		<version>20.0.0.Beta1-SNAPSHOT</version>
-		<relativePath>bom</relativePath>
+		<relativePath>bom/pom.xml</relativePath>
 	</parent>
 
 	<artifactId>wildfly-clustering-spring</artifactId>
@@ -126,7 +126,7 @@
 			<dependency>
 				<groupId>org.wildfly.clustering</groupId>
 				<artifactId>wildfly-clustering-bom</artifactId>
-				<version>10.0.1.Final</version>
+				<version>10.0.3.Final</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -144,8 +144,8 @@
 			</dependency>
 			<dependency>
 				<groupId>org.jboss.arquillian.container</groupId>
-				<artifactId>arquillian-tomcat-managed-8</artifactId>
-				<version>1.1.0.Final</version>
+				<artifactId>arquillian-tomcat-managed-10</artifactId>
+				<version>1.2.4.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>org.kohsuke.metainf-services</groupId>

@@ -5,8 +5,6 @@
 
 package org.wildfly.clustering.spring.session.infinispan.remote;
 
-import java.time.Duration;
-import java.util.Optional;
 import java.util.function.Function;
 
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -19,23 +17,16 @@ import org.wildfly.clustering.spring.session.context.SpringSessionFilter;
  */
 public abstract class AbstractHotRodSessionManagerITCase extends org.wildfly.clustering.spring.context.infinispan.remote.AbstractHotRodSessionManagerITCase {
 
-	interface SessionManagementTesterConfiguration extends ServletSessionManagementTesterConfiguration {
-		@Override
-		default Optional<Duration> getFailoverGracePeriod() {
-			return Optional.of(Duration.ofSeconds(2));
-		}
-	}
-
 	protected AbstractHotRodSessionManagerITCase() {
-		super(new SessionManagementTesterConfiguration() {
+		super(new ServletSessionManagementTesterConfiguration() {
 		});
 	}
 
-	protected AbstractHotRodSessionManagerITCase(SessionManagementTesterConfiguration configuration) {
+	protected AbstractHotRodSessionManagerITCase(ServletSessionManagementTesterConfiguration configuration) {
 		super(configuration);
 	}
 
-	protected AbstractHotRodSessionManagerITCase(Function<org.wildfly.clustering.session.container.SessionManagementTesterConfiguration, Tester> testerFactory, SessionManagementTesterConfiguration configuration) {
+	protected AbstractHotRodSessionManagerITCase(Function<org.wildfly.clustering.session.container.SessionManagementTesterConfiguration, Tester> testerFactory, ServletSessionManagementTesterConfiguration configuration) {
 		super(testerFactory, configuration);
 	}
 
