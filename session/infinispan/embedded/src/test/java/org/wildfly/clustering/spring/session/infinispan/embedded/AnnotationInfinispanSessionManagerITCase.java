@@ -4,14 +4,12 @@
  */
 package org.wildfly.clustering.spring.session.infinispan.embedded;
 
-import java.util.Properties;
-
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.wildfly.clustering.spring.context.PropertiesAsset;
+import org.wildfly.clustering.spring.context.infinispan.embedded.InfinispanSessionManagementArguments;
 import org.wildfly.clustering.spring.context.infinispan.embedded.InfinispanSessionManagementArgumentsProvider;
-import org.wildfly.clustering.spring.context.infinispan.embedded.InfinispanSessionManagementParameters;
 import org.wildfly.clustering.spring.session.context.SpringSessionFilter;
 import org.wildfly.clustering.spring.session.infinispan.embedded.context.Config;
 
@@ -20,23 +18,18 @@ import org.wildfly.clustering.spring.session.infinispan.embedded.context.Config;
  */
 public class AnnotationInfinispanSessionManagerITCase extends AbstractInfinispanSessionManagerITCase {
 
-	private final Properties properties = new Properties();
-
 	@ParameterizedTest
 	@ArgumentsSource(InfinispanSessionManagementArgumentsProvider.class)
-	public void test(InfinispanSessionManagementParameters parameters) {
-		this.properties.setProperty("session.granularity", parameters.getSessionPersistenceGranularity().name());
-		this.properties.setProperty("session.marshaller", parameters.getSessionMarshallerFactory().name());
-		this.properties.setProperty("infinispan.template", parameters.getTemplate());
-		this.run();
+	public void test(InfinispanSessionManagementArguments arguments) {
+		this.accept(arguments);
 	}
 
 	@Override
-	public WebArchive createArchive(org.wildfly.clustering.session.container.SessionManagementTesterConfiguration configuration) {
-		return super.createArchive(configuration)
+	public WebArchive createArchive(InfinispanSessionManagementArguments arguments) {
+		return super.createArchive(arguments)
 				.addPackage(SpringSessionFilter.class.getPackage())
 				.addPackage(Config.class.getPackage())
-				.addAsWebInfResource(new PropertiesAsset(this.properties), "classes/application.properties")
+				.addAsWebInfResource(new PropertiesAsset(arguments.getProperties()), "classes/application.properties")
 				;
 	}
 }

@@ -32,7 +32,6 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.List;
-import java.util.Properties;
 import java.util.function.UnaryOperator;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -43,7 +42,7 @@ import org.junit.jupiter.api.Test;
 import org.wildfly.clustering.arquillian.Deployment;
 import org.wildfly.clustering.session.container.SessionManagementTester;
 import org.wildfly.clustering.session.container.servlet.ServletSessionManagementTesterConfiguration;
-import org.wildfly.clustering.spring.context.PropertiesAsset;
+import org.wildfly.clustering.spring.context.SessionManagementArguments;
 import org.wildfly.clustering.spring.session.authentication.SecurityInitializer;
 import org.wildfly.clustering.spring.session.infinispan.remote.authentication.Config;
 
@@ -84,9 +83,8 @@ public class AuthenticationHotRodSessionManagerITCase extends AbstractHotRodSess
 	}
 
 	@Override
-	public WebArchive createArchive(org.wildfly.clustering.session.container.SessionManagementTesterConfiguration configuration) {
-		return super.createArchive(configuration)
-				.addAsWebInfResource(new PropertiesAsset(this.apply(new Properties())), "classes/application.properties")
+	public WebArchive createArchive(SessionManagementArguments arguments) {
+		return super.createArchive(arguments)
 				.addPackage(Config.class.getPackage())
 				.addPackage(SecurityInitializer.class.getPackage())
 				;
@@ -94,6 +92,6 @@ public class AuthenticationHotRodSessionManagerITCase extends AbstractHotRodSess
 
 	@Test
 	public void test() {
-		this.run();
+		this.accept(SessionManagementArguments.of());
 	}
 }

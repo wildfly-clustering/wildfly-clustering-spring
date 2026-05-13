@@ -22,12 +22,9 @@
 
 package org.wildfly.clustering.spring.web.infinispan.remote;
 
-import java.util.Properties;
-
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.Test;
-import org.wildfly.clustering.session.container.SessionManagementTesterConfiguration;
-import org.wildfly.clustering.spring.context.PropertiesAsset;
+import org.wildfly.clustering.spring.context.SessionManagementArguments;
 import org.wildfly.clustering.spring.web.infinispan.remote.context.Config;
 
 /**
@@ -37,14 +34,11 @@ public class AnnotationHotRodWebSessionManagerITCase extends AbstractHotRodWebSe
 
 	@Test
 	public void test() {
-		this.run();
+		this.accept(SessionManagementArguments.of());
 	}
 
 	@Override
-	public WebArchive createArchive(SessionManagementTesterConfiguration configuration) {
-		return super.createArchive(configuration)
-				.addAsWebInfResource(new PropertiesAsset(this.apply(new Properties())), "classes/application.properties")
-				.addPackage(Config.class.getPackage())
-				;
+	public WebArchive createArchive(SessionManagementArguments arguments) {
+		return super.createArchive(arguments).addPackage(Config.class.getPackage());
 	}
 }

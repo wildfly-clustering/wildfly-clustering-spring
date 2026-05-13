@@ -6,7 +6,6 @@
 package org.wildfly.clustering.spring.context;
 
 import java.util.EnumSet;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -21,12 +20,12 @@ public class SessionManagementArgumentsProvider implements ArgumentsProvider {
 	@Override
 	public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
 		Stream.Builder<Arguments> builder = Stream.builder();
-		for (SessionPersistenceGranularity strategy : EnumSet.allOf(SessionPersistenceGranularity.class)) {
+		for (SessionPersistenceGranularity granularity : EnumSet.allOf(SessionPersistenceGranularity.class)) {
 			for (SessionAttributeMarshaller marshaller : EnumSet.allOf(SessionAttributeMarshaller.class)) {
-				builder.add(Arguments.of(new SessionManagementParameters() {
+				builder.add(Arguments.of(new SessionManagementArguments() {
 					@Override
 					public SessionPersistenceGranularity getSessionPersistenceGranularity() {
-						return strategy;
+						return granularity;
 					}
 
 					@Override
@@ -36,7 +35,7 @@ public class SessionManagementArgumentsProvider implements ArgumentsProvider {
 
 					@Override
 					public String toString() {
-						return Map.of("granularity", strategy, "marshaller", marshaller).toString();
+						return String.format("%s-%s", granularity, marshaller);
 					}
 				}));
 			}
