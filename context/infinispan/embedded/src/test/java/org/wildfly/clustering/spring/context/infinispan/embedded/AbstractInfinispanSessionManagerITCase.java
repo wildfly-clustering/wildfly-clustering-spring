@@ -15,7 +15,7 @@ import org.wildfly.clustering.session.container.SessionManagementTesterConfigura
 /**
  * @author Paul Ferraro
  */
-public abstract class AbstractInfinispanSessionManagerITCase extends AbstractSessionManagerITCase<WebArchive> {
+public abstract class AbstractInfinispanSessionManagerITCase extends AbstractSessionManagerITCase<InfinispanSessionManagementArguments, WebArchive> {
 
 	protected AbstractInfinispanSessionManagerITCase(SessionManagementTesterConfiguration configuration) {
 		super(configuration, WebArchive.class);
@@ -26,7 +26,7 @@ public abstract class AbstractInfinispanSessionManagerITCase extends AbstractSes
 	}
 
 	@Override
-	public WebArchive createArchive(SessionManagementTesterConfiguration configuration) {
-		return super.createArchive(configuration).addAsWebInfResource("infinispan.xml");
+	public WebArchive createArchive(InfinispanSessionManagementArguments arguments) {
+		return super.createArchive(arguments).addAsWebInfResource("infinispan.xml");
 	}
 }

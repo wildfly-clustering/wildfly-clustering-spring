@@ -7,6 +7,7 @@ package org.wildfly.clustering.spring.web.infinispan.remote;
 
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.wildfly.clustering.session.container.SessionManagementTesterConfiguration;
+import org.wildfly.clustering.spring.context.SessionManagementArguments;
 import org.wildfly.clustering.spring.web.context.SessionHandler;
 import org.wildfly.clustering.spring.web.servlet.DispatcherServlet;
 
@@ -25,7 +26,7 @@ public abstract class AbstractHotRodWebSessionManagerITCase extends org.wildfly.
 	}
 
 	@Override
-	public WebArchive createArchive(SessionManagementTesterConfiguration configuration) {
-		return super.createArchive(configuration).addPackage(SessionHandler.class.getPackage());
+	public WebArchive createArchive(SessionManagementArguments arguments) {
+		return super.createArchive(arguments).addPackage(SessionHandler.class.getPackage());
 	}
 }

@@ -6,7 +6,7 @@ package org.wildfly.clustering.spring.web.infinispan.embedded;
 
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.Test;
-import org.wildfly.clustering.session.container.SessionManagementTesterConfiguration;
+import org.wildfly.clustering.spring.context.infinispan.embedded.InfinispanSessionManagementArguments;
 import org.wildfly.clustering.spring.web.infinispan.embedded.config.annotation.EnableInfinispanWebSession;
 import org.wildfly.clustering.spring.web.infinispan.embedded.context.ConfigContextLoaderListener;
 
@@ -19,11 +19,11 @@ public class AnnotationInfinispanWebSessionManagerITCase extends AbstractInfinis
 	@Test
 	public void test() {
 		// N.B. this test is not parameterized, as it would otherwise require a config class and listener per test configuration.
-		this.run();
+		this.accept(InfinispanSessionManagementArguments.of());
 	}
 
 	@Override
-	public WebArchive createArchive(SessionManagementTesterConfiguration configuration) {
-		return super.createArchive(configuration).addPackage(ConfigContextLoaderListener.class.getPackage());
+	public WebArchive createArchive(InfinispanSessionManagementArguments arguments) {
+		return super.createArchive(arguments).addPackage(ConfigContextLoaderListener.class.getPackage());
 	}
 }

@@ -24,10 +24,10 @@ jobs:
         with:
           java-version: |
             17
-            21
             25
+            26
           distribution: temurin
           cache: maven
 
       - name: Maven verify
-        run: mvn --batch-mode --no-transfer-progress ${{ case(contains(github.event.pull_request.labels.*.name, vars.VALIDATE_ONLY_LABEL) == true, 'validate', 'verify') }} -P lts
+        run: mvn --batch-mode --no-transfer-progress ${{ case(contains(github.event.pull_request.labels.*.name, vars.VALIDATE_ONLY_LABEL) == true, 'validate', 'verify --activate-profiles latest,lts') }}

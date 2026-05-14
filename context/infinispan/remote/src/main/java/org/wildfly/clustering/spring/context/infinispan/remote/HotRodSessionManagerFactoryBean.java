@@ -10,10 +10,10 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheContainer;
 import org.infinispan.client.hotrod.configuration.NearCacheMode;
 import org.infinispan.client.hotrod.configuration.TransactionMode;
-import org.infinispan.client.hotrod.transaction.lookup.RemoteTransactionManagerLookup;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.springframework.beans.factory.InitializingBean;
 import org.wildfly.clustering.cache.infinispan.remote.RemoteCacheConfiguration;
+import org.wildfly.clustering.cache.infinispan.remote.transaction.RemoteTransactionManagerLookup;
 import org.wildfly.clustering.session.SessionManager;
 import org.wildfly.clustering.session.SessionManagerConfiguration;
 import org.wildfly.clustering.session.SessionManagerFactory;
@@ -58,7 +58,7 @@ public class HotRodSessionManagerFactoryBean<C> extends AutoDestroyBean implemen
 					.marshaller(container.getConfiguration().marshaller())
 					.nearCacheMode(NearCacheMode.DISABLED)
 					.transactionMode(TransactionMode.NON_XA)
-					.transactionManagerLookup(RemoteTransactionManagerLookup.getInstance())
+					.transactionManagerLookup(RemoteTransactionManagerLookup.INSTANCE)
 					;
 			if (templateName != null) {
 				builder.templateName(templateName);

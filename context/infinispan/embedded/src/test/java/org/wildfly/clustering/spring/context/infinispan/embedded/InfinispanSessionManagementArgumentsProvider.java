@@ -6,7 +6,6 @@
 package org.wildfly.clustering.spring.context.infinispan.embedded;
 
 import java.util.EnumSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -27,12 +26,12 @@ public class InfinispanSessionManagementArgumentsProvider implements ArgumentsPr
 	public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
 		Stream.Builder<Arguments> builder = Stream.builder();
 		for (String template : this.templates) {
-			for (SessionPersistenceGranularity strategy : EnumSet.allOf(SessionPersistenceGranularity.class)) {
+			for (SessionPersistenceGranularity granularity : EnumSet.allOf(SessionPersistenceGranularity.class)) {
 				for (SessionAttributeMarshaller marshaller : EnumSet.allOf(SessionAttributeMarshaller.class)) {
-					builder.add(Arguments.of(new InfinispanSessionManagementParameters() {
+					builder.add(Arguments.of(new InfinispanSessionManagementArguments() {
 						@Override
 						public SessionPersistenceGranularity getSessionPersistenceGranularity() {
-							return strategy;
+							return granularity;
 						}
 
 						@Override
@@ -47,7 +46,7 @@ public class InfinispanSessionManagementArgumentsProvider implements ArgumentsPr
 
 						@Override
 						public String toString() {
-							return Map.of("template", template, "granularity", strategy, "marshaller", marshaller).toString();
+							return String.format("%s-%s-%s", template, granularity, marshaller);
 						}
 					}));
 				}

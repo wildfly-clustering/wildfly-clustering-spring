@@ -22,14 +22,11 @@
 
 package org.wildfly.clustering.spring.session.infinispan.remote;
 
-import java.util.Properties;
-
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
-import org.wildfly.clustering.spring.context.PropertiesAsset;
+import org.wildfly.clustering.spring.context.SessionManagementArguments;
 import org.wildfly.clustering.spring.context.SessionManagementArgumentsProvider;
-import org.wildfly.clustering.spring.context.SessionManagementParameters;
 import org.wildfly.clustering.spring.session.context.xml.XmlContextLoaderListener;
 
 /**
@@ -37,22 +34,17 @@ import org.wildfly.clustering.spring.session.context.xml.XmlContextLoaderListene
  */
 public class BeanHotRodSessionManagerITCase extends AbstractHotRodSessionManagerITCase {
 
-	private final Properties properties = new Properties();
-
 	@ParameterizedTest
 	@ArgumentsSource(SessionManagementArgumentsProvider.class)
-	public void test(SessionManagementParameters parameters) {
-		this.properties.setProperty("session.granularity", parameters.getSessionPersistenceGranularity().name());
-		this.properties.setProperty("session.marshaller", parameters.getSessionMarshallerFactory().name());
-		this.run();
+	public void test(SessionManagementArguments arguments) {
+		this.accept(arguments);
 	}
 
 	@Override
-	public WebArchive createArchive(org.wildfly.clustering.session.container.SessionManagementTesterConfiguration configuration) {
-		return super.createArchive(configuration)
+	public WebArchive createArchive(SessionManagementArguments arguments) {
+		return super.createArchive(arguments)
 				.addPackage(XmlContextLoaderListener.class.getPackage())
 				.addAsWebInfResource("applicationContext.xml")
-				.addAsWebInfResource(new PropertiesAsset(this.apply(this.properties)), "classes/application.properties")
 				;
 	}
 }

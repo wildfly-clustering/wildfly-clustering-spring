@@ -10,6 +10,7 @@ import java.util.function.Function;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.wildfly.clustering.arquillian.Tester;
 import org.wildfly.clustering.session.container.servlet.ServletSessionManagementTesterConfiguration;
+import org.wildfly.clustering.spring.context.SessionManagementArguments;
 import org.wildfly.clustering.spring.session.context.SpringSessionFilter;
 
 /**
@@ -31,7 +32,7 @@ public abstract class AbstractHotRodSessionManagerITCase extends org.wildfly.clu
 	}
 
 	@Override
-	public WebArchive createArchive(org.wildfly.clustering.session.container.SessionManagementTesterConfiguration configuration) {
-		return super.createArchive(configuration).addPackage(SpringSessionFilter.class.getPackage());
+	public WebArchive createArchive(SessionManagementArguments arguments) {
+		return super.createArchive(arguments).addPackage(SpringSessionFilter.class.getPackage());
 	}
 }

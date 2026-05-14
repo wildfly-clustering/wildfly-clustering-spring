@@ -27,6 +27,7 @@ import org.wildfly.clustering.function.Function;
 import org.wildfly.clustering.session.container.SessionManagementTester;
 import org.wildfly.clustering.session.container.SessionManagementTesterConfiguration;
 import org.wildfly.clustering.session.container.servlet.ServletSessionManagementTesterConfiguration;
+import org.wildfly.clustering.spring.context.infinispan.embedded.InfinispanSessionManagementArguments;
 import org.wildfly.clustering.spring.session.authentication.SecurityInitializer;
 import org.wildfly.clustering.spring.session.infinispan.embedded.authentication.Config;
 
@@ -73,12 +74,12 @@ public class AuthenticationInfinispanSessionManagerITCase extends AbstractInfini
 
 	@Test
 	public void test() {
-		this.run();
+		this.accept(InfinispanSessionManagementArguments.of());
 	}
 
 	@Override
-	public WebArchive createArchive(org.wildfly.clustering.session.container.SessionManagementTesterConfiguration configuration) {
-		return super.createArchive(configuration)
+	public WebArchive createArchive(InfinispanSessionManagementArguments arguments) {
+		return super.createArchive(arguments)
 				.addPackage(Config.class.getPackage())
 				.addPackage(SecurityInitializer.class.getPackage())
 				;

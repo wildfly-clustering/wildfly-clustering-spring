@@ -7,7 +7,6 @@ package org.wildfly.clustering.spring.context.infinispan.remote;
 
 import java.util.Properties;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 
 import org.infinispan.client.hotrod.impl.HotRodURI;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -18,11 +17,13 @@ import org.wildfly.clustering.cache.infinispan.remote.InfinispanServerContainer;
 import org.wildfly.clustering.cache.infinispan.remote.InfinispanServerExtension;
 import org.wildfly.clustering.session.container.AbstractSessionManagerITCase;
 import org.wildfly.clustering.session.container.SessionManagementTesterConfiguration;
+import org.wildfly.clustering.spring.context.PropertiesAsset;
+import org.wildfly.clustering.spring.context.SessionManagementArguments;
 
 /**
  * @author Paul Ferraro
  */
-public abstract class AbstractHotRodSessionManagerITCase extends AbstractSessionManagerITCase<WebArchive> implements UnaryOperator<Properties> {
+public abstract class AbstractHotRodSessionManagerITCase extends AbstractSessionManagerITCase<SessionManagementArguments, WebArchive> {
 
 	@RegisterExtension
 	static final ContainerProvider<InfinispanServerContainer> INFINISPAN = new InfinispanServerExtension();
@@ -36,31 +37,14 @@ public abstract class AbstractHotRodSessionManagerITCase extends AbstractSession
 	}
 
 	@Override
-	public Properties apply(Properties properties) {
+	public WebArchive createArchive(SessionManagementArguments arguments) {
+		Properties properties = arguments.getProperties();
 		HotRodURI uri = INFINISPAN.getContainer().get();
 		properties.setProperty("infinispan.server.uri", uri.toString(true));
 		// Use local cache since our remote cluster has only 1 member
 		// Reduce expiration interval to speed up expiration verification
 		properties.setProperty("infinispan.server.configuration", """
-{
-	"local-cache" : {
-		"encoding" : {
-			"key" : {
-				"media-type" : "application/octet-stream"
-			},
-			"value" : {
-				"media-type" : "application/octet-stream"
-			}
-		},
-		"expiration" : {
-			"interval" : 1000
-		},
-		"transaction" : {
-			"mode" : "NON_XA",
-			"locking" : "PESSIMISTIC"
-		}
-	}
-}""");
-		return properties;
+{ "local-cache" : { "encoding" : { "key" : { "media-type" : "application/octet-stream" }, "value" : { "media-type" : "application/octet-stream" }}, "expiration" : { "interval" : 1000 }, "locking" : { "isolation" : "REPEATABLE_READ" }, "transaction" : { "mode" : "NON_XA", "locking" : "PESSIMISTIC" }}}""");
+		return super.createArchive(arguments).addAsWebInfResource(new PropertiesAsset(properties), "classes/application.properties");
 	}
 }
