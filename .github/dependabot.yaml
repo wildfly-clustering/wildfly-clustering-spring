@@ -6,6 +6,8 @@ updates:
       interval: daily
   - package-ecosystem: maven
     directory: '/'
+    labels:
+    - dependencies
     schedule:
       interval: daily
     ignore:
