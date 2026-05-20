@@ -1,0 +1,104 @@
+name: Backport
+run-name: Backport "${{ github.event.pull_request.title }}"
+
+on:
+  pull_request_target:
+    types:
+      - closed
+      - labeled
+
+jobs:
+  backport:
+    name: Backport
+    permissions:
+      contents: write
+      pull-requests: write
+    strategy:
+      # Matrix of source and target branches to which we will attempt to backport
+      matrix:
+        include:
+          - origin: ${{ github.event.pull_request.base.repo.default_branch }}
+            target: 20.x
+    if: (github.event.pull_request.state == 'closed') && contains(github.event.pull_request.labels.*.name, vars.BACKPORT_LABEL) == true
+    runs-on: ubuntu-latest
+    steps:
+      - id: context
+        name: Show github context
+        env:
+          GITHUB_CONTEXT: ${{ toJSON(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
+      - id: filter-origin
+        name: Filter backport matrix by source branch
+        if: (github.event.pull_request.merged == true) && (github.event.pull_request.base.ref == matrix.origin)
+        run: echo "Attempt backport of ${{ github.event.pull_request.number }} to ${{ matrix.target }}"
+
+      - id: filter-target
+        name: Filter backport matrix by target branch
+        if: (github.event.pull_request.head.repo.owner.id == github.repository_owner_id) && (github.event.pull_request.base.ref == matrix.target) && startsWith(github.event.pull_request.head.ref, format('{0}-{1}-', vars.BACKPORT_LABEL, matrix.target))
+        env:
+          BACKPORT_BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: echo "Deleting obsolete $BACKPORT_BRANCH branch"
+
+      - id: create-app-token
+        name: Create GitHub App installation access token
+        if: (steps.filter-origin.conclusion == 'success') || (steps.filter-target.conclusion == 'success')
+        # Per https://github.com/actions/create-github-app-token#create-a-token-for-the-current-repository
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          permission-contents: write
+          permission-pull-requests: write
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - id: git-checkout
+        name: ${{ format('Checkout {0} branch', matrix.target) }}
+        if: steps.create-app-token.conclusion == 'success'
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          # Checkout backport target branch
+          ref: ${{ matrix.target }}
+          token: ${{ steps.create-app-token.outputs.token }}
+
+      - id: app-user
+        name: Determine user ID of GitHub App installation
+        if: steps.create-app-token.conclusion == 'success'
+        env:
+          GH_TOKEN: ${{ steps.create-app-token.outputs.token }}
+        # Per https://github.com/actions/create-github-app-token#create-a-git-committer-string-for-an-app-installation
+        run: echo "id=$(gh api "/users/${{ steps.create-app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+
+      - id: git-configure
+        name: Configure git user
+        if: steps.app-user.conclusion == 'success'
+        run: |
+            git config --global user.name "${{ steps.create-app-token.outputs.app-slug }}[bot]"
+            git config --global user.email "${{ steps.app-user.outputs.id }}+$(git config get user.name)@users.noreply.github.com"
+            echo "identity=$(git config get user.name) <$(git config get user.email)>" >> "$GITHUB_OUTPUT"
+
+      - id: prepare-backport
+        name: Prepare backport branch
+        if: (steps.filter-origin.conclusion == 'success')
+        run: git cherry-pick -x $(git rev-list --reverse ${{ github.event.pull_request.merge_commit_sha }}^1..${{ github.event.pull_request.merge_commit_sha }}^2)
+
+      - id: create-backport-pull-request
+        name: Create backport pull request
+        if: steps.prepare-backport.conclusion == 'success'
+        uses: peter-evans/create-pull-request@v8
+        with:
+          base: ${{ matrix.target }}
+          branch: ${{ format('{0}-{1}-{2}', vars.BACKPORT_LABEL, matrix.target, github.event.pull_request.number) }}
+          committer: ${{ steps.git-configure.outputs.identity }}
+          labels: ${{ join(github.event.pull_request.labels.*.name, ', ') }}
+          title: ${{ format('[{0}] {1}', matrix.target, github.event.pull_request.title) }}
+          body: ${{ format('Backport of {0}', github.event.pull_request.html_url) }}
+          token: ${{ steps.create-app-token.outputs.token }}
+          sign-commits: true
+
+      - id: delete-backport-branch
+        name: Delete backport branch
+        if: steps.filter-target.conclusion == 'success'
+        env:
+          BACKPORT_BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: git push origin --delete $BACKPORT_BRANCH
