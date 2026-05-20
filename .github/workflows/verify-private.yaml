@@ -1,0 +1,60 @@
+name: Backport pull request
+run-name: Verifying pull request "${{ github.event.pull_request.title }}"
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+env:
+  JAVA_MIN: 17
+  JAVA_DEFAULT: 25
+  JAVA_MAX: 26
+  VALIDATE_ONLY_LABEL: ${{ vars.VALIDATE_ONLY_LABEL }}
+
+jobs:
+  verify-private:
+    name: Verify
+    # Exclude pull requests from forks
+    if: github.event.pull_request.head.repo.owner.id == github.event.pull_request.base.repo.owner.id
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    steps:
+      - name: Context
+        env:
+          ENV_CONTEXT: ${{ toJSON(env) }}
+          GITHUB_CONTEXT: ${{ toJSON(github) }}
+        run: |
+          echo "env=$ENV_CONTEXT"
+          echo "github=$GITHUB_CONTEXT"
+
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          java-version: |
+            ${{ env.JAVA_MIN }}
+            ${{ env.JAVA_DEFAULT }}
+            ${{ env.JAVA_MAX }}
+          distribution: temurin
+
+      - name: Maven validate
+        if: contains(github.event.pull_request.labels.*.name, env.VALIDATE_ONLY_LABEL)
+        run: mvn --batch-mode --no-transfer-progress validate
+
+      - name: Maven verify
+        if: ${{ !contains(github.event.pull_request.labels.*.name, env.VALIDATE_ONLY_LABEL) }}
+        run: |
+          mvn --batch-mode --no-transfer-progress verify
+          mvn --batch-mode --no-transfer-progress verify -Dtoolchain.jdk.test.version=${{ env.JAVA_MIN }}
+          mvn --batch-mode --no-transfer-progress verify -Dtoolchain.jdk.test.version=${{ env.JAVA_MAX }}
