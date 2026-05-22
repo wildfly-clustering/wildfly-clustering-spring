@@ -8,7 +8,14 @@ package org.wildfly.clustering.spring.context.infinispan.embedded;
 import java.io.FileNotFoundException;
 import java.lang.management.ManagementFactory;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -18,6 +25,9 @@ import javax.management.ObjectName;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 import org.infinispan.commons.dataconversion.MediaType;
+import org.infinispan.commons.executors.ScheduledThreadPoolExecutorFactory;
+import org.infinispan.commons.executors.ThreadPoolExecutorFactory;
+import org.infinispan.configuration.cache.TransactionConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalJmxConfiguration;
 import org.infinispan.configuration.global.ShutdownHookBehavior;
@@ -25,6 +35,8 @@ import org.infinispan.configuration.global.TransportConfiguration;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ParserRegistry;
 import org.infinispan.expiration.ExpirationManager;
+import org.infinispan.factories.KnownComponentNames;
+import org.infinispan.factories.threads.CoreExecutorFactory;
 import org.infinispan.globalstate.ConfigurationStorage;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -174,13 +186,21 @@ public class EmbeddedCacheManagerBean extends AutoDestroyBean implements Channel
 			this.accept(this.commandDispatcherFactory::close);
 		}
 
+		Map<String, ExecutorServiceFactory<? extends ExecutorService>> executors = Map.of(
+				KnownComponentNames.BLOCKING_EXECUTOR, new SimpleThreadPoolExecutorFactory<>(createThreadPoolFactoryWithDefaults(KnownComponentNames.BLOCKING_EXECUTOR)),
+				KnownComponentNames.EXPIRATION_SCHEDULED_EXECUTOR, new SimpleThreadPoolExecutorFactory<>(ScheduledThreadPoolExecutorFactory.create()),
+				KnownComponentNames.ASYNC_NOTIFICATION_EXECUTOR, new SimpleThreadPoolExecutorFactory<>(createThreadPoolFactoryWithDefaults(KnownComponentNames.ASYNC_NOTIFICATION_EXECUTOR)),
+				KnownComponentNames.NON_BLOCKING_EXECUTOR, new SimpleNonBlockingThreadPoolExecutorFactory<>(createThreadPoolFactoryWithDefaults(KnownComponentNames.NON_BLOCKING_EXECUTOR)));
+
+		executors.values().forEach(this);
+
 		ClassLoader loader = this.loader.getClassLoader();
 		global.classLoader(this.loader.getClassLoader())
 				.shutdown().hookBehavior(ShutdownHookBehavior.DONT_REGISTER)
-				.blockingThreadPool().threadFactory(new DefaultBlockingThreadFactory(BlockingManager.class))
-				.expirationThreadPool().threadFactory(new DefaultBlockingThreadFactory(ExpirationManager.class))
-				.listenerThreadPool().threadFactory(new DefaultBlockingThreadFactory(ListenerInvocation.class))
-				.nonBlockingThreadPool().threadFactory(new DefaultNonBlockingThreadFactory(NonBlockingManager.class))
+				.blockingThreadPool().threadPoolFactory(executors.get(KnownComponentNames.BLOCKING_EXECUTOR)).threadFactory(new DefaultBlockingThreadFactory(BlockingManager.class))
+				.expirationThreadPool().threadPoolFactory(executors.get(KnownComponentNames.EXPIRATION_SCHEDULED_EXECUTOR)).threadFactory(new DefaultBlockingThreadFactory(ExpirationManager.class))
+				.listenerThreadPool().threadPoolFactory(executors.get(KnownComponentNames.ASYNC_NOTIFICATION_EXECUTOR)).threadFactory(new DefaultBlockingThreadFactory(ListenerInvocation.class))
+				.nonBlockingThreadPool().threadPoolFactory(executors.get(KnownComponentNames.NON_BLOCKING_EXECUTOR)).threadFactory(new DefaultNonBlockingThreadFactory(NonBlockingManager.class))
 				.serialization()
 					.marshaller(new UserMarshaller(MediaTypes.WILDFLY_PROTOSTREAM, new ProtoStreamByteBufferMarshaller(SerializationContextBuilder.newInstance(ClassLoaderMarshaller.of(loader)).load(loader).build())))
 					// Register dummy serialization context initializer, to bypass service loading in org.infinispan.marshall.protostream.impl.SerializationContextRegistryImpl
@@ -199,5 +219,63 @@ public class EmbeddedCacheManagerBean extends AutoDestroyBean implements Channel
 		this.container =new DefaultCacheManager(holder, false);
 		this.container.start();
 		this.accept(this.container::stop);
+	}
+
+	private interface ExecutorServiceFactory<E extends ExecutorService> extends ThreadPoolExecutorFactory<E>, Runnable {
+	}
+
+	private static ThreadPoolExecutorFactory<? extends ExecutorService> createThreadPoolFactoryWithDefaults(String componentName) {
+		int defaultQueueSize = KnownComponentNames.getDefaultQueueSize(componentName);
+		int defaultMaxThreads = KnownComponentNames.getDefaultThreads(componentName);
+		return CoreExecutorFactory.executorFactory(defaultMaxThreads, defaultQueueSize, KnownComponentNames.NON_BLOCKING_EXECUTOR.equals(componentName));
+	}
+
+	private static class SimpleThreadPoolExecutorFactory<E extends ExecutorService> implements ExecutorServiceFactory<E> {
+		private final List<Runnable> tasks = new CopyOnWriteArrayList<>();
+		private final ThreadPoolExecutorFactory<E> factory;
+
+		SimpleThreadPoolExecutorFactory(ThreadPoolExecutorFactory<E> factory) {
+			this.factory = factory;
+		}
+
+		@Override
+		public E createExecutor(ThreadFactory factory) {
+			E executor = this.factory.createExecutor(factory);
+			this.tasks.add(new Runnable() {
+				private final Duration timeout = TransactionConfiguration.CACHE_STOP_TIMEOUT.getDefaultValue().toDuration();
+
+				@Override
+				public void run() {
+					try {
+						executor.awaitTermination(this.timeout.toNanos(), TimeUnit.NANOSECONDS);
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+					}
+				}
+			});
+			return executor;
+		}
+
+		@Override
+		public void validate() {
+			// Do nothing
+		}
+
+		@Override
+		public void run() {
+			this.tasks.forEach(Runnable::run);
+		}
+	}
+
+	private static class SimpleNonBlockingThreadPoolExecutorFactory<E extends ExecutorService> extends SimpleThreadPoolExecutorFactory<E> {
+
+		SimpleNonBlockingThreadPoolExecutorFactory(ThreadPoolExecutorFactory<E> factory) {
+			super(factory);
+		}
+
+		@Override
+		public boolean createsNonBlockingThreads() {
+			return true;
+		}
 	}
 }
