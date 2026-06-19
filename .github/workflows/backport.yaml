@@ -54,7 +54,7 @@ jobs:
       - id: git-checkout
         name: ${{ format('Checkout {0} branch', matrix.target) }}
         if: steps.create-app-token.conclusion == 'success'
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           # Checkout backport target branch
