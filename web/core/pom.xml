@@ -17,6 +17,10 @@
 
 	<name>${project.spring.web}: Core</name>
 
+	<properties>
+		<project.module.name>org.wildfly.clustering.spring.web.core</project.module.name>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>jakarta.servlet</groupId>

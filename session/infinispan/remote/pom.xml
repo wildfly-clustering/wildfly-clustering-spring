@@ -19,6 +19,7 @@
 
 	<properties>
 		<catalina.home>${project.build.directory}/apache-tomcat-${version.org.apache.tomcat}</catalina.home>
+		<project.module.name>org.wildfly.clustering.spring.session.infinispan.remote</project.module.name>
 	</properties>
 
 	<dependencies>

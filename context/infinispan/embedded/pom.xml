@@ -17,6 +17,10 @@
 
 	<name>${project.spring.context.infinispan}: Embedded</name>
 
+	<properties>
+		<project.module.name>org.wildfly.clustering.spring.context.infinispan.embedded</project.module.name>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.kohsuke.metainf-services</groupId>

@@ -17,6 +17,10 @@
 
 	<name>${project.repository.name} Security</name>
 
+	<properties>
+		<project.module.name>org.wildfly.clustering.spring.security</project.module.name>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>jakarta.servlet</groupId>

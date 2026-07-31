@@ -17,8 +17,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 import javax.management.ObjectName;
 
@@ -60,10 +58,13 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.wildfly.clustering.cache.infinispan.marshalling.MediaTypes;
 import org.wildfly.clustering.cache.infinispan.marshalling.UserMarshaller;
+import org.wildfly.clustering.function.Function;
+import org.wildfly.clustering.function.Predicate;
 import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ClassLoaderMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ClassLoaderResolver;
+import org.wildfly.clustering.marshalling.protostream.ImmutableSerializationContext;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamConfiguration;
 import org.wildfly.clustering.server.group.GroupCommandDispatcherFactory;
 import org.wildfly.clustering.server.infinispan.dispatcher.ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration;
 import org.wildfly.clustering.server.jgroups.ChannelGroupMember;
@@ -75,6 +76,10 @@ import org.wildfly.clustering.spring.context.AutoDestroyBean;
  * @author Paul Ferraro
  */
 public class EmbeddedCacheManagerBean extends AutoDestroyBean implements ChannelEmbeddedCacheManagerCommandDispatcherFactoryConfiguration, InitializingBean, ResourceLoaderAware, EnvironmentAware {
+	static final Function<ClassLoader, ClassLoaderResolver> DEFAULT_RESOLVER_FACTORY = ClassLoaderResolver::of;
+	static final Function<ClassLoaderResolver, ProtoStreamConfiguration> DEFAULT_CONFIGURATION_FACTORY = Function.of(ProtoStreamConfiguration.Builder::with, ProtoStreamConfiguration.Builder::build);
+	static final Function<ProtoStreamConfiguration, ImmutableSerializationContext> DEFAULT_SERIALIZATION_CONTEXT_FACTORY = Function.of(ImmutableSerializationContext.Builder::with, ImmutableSerializationContext.Builder::build);
+	static final Function<ClassLoader, ByteBufferMarshaller> DEFAULT_MARSHALLER_FACTORY = DEFAULT_RESOLVER_FACTORY.thenApply(DEFAULT_CONFIGURATION_FACTORY).thenApply(DEFAULT_SERIALIZATION_CONTEXT_FACTORY).thenApply(ProtoStreamByteBufferMarshaller::new);
 
 	private static final System.Logger LOGGER = System.getLogger(EmbeddedCacheManagerBean.class.getPackageName());
 	private static final AtomicInteger COUNTER = new AtomicInteger(0);
@@ -174,7 +179,7 @@ public class EmbeddedCacheManagerBean extends AutoDestroyBean implements Channel
 
 			@Override
 			public Function<ClassLoader, ByteBufferMarshaller> getMarshallerFactory() {
-				return loader -> new ProtoStreamByteBufferMarshaller(SerializationContextBuilder.newInstance(ClassLoaderMarshaller.of(loader)).load(loader).build());
+				return DEFAULT_MARSHALLER_FACTORY;
 			}
 
 			@Override
@@ -202,7 +207,7 @@ public class EmbeddedCacheManagerBean extends AutoDestroyBean implements Channel
 				.listenerThreadPool().threadPoolFactory(executors.get(KnownComponentNames.ASYNC_NOTIFICATION_EXECUTOR)).threadFactory(new DefaultBlockingThreadFactory(ListenerInvocation.class))
 				.nonBlockingThreadPool().threadPoolFactory(executors.get(KnownComponentNames.NON_BLOCKING_EXECUTOR)).threadFactory(new DefaultNonBlockingThreadFactory(NonBlockingManager.class))
 				.serialization()
-					.marshaller(new UserMarshaller(MediaTypes.WILDFLY_PROTOSTREAM, new ProtoStreamByteBufferMarshaller(SerializationContextBuilder.newInstance(ClassLoaderMarshaller.of(loader)).load(loader).build())))
+					.marshaller(new UserMarshaller(MediaTypes.WILDFLY_PROTOSTREAM, DEFAULT_MARSHALLER_FACTORY.apply(loader)))
 					// Register dummy serialization context initializer, to bypass service loading in org.infinispan.marshall.protostream.impl.SerializationContextRegistryImpl
 					// Otherwise marshaller auto-detection will not work
 					.addContextInitializer(new SerializationContextInitializer() {

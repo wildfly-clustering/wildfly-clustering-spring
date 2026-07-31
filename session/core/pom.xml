@@ -17,6 +17,10 @@
 
 	<name>${project.spring.session}: Core</name>
 
+	<properties>
+		<project.module.name>org.wildfly.clustering.spring.session.core</project.module.name>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>jakarta.servlet</groupId>

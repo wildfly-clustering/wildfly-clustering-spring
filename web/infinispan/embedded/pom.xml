@@ -19,6 +19,7 @@
 
 	<properties>
 		<catalina.home>${project.build.directory}/apache-tomcat-${version.org.apache.tomcat}</catalina.home>
+		<project.module.name>org.wildfly.clustering.spring.web.infinispan.embedded</project.module.name>
 	</properties>
 
 	<dependencies>
