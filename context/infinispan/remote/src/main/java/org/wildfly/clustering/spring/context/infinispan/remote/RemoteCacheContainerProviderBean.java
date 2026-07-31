@@ -27,9 +27,12 @@ import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.ResourceLoader;
 import org.wildfly.clustering.cache.infinispan.marshalling.MediaTypes;
 import org.wildfly.clustering.cache.infinispan.marshalling.UserMarshaller;
-import org.wildfly.clustering.marshalling.protostream.ClassLoaderMarshaller;
+import org.wildfly.clustering.function.Function;
+import org.wildfly.clustering.marshalling.ByteBufferMarshaller;
+import org.wildfly.clustering.marshalling.protostream.ClassLoaderResolver;
+import org.wildfly.clustering.marshalling.protostream.ImmutableSerializationContext;
 import org.wildfly.clustering.marshalling.protostream.ProtoStreamByteBufferMarshaller;
-import org.wildfly.clustering.marshalling.protostream.SerializationContextBuilder;
+import org.wildfly.clustering.marshalling.protostream.ProtoStreamConfiguration;
 import org.wildfly.clustering.spring.context.AutoDestroyBean;
 
 /**
@@ -37,6 +40,10 @@ import org.wildfly.clustering.spring.context.AutoDestroyBean;
  * @author Paul Ferraro
  */
 public class RemoteCacheContainerProviderBean extends AutoDestroyBean implements RemoteCacheContainerProvider, InitializingBean, ResourceLoaderAware {
+	static final Function<ClassLoader, ClassLoaderResolver> DEFAULT_RESOLVER_FACTORY = ClassLoaderResolver::of;
+	static final Function<ClassLoaderResolver, ProtoStreamConfiguration> DEFAULT_CONFIGURATION_FACTORY = Function.of(ProtoStreamConfiguration.Builder::with, ProtoStreamConfiguration.Builder::build);
+	static final Function<ProtoStreamConfiguration, ImmutableSerializationContext> DEFAULT_SERIALIZATION_CONTEXT_FACTORY = Function.of(ImmutableSerializationContext.Builder::with, ImmutableSerializationContext.Builder::build);
+	static final Function<ClassLoader, ByteBufferMarshaller> DEFAULT_MARSHALLER_FACTORY = DEFAULT_RESOLVER_FACTORY.thenApply(DEFAULT_CONFIGURATION_FACTORY).thenApply(DEFAULT_SERIALIZATION_CONTEXT_FACTORY).thenApply(ProtoStreamByteBufferMarshaller::new);
 
 	private static final AtomicInteger COUNTER = new AtomicInteger(0);
 	static class NonBlockingThreadGroup extends ThreadGroup implements NonBlockingResource {
@@ -88,7 +95,7 @@ public class RemoteCacheContainerProviderBean extends AutoDestroyBean implements
 						return executor;
 					}
 				})
-				.marshaller(new UserMarshaller(MediaTypes.WILDFLY_PROTOSTREAM, new ProtoStreamByteBufferMarshaller(SerializationContextBuilder.newInstance(ClassLoaderMarshaller.of(this.loader)).load(this.loader).build())))
+				.marshaller(new UserMarshaller(MediaTypes.WILDFLY_PROTOSTREAM, DEFAULT_MARSHALLER_FACTORY.apply(this.loader)))
 				.build();
 		this.accept(() -> {
 			try {
