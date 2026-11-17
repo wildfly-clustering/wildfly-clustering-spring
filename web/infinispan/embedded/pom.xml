@@ -18,7 +18,6 @@
 	<name>${project.spring.web.infinispan}: Embedded</name>
 
 	<properties>
-		<catalina.home>${project.build.directory}/apache-tomcat-${version.org.apache.tomcat}</catalina.home>
 		<project.module.name>org.wildfly.clustering.spring.web.infinispan.embedded</project.module.name>
 	</properties>
 
@@ -72,7 +71,7 @@
 
 		<dependency>
 			<groupId>org.jboss.arquillian.container</groupId>
-			<artifactId>arquillian-tomcat-managed-10</artifactId>
+			<artifactId>arquillian-tomcat-remote-10</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -87,7 +86,12 @@
 		</dependency>
 		<dependency>
 			<groupId>org.wildfly.clustering</groupId>
-			<artifactId>wildfly-clustering-arquillian</artifactId>
+			<artifactId>wildfly-clustering-container-arquillian</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.wildfly.clustering</groupId>
+			<artifactId>wildfly-clustering-junit</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -120,130 +124,13 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-clean-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>clean-tomcat-webapps</id>
-						<phase>pre-integration-test</phase>
-						<goals>
-							<goal>clean</goal>
-						</goals>
-						<configuration>
-							<excludeDefaultDirectories>true</excludeDefaultDirectories>
-							<filesets>
-								<fileset>
-									<directory>${catalina.home}/webapps</directory>
-									<includes>
-										<include>ROOT/**</include>
-										<include>docs/**</include>
-										<include>examples/**</include>
-									</includes>
-								</fileset>
-							</filesets>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>unpack-tomcat</id>
-						<phase>generate-test-resources</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>org.apache.tomcat</groupId>
-									<artifactId>tomcat</artifactId>
-									<version>${version.org.apache.tomcat}</version>
-									<type>zip</type>
-									<overWrite>true</overWrite>
-									<outputDirectory>${project.build.directory}</outputDirectory>
-									<includes>**</includes>
-								</artifactItem>
-							</artifactItems>
-						</configuration>
-					</execution>
-					<execution>
-						<id>configure-tomcat-runtime</id>
-						<phase>pre-integration-test</phase>
-						<goals>
-							<goal>copy</goal>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${catalina.home}/lib/</outputDirectory>
-							<includeScope>runtime</includeScope>
-						</configuration>
-					</execution>
-					<execution>
-						<id>configure-tomcat-test</id>
-						<phase>pre-integration-test</phase>
-						<goals>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${catalina.home}/lib/</outputDirectory>
-							<includeScope>test</includeScope>
-							<includeGroupIds>org.springframework.security</includeGroupIds>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-resources-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>copy-tomcat-1</id>
-						<phase>pre-integration-test</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/tomcat-1</outputDirectory>
-							<resources>
-								<resource>
-									<directory>${catalina.home}</directory>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-					<execution>
-						<id>copy-tomcat-2</id>
-						<phase>pre-integration-test</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/tomcat-2</outputDirectory>
-							<resources>
-								<resource>
-									<directory>${catalina.home}</directory>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-					<execution>
-						<id>copy-tomcat-3</id>
-						<phase>pre-integration-test</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/tomcat-3</outputDirectory>
-							<resources>
-								<resource>
-									<directory>${catalina.home}</directory>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<configuration>
+					<systemPropertyVariables>
+						<project.basedir>${project.basedir}</project.basedir>
+						<project.artifact>${project.build.directory}/${project.build.finalName}.${project.packaging}</project.artifact>
+					</systemPropertyVariables>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

@@ -54,8 +54,19 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.jboss.shrinkwrap</groupId>
-			<artifactId>shrinkwrap-api</artifactId>
+			<groupId>org.jboss.shrinkwrap.resolver</groupId>
+			<artifactId>shrinkwrap-resolver-api-maven</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.wildfly.clustering</groupId>
+			<artifactId>wildfly-clustering-junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.wildfly.clustering</groupId>
+			<artifactId>wildfly-clustering-session-spi</artifactId>
+			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

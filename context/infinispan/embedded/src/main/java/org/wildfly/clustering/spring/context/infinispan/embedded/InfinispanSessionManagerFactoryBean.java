@@ -16,7 +16,6 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.transaction.TransactionMode;
 import org.infinispan.transaction.tm.EmbeddedTransactionManager;
 import org.springframework.beans.factory.InitializingBean;
 import org.wildfly.clustering.cache.infinispan.embedded.EmbeddedCacheConfiguration;
@@ -71,8 +70,8 @@ public class InfinispanSessionManagerFactoryBean<C> extends AutoDestroyBean impl
 		ConfigurationBuilder builder = new ConfigurationBuilder().read(template).template(false);
 		builder.encoding().mediaType(MediaType.APPLICATION_OBJECT_TYPE);
 
-		if (template.invocationBatching().enabled()) {
-			builder.transaction().transactionMode(TransactionMode.TRANSACTIONAL).transactionManagerLookup(EmbeddedTransactionManager::getInstance);
+		if (template.transaction().mode().isTransactional()) {
+			builder.transaction().transactionManagerLookup(EmbeddedTransactionManager::getInstance);
 		}
 
 		// Disable expiration

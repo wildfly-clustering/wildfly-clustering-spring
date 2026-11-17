@@ -8,21 +8,21 @@ package org.wildfly.clustering.spring.context.infinispan.embedded;
 import java.util.function.Function;
 
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.wildfly.clustering.arquillian.Tester;
-import org.wildfly.clustering.session.container.AbstractSessionManagerITCase;
+import org.wildfly.clustering.junit.Tester;
 import org.wildfly.clustering.session.container.SessionManagementTesterConfiguration;
+import org.wildfly.clustering.spring.context.AbstractSessionManagerITCase;
 
 /**
  * @author Paul Ferraro
  */
-public abstract class AbstractInfinispanSessionManagerITCase extends AbstractSessionManagerITCase<InfinispanSessionManagementArguments, WebArchive> {
+public abstract class AbstractInfinispanSessionManagerITCase extends AbstractSessionManagerITCase<InfinispanSessionManagementArguments> {
 
 	protected AbstractInfinispanSessionManagerITCase(SessionManagementTesterConfiguration configuration) {
-		super(configuration, WebArchive.class);
+		super(configuration);
 	}
 
 	protected AbstractInfinispanSessionManagerITCase(Function<SessionManagementTesterConfiguration, Tester> testerFactory, SessionManagementTesterConfiguration configuration) {
-		super(testerFactory, configuration, WebArchive.class);
+		super(testerFactory, configuration);
 	}
 
 	@Override

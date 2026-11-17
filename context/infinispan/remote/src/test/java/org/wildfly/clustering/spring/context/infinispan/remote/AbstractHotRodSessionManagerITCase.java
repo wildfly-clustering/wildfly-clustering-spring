@@ -11,35 +11,33 @@ import java.util.function.Function;
 import org.infinispan.client.hotrod.impl.HotRodURI;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.wildfly.clustering.arquillian.Tester;
-import org.wildfly.clustering.cache.ContainerProvider;
-import org.wildfly.clustering.cache.infinispan.remote.InfinispanServerContainer;
-import org.wildfly.clustering.cache.infinispan.remote.InfinispanServerExtension;
-import org.wildfly.clustering.session.container.AbstractSessionManagerITCase;
+import org.wildfly.clustering.container.infinispan.InfinispanServerExtension;
+import org.wildfly.clustering.junit.Tester;
 import org.wildfly.clustering.session.container.SessionManagementTesterConfiguration;
+import org.wildfly.clustering.spring.context.AbstractSessionManagerITCase;
 import org.wildfly.clustering.spring.context.PropertiesAsset;
 import org.wildfly.clustering.spring.context.SessionManagementArguments;
 
 /**
  * @author Paul Ferraro
  */
-public abstract class AbstractHotRodSessionManagerITCase extends AbstractSessionManagerITCase<SessionManagementArguments, WebArchive> {
+public abstract class AbstractHotRodSessionManagerITCase extends AbstractSessionManagerITCase<SessionManagementArguments> {
 
 	@RegisterExtension
-	static final ContainerProvider<InfinispanServerContainer> INFINISPAN = new InfinispanServerExtension();
+	static final InfinispanServerExtension INFINISPAN = new InfinispanServerExtension();
 
 	protected AbstractHotRodSessionManagerITCase(SessionManagementTesterConfiguration configuration) {
-		super(configuration, WebArchive.class);
+		super(configuration);
 	}
 
 	protected AbstractHotRodSessionManagerITCase(Function<SessionManagementTesterConfiguration, Tester> testerFactory, SessionManagementTesterConfiguration configuration) {
-		super(testerFactory, configuration, WebArchive.class);
+		super(testerFactory, configuration);
 	}
 
 	@Override
 	public WebArchive createArchive(SessionManagementArguments arguments) {
 		Properties properties = arguments.getProperties();
-		HotRodURI uri = INFINISPAN.getContainer().get();
+		HotRodURI uri = INFINISPAN.getLocation();
 		properties.setProperty("infinispan.server.uri", uri.toString(true));
 		// Use local cache since our remote cluster has only 1 member
 		// Reduce expiration interval to speed up expiration verification

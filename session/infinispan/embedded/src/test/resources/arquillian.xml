@@ -1,44 +1,40 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 	Copyright The WildFly Authors
 	SPDX-License-Identifier: Apache-2.0
 -->
 <arquillian xmlns="http://jboss.org/schema/arquillian" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jboss.org/schema/arquillian http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
+	<extension qualifier="OCI">
+		<property name="oci:image">${tomcat.container.image}</property>
+		<property name="oci:expose">bindHttpPort jmxPort shutdownPort</property>
+		<property name="oci:start-message-pattern">.*\QServer startup in \E.*</property>
+		<property name="ref:HTTP_PORT">bindHttpPort</property>
+		<property name="ref:JMX_PORT">jmxPort</property>
+		<property name="ref:SHUTDOWN_PORT">shutdownPort</property>
+		<property name="ref:JVM_ROUTE"/>
+		<property name="env:JAVA_OPTS">${tomcat.container.parameters}</property>
+		<property name="file:${project.basedir}/../../../context/core/src/test/resources/tomcat">/usr/local/tomcat</property>
+	</extension>
 	<group qualifier="tomcat" default="true">
-		<container qualifier="tomcat-1" mode="class">
+		<container qualifier="server-1" mode="manual">
 			<configuration>
-				<property name="catalinaHome">${project.build.directory}/tomcat-1</property>
-
-				<property name="jmxPort">${tomcat1.jmx.port}</property>
-				<property name="bindHttpPort">${tomcat1.http.port}</property>
-				<property name="javaVmArguments">${tomcat1.runtime.parameters}</property>
-
-				<property name="user">${tomcat.admin.username}</property>
-				<property name="pass">${tomcat.admin.password}</property>
+				<property name="bindHttpPort">8080</property>
+				<property name="jmxPort">8089</property>
+				<property name="shutdownPort">9089</property>
 			</configuration>
 		</container>
-		<container qualifier="tomcat-2" mode="class">
+		<container qualifier="server-2" mode="manual">
 			<configuration>
-				<property name="catalinaHome">${project.build.directory}/tomcat-2</property>
-
-				<property name="jmxPort">${tomcat2.jmx.port}</property>
-				<property name="bindHttpPort">${tomcat2.http.port}</property>
-				<property name="javaVmArguments">${tomcat2.runtime.parameters}</property>
-
-				<property name="user">${tomcat.admin.username}</property>
-				<property name="pass">${tomcat.admin.password}</property>
+				<property name="bindHttpPort">8180</property>
+				<property name="jmxPort">8189</property>
+				<property name="shutdownPort">9189</property>
 			</configuration>
 		</container>
-		<container qualifier="tomcat-3" mode="class">
+		<container qualifier="server-3" mode="manual">
 			<configuration>
-				<property name="catalinaHome">${project.build.directory}/tomcat-3</property>
-
-				<property name="jmxPort">${tomcat3.jmx.port}</property>
-				<property name="bindHttpPort">${tomcat3.http.port}</property>
-				<property name="javaVmArguments">${tomcat3.runtime.parameters}</property>
-
-				<property name="user">${tomcat.admin.username}</property>
-				<property name="pass">${tomcat.admin.password}</property>
+				<property name="bindHttpPort">8280</property>
+				<property name="jmxPort">8289</property>
+				<property name="shutdownPort">9289</property>
 			</configuration>
 		</container>
 	</group>
