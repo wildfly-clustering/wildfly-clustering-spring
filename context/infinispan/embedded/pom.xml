@@ -51,19 +51,7 @@
 
 		<dependency>
 			<groupId>org.wildfly.clustering</groupId>
-			<artifactId>wildfly-clustering-arquillian</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.wildfly.clustering</groupId>
-			<artifactId>wildfly-clustering-cache-infinispan-remote</artifactId>
-			<classifier>tests</classifier>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.wildfly.clustering</groupId>
-			<artifactId>wildfly-clustering-cache-spi</artifactId>
-			<classifier>tests</classifier>
+			<artifactId>wildfly-clustering-junit</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -74,18 +62,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.jboss.arquillian.junit5</groupId>
-			<artifactId>arquillian-junit5-container</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.jboss.shrinkwrap</groupId>
 			<artifactId>shrinkwrap-api</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.testcontainers</groupId>
-			<artifactId>testcontainers</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

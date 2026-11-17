@@ -47,20 +47,17 @@
 
 		<dependency>
 			<groupId>org.wildfly.clustering</groupId>
-			<artifactId>wildfly-clustering-arquillian</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.wildfly.clustering</groupId>
-			<artifactId>wildfly-clustering-cache-infinispan-remote</artifactId>
-			<classifier>tests</classifier>
+			<artifactId>wildfly-clustering-container-arquillian</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.wildfly.clustering</groupId>
-			<artifactId>wildfly-clustering-cache-spi</artifactId>
-			<classifier>tests</classifier>
+			<artifactId>wildfly-clustering-container-infinispan</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.wildfly.clustering</groupId>
+			<artifactId>wildfly-clustering-junit</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

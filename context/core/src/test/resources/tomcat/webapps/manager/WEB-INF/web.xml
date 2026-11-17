@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_1.xsd"
+	version="6.1"
+	metadata-complete="true">
+
+	<display-name>Tomcat Manager Application</display-name>
+
+	<request-character-encoding>UTF-8</request-character-encoding>
+
+	<servlet>
+		<servlet-name>Manager</servlet-name>
+		<servlet-class>org.apache.catalina.manager.ManagerServlet</servlet-class>
+	</servlet>
+
+	<!-- Define the Manager Servlet Mapping -->
+	<servlet-mapping>
+		<servlet-name>Manager</servlet-name>
+		<url-pattern>/text/*</url-pattern>
+	</servlet-mapping>
+
+</web-app>

@@ -10,7 +10,6 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.wildfly.clustering.spring.context.PropertiesAsset;
 import org.wildfly.clustering.spring.context.infinispan.embedded.InfinispanSessionManagementArguments;
 import org.wildfly.clustering.spring.context.infinispan.embedded.InfinispanSessionManagementArgumentsProvider;
-import org.wildfly.clustering.spring.session.context.SpringSessionFilter;
 import org.wildfly.clustering.spring.session.infinispan.embedded.context.Config;
 
 /**
@@ -26,10 +25,11 @@ public class AnnotationInfinispanSessionManagerITCase extends AbstractInfinispan
 
 	@Override
 	public WebArchive createArchive(InfinispanSessionManagementArguments arguments) {
-		return super.createArchive(arguments)
-				.addPackage(SpringSessionFilter.class.getPackage())
+		WebArchive archive = super.createArchive(arguments)
 				.addPackage(Config.class.getPackage())
 				.addAsWebInfResource(new PropertiesAsset(arguments.getProperties()), "classes/application.properties")
 				;
+		System.out.println(archive.toString(true));
+		return archive;
 	}
 }
